@@ -31,7 +31,7 @@ figcaption span{color:var(--muted);font-weight:400}
 <main class="wrap">
   <h1>كوخ غرفة وتراس 5 × 7 شامل التراس</h1>
   <p class="meta">مصنع وتد الأخشاب · تصميم حسب صورة العميل · 2026-09-29</p>
-  <ul class="facts"><li>35 م² (كوخ 27 + تراس 8)</li><li>غرفة نوم</li><li>دورة مياه</li><li>صالة ومطبخ صغير</li><li>خشب بلونه الطبيعي</li><li>40,250 ريال — عرض اليوم الوطني</li></ul>
+  <ul class="facts"><li>35 م² (كوخ 27 + تراس 8)</li><li>غرفة نوم</li><li>دورة مياه</li><li>صالة ومطبخ صغير</li><li>خشب بلونه الطبيعي</li><li>40,250 ريال</li></ul>
   <div class="bar">
     <button class="btn" id="dl" type="button">تحميل ملف PDF</button>
     <span id="st" role="status">اضغط أي صفحة لتكبيرها</span>
@@ -40,7 +40,7 @@ figcaption span{color:var(--muted);font-weight:400}
 </main>
 
 <script>
-const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات والتسعير — عرض اليوم الوطني"],["7","الصور الواقعية"],["8","لقطات المنظور الخارجي"],["9","المقطع العلوي بالفرش"],["10","المنظور والمواد"]];
+const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات والتسعير"],["7","الصور الواقعية"],["8","لقطات المنظور الخارجي"],["9","المقطع العلوي بالفرش"],["10","المنظور والمواد"]];
 document.getElementById("pages").innerHTML=PAGES.map(([n,t])=>`<figure><a href="pages/page-${n}.jpg" target="_blank" rel="noopener"><img src="pages/page-${n}.jpg" alt="${t}" loading="${n==="1"?"eager":"lazy"}"></a><figcaption>صفحة ${n} <span>· ${t}</span></figcaption></figure>`).join("");
 const st=document.getElementById("st");
 document.getElementById("dl").addEventListener("click",async()=>{
