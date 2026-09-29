@@ -288,19 +288,31 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
         S.wbox("frame", w, a, b, out - 2, half, zt - 3, zt + 3)
 
 
-def _glass_gable(S, w, L, H, rise, half, tp, fw=10, spacing=110):
-    """مثلث جملون زجاج: إطار على الأضلاع + قوائم رأسية بين الزجاج."""
-    zt = lambda t: H + (min(t, L - t) / (L / 2)) * rise  # noqa: E731
-    S.wprism("glass", w, [(fw, H + fw), (L - fw, H + fw), (L / 2, H + rise - fw * 1.4)], -1, 1)
-    S.wbox("frame", w, -half, L + half, -half, half, H, H + fw)
-    for (t0, t1) in ((-half, L / 2), (L + half, L / 2)):
-        S.wdiag("frame", w, t0, H, t1, H + rise, fw * 1.5, -half, half)
-    n = max(1, round(L / spacing))
-    for k in range(1, n):
-        t = L * k / n
-        if abs(t - L / 2) < 6:
-            t = L / 2
-        S.wbox("frame", w, t - 3, t + 3, -3, 3, H + fw, zt(t) - 4)
+def gable_glass_geometry(L, H, rise, tp, border=20, post=10, spacing=110):
+    """هندسة مثلث الجملون الزجاج بإطار خشب: (المثلث الداخلي للزجاج، مواقع القوائم، دالة الحافة الداخلية)."""
+    bv = border * math.sqrt(1 + tp * tp)            # الإزاحة الرأسية للحافة المائلة الداخلية
+    tl = (border + bv) / tp
+    apex = H + rise - bv
+    inner = [(tl, H + border), (L - tl, H + border), (L / 2, apex)]
+    zin = lambda t: H + min(t, L - t) * tp - bv      # noqa: E731
+    n = max(1, round((L - 2 * tl) / spacing))
+    posts = [tl + (L - 2 * tl) * k / n for k in range(1, n)]
+    return inner, posts, zin, bv, tl
+
+
+def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
+    """مثلث جملون زجاج مركّب داخل إطار خشب: حافة سفلية ومائلة 20 سم + قوائم خشب 10 سم."""
+    inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, tp, border, post, spacing)
+    S.wbox("wood", w, -half, L + half, -half, half, H, H + border)
+    S.wprism("wood", w, [(-half, H), (L / 2, H + rise), (L / 2, H + rise - bv), (tl, H + border), (tl, H)],
+             -half, half)
+    S.wprism("wood", w, [(L + half, H), (L - tl, H), (L - tl, H + border), (L / 2, H + rise - bv),
+                         (L / 2, H + rise)], -half, half)
+    for t in posts:
+        S.wbox("wood", w, t - post / 2, t + post / 2, -half, half, H + border, zin(t) + 1)
+    S.wprism("glass", w, inner, -1, 1)
+    # كنار خارجي حول الزجاج (خط التركيب)
+    S.wbox("trim", w, tl, L - tl, -half - 2.5, -half, H + border - 5, H + border)
 
 
 # ---------------------------------------------------------------- الدكة والدربزين

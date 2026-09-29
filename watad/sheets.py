@@ -334,12 +334,13 @@ def elevation(ax, ctx, w):
         y += cover
     top = H + rise
     if gable_end and w.gable_glass:
-        ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.2))
-        n = max(1, round(L / 110))
-        for k in range(1, n):
-            t = L * k / n
-            ax.plot([t, t], [H, H + (min(t, L - t) / (L / 2)) * rise], color=C_WIN, lw=0.8)
-        ax.text(L / 2, H + rise * 0.3, "جملون زجاج", ha="center", fontsize=8, color=C_WIN)
+        from .model3d import gable_glass_geometry
+        inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
+        ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
+        ax.add_patch(Polygon(inner, closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
+        for t in posts:
+            ax.add_patch(Rectangle((t - 5, inner[0][1]), 10, zin(t) - inner[0][1], fc="#e9d9c4", ec="k", lw=0.5))
+        ax.text(L / 2, H + 32, "زجاج بإطار خشب 20 سم + قوائم خشب 10 سم", ha="center", fontsize=7, color=C_WIN)
     if gable_end:
         if not w.gable_glass:
             ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
