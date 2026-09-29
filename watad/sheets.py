@@ -871,7 +871,7 @@ def _grid_page(title, shots, note=None):
         ax.axis("off")
         ax.set_title(name, fontsize=11, color=BRAND, loc="right")
     if note:
-        fig.text(0.98, 0.085, note, ha="right", fontsize=9, color="#555")
+        fig.text(0.955, 0.12, note, ha="right", fontsize=9, color="#555")
     return fig
 
 
@@ -895,7 +895,7 @@ def real_sheets(ctx):
             a2.imshow(plt.imread(pth))
             a2.axis("off")
             a2.set_title(name, fontsize=10, color=BRAND, loc="right")
-        fig.text(0.98, 0.25, "رندر واقعي بخامات حقيقية وإضاءة طبيعية — الألوان النهائية حسب عينات المورد",
+        fig.text(0.955, 0.25, "رندر واقعي بخامات حقيقية وإضاءة طبيعية — الألوان النهائية حسب عينات المورد",
                  ha="right", fontsize=9, color="#555")
         pages.append((fig, "الصور الواقعية — الخارج"))
     if shots.get("dusk"):

@@ -52,6 +52,18 @@ Ka 0.178 0.142 0.097
 d 1.00
 illum 2
 
+newmtl ceiling
+Kd 0.890 0.710 0.486
+Ka 0.178 0.142 0.097
+d 1.00
+illum 2
+
+newmtl joist
+Kd 0.890 0.710 0.486
+Ka 0.178 0.142 0.097
+d 1.00
+illum 2
+
 newmtl door
 Kd 0.086 0.086 0.086
 Ka 0.017 0.017 0.017
