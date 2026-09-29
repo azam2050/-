@@ -10,7 +10,7 @@ from .obj_out import write_obj
 from .quantities import build_quantities
 from .rules import load_rules
 from .model3d import build_scene, railing_catalog, render_preview
-from .sheets import build_pdf
+from .sheets import build_client_pdf, build_pdf
 from .style import resolve_style
 
 
@@ -41,6 +41,7 @@ def build(project_path, out_dir, rules_path=None):
     stem = project.name.replace(" ", "_")
     files = {
         "pdf": out / f"{stem}.pdf",
+        "client_pdf": out / f"{stem}_client.pdf",
         "dxf": out / f"{stem}.dxf",
         "model3d_obj": out / f"{stem}_3d.obj",
         "model3d_glb": out / f"{stem}_3d.glb",
@@ -58,6 +59,7 @@ def build(project_path, out_dir, rules_path=None):
            "height": hi, "issues": issues, "questions": qs, "style": style,
            "preview": files["preview"], "railings": railings}
     build_pdf(ctx, files["pdf"])
+    build_client_pdf(ctx, files["client_pdf"])
     write_dxf(project, members, heights, rules, files["dxf"])
     write_obj(project, members, rules, files["obj"])
     files["json"].write_text(json.dumps({"height": hi, **q, "issues": issues, "open_questions": qs},

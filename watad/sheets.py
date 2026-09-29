@@ -216,7 +216,9 @@ def plan_sheet(ctx):
     P, rules = ctx["project"], ctx["rules"]
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(P, rules)
-    portrait = (y1 - y0) > (x1 - x0)
+    ey0 = min([y0] + [d.rect[1] - (120 if d.stairs else 0) for d in P.decks])
+    ex1 = max([x1] + [d.rect[2] for d in P.decks])
+    portrait = (y1 - ey0) >= (ex1 - x0) * 0.95
     fig = new_page((A3[1], A3[0]) if portrait else A3)
     ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
     title(ax, "المسقط الأفقي مع الفرش", "الأبعاد بالسنتيمتر - الجدران: قوائم 7×5 + تلبيس 2.5 من الجهتين (12 سم)")
@@ -270,13 +272,37 @@ def plan_sheet(ctx):
         # dim() يزيح لليسار؛ الخارج على يمين الجدار → نعكس الاتجاه
         chain(ax, pts[::-1], 45)
         dim(ax, pts[-1], pts[0], 90, fs=8)
+    # محاور الشبكة (أرقام للجدران الرأسية، حروف للأفقية) مثل لوحات المكتب
+    xs = sorted({round(w.start[0]) for w in P.walls if abs(w.u[0]) < 1e-6})
+    ys = sorted({round(w.start[1]) for w in P.walls if abs(w.u[1]) < 1e-6})
+    def _thin(v, gap=45):
+        out = []
+        for a in v:
+            if not out or a - out[-1] >= gap:
+                out.append(a)
+        return out
+    xs, ys = _thin(xs), _thin(ys)
+    letters = "أبجدهوزحطيكلمن"
+    bx0, by0, bx1, by1 = outer_bbox(P, rules)
+    for i, x in enumerate(xs):
+        yb = by1 + 125
+        ax.plot([x, x], [by1 + 8, yb - 16], color="#999", lw=0.5, ls=(0, (6, 3)))
+        ax.add_patch(Ellipse((x, yb), 32, 32, fill=False, ec="#777", lw=0.8))
+        ax.text(x, yb, str(i + 1), ha="center", va="center", fontsize=9, color="#555")
+    for i, y in enumerate(ys):
+        xb = bx1 + 125
+        ax.plot([bx1 + 8, xb - 16], [y, y], color="#999", lw=0.5, ls=(0, (6, 3)))
+        ax.add_patch(Ellipse((xb, y), 32, 32, fill=False, ec="#777", lw=0.8))
+        ax.text(xb, y, letters[i], ha="center", va="center", fontsize=9, color="#555")
+    y1 = max(y1, by1 + 60)
+    x1 = max(x1, bx1 + 60)
     # سهم الشمال
     nx_, ny_ = x1 + 120, y1 - 60
     ax.add_patch(Polygon([(nx_ - 18, ny_ - 40), (nx_, ny_ + 30), (nx_ + 18, ny_ - 40), (nx_, ny_ - 25)],
                          closed=True, fc="k"))
     ax.text(nx_, ny_ + 42, "ش", ha="center", fontsize=14)
     ax.set_xlim(x0 - 160, x1 + 170)
-    ax.set_ylim(y0 - 160, y1 + 130)
+    ax.set_ylim(y0 - 160, y1 + 170)
     return fig, "المسقط الأفقي"
 
 
@@ -600,14 +626,16 @@ def areas_sheet(ctx):
     ax2 = fig.add_axes([0.6, 0.45, 0.35, 0.4])
     table(ax2, ["البند", "القيمة"], info, [1.5, 3.5], fs=10)
     ax2.set_title("مصنع وتد الأخشاب\nWatad Wood Factory", fontsize=14)
+    ax3 = fig.add_axes([0.6, 0.2, 0.35, 0.18])
     if P.price_per_m2:
-        ax3 = fig.add_axes([0.6, 0.2, 0.35, 0.18])
         total = round(gross, 2) * P.price_per_m2
-        table(ax3, ["البند", "القيمة"], [["المساحة الإجمالية (م2)", f"{gross:.2f}"],
-                                          ["سعر المتر (ريال)", f"{P.price_per_m2:,.0f}"],
-                                          ["الإجمالي (ريال)", f"{total:,.0f}"]], [2.5, 2.5], fs=10,
-              bold_last=1)
-        ax3.set_title("التسعير", fontsize=14)
+        price_rows = [["سعر المتر (ريال)", f"{P.price_per_m2:,.0f}"], ["الإجمالي (ريال)", f"{total:,.0f}"]]
+    else:
+        price_rows = [["سعر المتر (ريال)", "يُحدد بعد الاعتماد"], ["الإجمالي (ريال)", "—"]]
+    extra = [["مساحة التراس المسقوف (م2)", f"{sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4:.2f}"]] if P.decks else []
+    table(ax3, ["البند", "القيمة"], [["المساحة الإجمالية (م2)", f"{gross:.2f}"]] + extra + price_rows,
+          [2.5, 2.5], fs=10, bold_last=1)
+    ax3.set_title("التسعير", fontsize=14)
     return fig, "المساحات والتسعير"
 
 
@@ -739,6 +767,21 @@ def bom_rows(ctx):
              ["العزل", f"{q['insulation']['panels']} لوح فوم صخري 80" if q["insulation"] else "بدون (غير مطلوب)"],
              ["الصبة", "يجهزها العميل — 20 سم، مفرغة تحت دورات المياه"]]
     return rows
+
+
+def build_client_pdf(ctx, path, with_perspective=True):
+    """نسخة العميل بنفس ترتيب ملف المكتب: مسقط، واجهات، سقف وقطاع، جدول الفتحات، المساحات."""
+    pages = [plan_sheet(ctx)] + elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
+                                                         areas_sheet(ctx)]
+    if with_perspective:
+        pages.append(perspective_sheet(ctx))
+    n = len(pages)
+    with PdfPages(path) as pdf:
+        for i, (fig, sheet) in enumerate(pages, 1):
+            footer(fig, ctx, sheet, i, n)
+            pdf.savefig(fig)
+            plt.close(fig)
+    return n
 
 
 def build_pdf(ctx, path):
