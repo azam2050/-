@@ -3,7 +3,7 @@ import math
 from collections import Counter
 
 from .framing import frame_wall
-from .roof import gable_rafters
+from .roof import cross_rafters, gable_rafters
 
 
 def split_long(lengths, stock):
@@ -80,6 +80,8 @@ def pallet_plan(project, rules, walls_members):
     extra_bins = pack(remaining, stud_stock, kerf)
     long_extra = pack([p for b in overflow for p in b], rafter_stock, kerf)
 
+    cross = cross_rafters(project, rules)
+    n_cross = sum(c["rafters"] + c["valleys"] for c in cross)
     m2 = math.ceil(len(extra_bins) / 3)
     m2_long = math.ceil(len(long_extra) / 3)
     return {
@@ -90,7 +92,8 @@ def pallet_plan(project, rules, walls_members):
         "method2_long_pallets": {"count": m2_long, "length": rafter_stock},
         "floor_joists": {"count": len(joists), "lengths": sorted(Counter(round(j) for j in joists).items()),
                          "stock": j_stock},
-        "total_pallets": n_m1 + m2 + m2_long + len(joists),
+        "cross_rafters": {"count": n_cross, "items": cross},
+        "total_pallets": n_m1 + m2 + m2_long + len(joists) + n_cross,
         "stud_pieces_total": len(stud_pieces),
         "stud_cut_list": sorted(Counter(round(p) for p in stud_pieces).items(), reverse=True),
         "roof": roof,

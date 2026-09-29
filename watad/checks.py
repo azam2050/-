@@ -228,4 +228,19 @@ def review(project, rules, heights, height_info, rafters):
 
     if rafters["warning"]:
         add(ERROR, "طول المداد", rafters["warning"])
+    # تصريف مويه السقف (قاعدة المصنع): كل سطح ميله ≥ الحد الأدنى، والمثلثات البارزة واديها ينزل للرفرف
+    min_p = rules.get("design", {}).get("roof_min_pitch", 20)
+    if project.roof.pitch_deg < min_p:
+        add(ERROR, "ميل السقف", f"ميل {project.roof.pitch_deg}° أقل من {min_p}° — المويه تتجمع وقت الأمطار.",
+            f"ارفع الميل إلى {min_p}° أو أكثر.")
+    from .roof import cross_gables, cross_rafters
+    for g in cross_gables(project, rules):
+        if g["pitch"] < min_p:
+            add(ERROR, f"ميل المثلث البارز {g['side']}", f"{g['pitch']}° أقل من {min_p}°.", f"ارفعه إلى {min_p}° أو أكثر.")
+        if g["zr"] >= project.roof_base + roof_geometry(project, rules)["rise"]:
+            add(ERROR, "المثلث البارز أعلى من قمة السقف", "قمة المثلث لازم تكون أوطى من قمة الجملون الرئيسي.",
+                "صغّر عرض المثلث أو ميله.")
+    for c in cross_rafters(project, rules):
+        if c["warning"]:
+            add(WARN, "مداد الوادي", c["warning"], "وصلة مزدوجة 5×15 مع براغي، ومرتكزة على جدار أو دعامة 7×5.")
     return issues

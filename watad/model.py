@@ -119,6 +119,7 @@ class Roof:
     overhang: float = 0       # بروز المداد خارج الجدار (أفقي)
     ext_start: float = 0      # امتداد إضافي للسقف عند بداية محور الجملون (جلسة/تراس مسقوف)
     ext_end: float = 0        # امتداد إضافي عند نهاية محور الجملون
+    cross_gables: list = field(default_factory=list)   # مثلثات بارزة (جملون متقاطع) على جدران الرفرف
 
 
 @dataclass

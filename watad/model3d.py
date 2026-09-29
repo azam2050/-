@@ -7,7 +7,7 @@ import math
 import numpy as np
 
 from .model import Wall, outer_bbox, wall_thickness
-from .roof import rafter_positions, roof_geometry
+from .roof import cross_gables, cross_planes, rafter_positions, roof_geometry
 
 
 class Scene:
@@ -270,6 +270,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 aa, ab = (eave, ac) if side < 0 else (ac, eave)
                 slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
+    if not cut:
+        _cross_gables(S, project, rules, half)
     for d in project.decks:
         if cut and d.level > 0 and d.level > cut:
             continue
@@ -292,6 +294,42 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         c0, c1 = to_xy(a0, b_edge - 8), to_xy(a1, b_edge + 8)
         S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), H - 22, max(c0[0], c1[0]), max(c0[1], c1[1]), H)
     return S
+
+
+def _cross_gables(S, project, rules, half):
+    """المثلثات البارزة: سطحين (مدادات+تطبيق كطبقة وحدة، ثم قرميد)، حشوة المثلث، شباك، وكوابيل تحت الرفرف."""
+    rd = rules["members"]["rafter"]["w"]
+    for g in cross_gables(project, rules):
+        kv = 1 / math.cos(math.radians(g["pitch"]))
+        for tri in cross_planes(g):
+            n = 3
+            faces = [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)]
+            S.poly("sheathing", list(tri) + [(x, y, z + (rd + 2.5) * kv) for x, y, z in tri], faces)
+            S.poly("roof_tiles", [(x, y, z + (rd + 2.5) * kv) for x, y, z in tri]
+                   + [(x, y, z + (rd + 6.5) * kv) for x, y, z in tri], faces)
+        wall, sg, c, hw, H, zr = g["wall"], g["sg"], g["c"], g["hw"], g["H"], g["zr"]
+        ax_y = g["axis"] == "y"
+        P = (lambda a, b, z: (a, b, z)) if ax_y else (lambda a, b, z: (b, a, z))
+        tri = [P(wall, c - hw, H), P(wall, c, zr), P(wall, c + hw, H)]
+        inner = [P(wall - sg * 2 * half, c - hw, H), P(wall - sg * 2 * half, c, zr), P(wall - sg * 2 * half, c + hw, H)]
+        S.poly("wood", tri + inner, [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)])
+        cg = next(x for x in project.roof.cross_gables if x.get("side", "W") == g["side"])
+        ww = cg.get("window_width", 110)
+        wz0 = H + 15
+        wz1 = min(H + cg.get("window_height", 140), zr - (ww / 2) * g["t"] - 25)
+        if wz1 - wz0 > 40:
+            S.box("frame", *(lambda a, b: (min(a[0], b[0]), min(a[1], b[1]), wz0 - 6, max(a[0], b[0]), max(a[1], b[1]), wz1 + 6))(
+                P(wall + sg * 1.5, c - ww / 2 - 6, 0), P(wall, c + ww / 2 + 6, 0)))
+            S.box("glass", *(lambda a, b: (min(a[0], b[0]), min(a[1], b[1]), wz0, max(a[0], b[0]), max(a[1], b[1]), wz1))(
+                P(wall + sg * 3, c - ww / 2, 0), P(wall + sg * 1.5, c + ww / 2, 0)))
+        for y in (c - hw + 35, c + hw - 35):             # كوابيل خشب تحت رفرف المثلث
+            a0 = P(wall, y - 3.5, 0)
+            a1 = P(wall + sg * 55, y + 3.5, 0)
+            S.hexa("trim", [(a0[0], a0[1], H - 60), (a1[0], a0[1], H - 5), (a1[0], a1[1], H - 5), (a0[0], a1[1], H - 60),
+                            (a0[0], a0[1], H - 50), (a1[0], a0[1], H + 5), (a1[0], a1[1], H + 5), (a0[0], a1[1], H - 50)]
+                   if ax_y else
+                   [(a0[0], a0[1], H - 60), (a0[0], a1[1], H - 5), (a1[0], a1[1], H - 5), (a1[0], a0[1], H - 60),
+                    (a0[0], a0[1], H - 50), (a0[0], a1[1], H + 5), (a1[0], a1[1], H + 5), (a1[0], a0[1], H - 50)])
 
 
 def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
@@ -549,6 +587,11 @@ def stair_railing(S, project, st, h=90, bal=12):
     S.zoff = 0
 
 
+def gable_transom(H, rise, border, bv):
+    """منسوب العارضة الأفقية في زجاج الجملون (45% من ارتفاع الزجاج)."""
+    return H + border + (rise - bv - border) * 0.45
+
+
 def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
     """مثلث جملون زجاج مركّب داخل إطار خشب: حافة سفلية ومائلة 20 سم + قوائم خشب 10 سم."""
     inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, tp, border, post, spacing)
@@ -569,6 +612,12 @@ def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
     for t in posts:
         for a in (t - post / 2 - fw_, t + post / 2):
             S.wbox("frame", w, a, a + fw_, -fd, fd, zb, zin(a + fw_ / 2))
+    # تقسيم أفقي للزجاج (عارضة خشب بإطار أسود) — يعطي الواجهة العلوية حركة ويصغّر الألواح للتركيب
+    zh = gable_transom(H, rise, border, bv)
+    ta = (zh - H + bv) / tp
+    if L - 2 * ta > 60:
+        S.wbox("wood", w, ta, L - ta, -half, half, zh - post / 2, zh + post / 2)
+        S.wbox("frame", w, ta, L - ta, -fd, fd, zh - post / 2 - fw_, zh + post / 2 + fw_)
     # كنار خارجي حول الزجاج (خط التركيب)
     S.wbox("trim", w, tl, L - tl, -half - 2.5, -half, H + border - 5, H + border)
 

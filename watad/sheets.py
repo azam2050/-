@@ -17,7 +17,7 @@ from shapely.geometry import LineString, box
 from shapely.ops import unary_union
 
 from .model import outer_bbox, wall_thickness
-from .roof import rafter_positions, roof_geometry
+from .roof import cross_gables, rafter_positions, roof_geometry
 
 plt.rcParams["font.family"] = "DejaVu Sans"
 plt.rcParams["pdf.fonttype"] = 42      # خطوط TrueType مضمّنة — تفتح في كل برامج PDF والجوالات
@@ -487,7 +487,12 @@ def elevation(ax, ctx, w):
         ax.add_patch(Polygon(inner, closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
         for t in posts:
             ax.add_patch(Rectangle((t - 5, inner[0][1]), 10, zin(t) - inner[0][1], fc="#e9d9c4", ec="k", lw=0.5))
-        ax.text(L / 2, H + 32, "زجاج بإطار خشب 20 سم + قوائم خشب 10 سم", ha="center", fontsize=7, color=C_WIN)
+        from .model3d import gable_transom
+        zh = gable_transom(H, rise, 20, bv)
+        ta = (zh - H + bv) / math.tan(p)
+        if L - 2 * ta > 60:
+            ax.add_patch(Rectangle((ta, zh - 5), L - 2 * ta, 10, fc="#e9d9c4", ec="k", lw=0.5))
+        ax.text(L / 2, H + 32, "زجاج مقسّم بإطار خشب 20 سم + قوائم وعارضة 10 سم", ha="center", fontsize=7, color=C_WIN)
     if gable_end:
         if not gglass:
             ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
@@ -517,6 +522,40 @@ def elevation(ax, ctx, w):
             if tpos < -5 or tpos > L + 5:
                 ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
         roof_top = top + depth
+    # المثلثات البارزة (جملون متقاطع)
+    from .roof import cross_gables
+    for g in cross_gables(P, rules):
+        kd = (rules["members"]["rafter"]["w"] + 6.5) / math.cos(math.radians(g["pitch"]))
+        tt = lambda x, y: (x - w.start[0]) * ux + (y - w.start[1]) * uy + half  # noqa: E731
+        P_ = (lambda a, b: (a, b)) if g["axis"] == "y" else (lambda a, b: (b, a))
+        facing = (abs(ux) < 1e-6) == (g["axis"] == "y") and \
+            abs(((w.start[0] if g["axis"] == "y" else w.start[1]) + g["sg"] * half) - g["wall"]) < 2
+        if facing:                 # المثلث مواجه لنا: حشوة + سقفه + شباك
+            ta, tc, tb = (tt(*P_(g["wall"], g["c"] + d_)) for d_ in (-g["hw"], 0, g["hw"]))
+            ta, tb = min(ta, tb), max(ta, tb)
+            ax.add_patch(Polygon([(ta, H), (tc, g["zr"]), (tb, H)], closed=True, fc="white", ec="k", lw=1, zorder=3))
+            yy = H + cover
+            while yy < g["zr"] - 5:
+                dxg = (g["zr"] - yy) / g["t"]
+                ax.plot([tc - dxg, tc + dxg], [yy, yy], color="#999", lw=0.4, zorder=3)
+                yy += cover
+            e2 = g["ov"] * g["t"]
+            lower = [(ta - g["ov"], H - e2), (tc, g["zr"]), (tb + g["ov"], H - e2)]
+            ax.add_patch(Polygon(lower + [(x, z + kd) for x, z in lower][::-1], closed=True, fc="#fff3e0",
+                                 ec=C_ROOF, lw=0.9, zorder=3))
+            cgd = next(x for x in P.roof.cross_gables if x.get("side", "W") == g["side"])
+            ww = cgd.get("window_width", 110)
+            wz1 = min(H + cgd.get("window_height", 140), g["zr"] - ww / 2 * g["t"] - 25)
+            ax.add_patch(Rectangle((tc - ww / 2, H + 15), ww, wz1 - H - 15, fc="white", ec=C_WIN, lw=1, zorder=3))
+            ax.text(tc, H + 18 + (wz1 - H) / 2, "مثلث بارز", ha="center", fontsize=6, color=C_WIN, zorder=4)
+            level(ax, L + g["ov"] + 30 + ext_r, g["zr"], g["zr"] / 100, "قمة المثلث")
+        elif (abs(uy) < 1e-6) == (g["axis"] == "y"):   # واجهة الجملون: بروز المثلث من الجنب
+            xo = g["wall"] + g["sg"] * g["ov"]
+            xi = g["wall"] - g["sg"] * g["reach"]
+            a0 = tt(*P_(xo, g["c"]))
+            a1 = tt(*P_(xi, g["c"]))
+            ax.add_patch(Polygon([(a0, g["ze"]), (a0, g["zr"] + kd), (a1, g["zr"] + kd), (a1, g["zr"])], closed=True,
+                                 fc="#f3e7d6", ec=C_ROOF, lw=0.8, zorder=0.5))
     # التراس والأعمدة أمام هذي الواجهة
     late_rails = []
     nx_, ny_ = w.n
@@ -682,7 +721,20 @@ def roof_sheet(ctx):
     dim(ax, (rx1, ry1), (rx1, ry0), 40)
     for pt in P.posts:
         ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
-    ax.set_xlim(rx0 - 60, rx1 + 90)
+    from .roof import cross_gables, cross_planes
+    for gc in cross_gables(P, rules):               # المثلثات البارزة: سطحين + قمة + وادي
+        for tri in cross_planes(gc):
+            ax.add_patch(Polygon([(x, y) for x, y, _ in tri], closed=True, fc="#ffe9cc", ec=C_ROOF, lw=0.9))
+        (ax_, ay_, _), (bx_, by_, _) = cross_planes(gc)[0][2], cross_planes(gc)[0][1]
+        ax.plot([ax_, bx_], [ay_, by_], color=C_ROOF, lw=1.2)
+        for tri in cross_planes(gc):
+            ax.plot([tri[0][0], tri[1 if tri is cross_planes(gc)[0] else 2][0]],
+                    [tri[0][1], tri[1 if tri is cross_planes(gc)[0] else 2][1]], color="#1f5fa8", lw=1, ls="--")
+        mx, my = (ax_ + bx_) / 2, (ay_ + by_) / 2
+        ax.text(mx, my + 14, f"مثلث بارز {gc['pitch']}°", ha="center", fontsize=7, color="red")
+    if P.roof.cross_gables:
+        ax.text(cx, y0 + 60, "--- وادي: ينزل للرفرف (تصريف لبرا)", ha="center", fontsize=7, color="#1f5fa8")
+    ax.set_xlim(rx0 - 60 - max([g["ov"] for g in cross_gables(P, rules)] + [0]), rx1 + 90 + max([g["ov"] for g in cross_gables(P, rules)] + [0]))
     ax.set_ylim(ry0 - 40, ry1 + 90)
 
     # القطاع العرضي عمودي على الجملون، يمر بأكبر غرفة
@@ -720,6 +772,16 @@ def roof_sheet(ctx):
     lower = [(-ov, H - e), (S / 2, H + rise), (S + ov, H - e)]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+    for gc in cross_gables(P, rules):               # المثلث البارز إذا القطاع يمر فيه
+        if ridge_y == (gc["axis"] == "y") and abs(cut - gc["c"]) < gc["hw"] + gc["ov"]:
+            zc = gc["zr"] - abs(cut - gc["c"]) * gc["t"]
+            xo = gc["wall"] + gc["sg"] * gc["ov"] - lo
+            xi = gc["wall"] - lo - gc["sg"] * (zc - H) / math.tan(p)
+            kd = depth
+            ax2.add_patch(Rectangle((min(xo, xi), zc), abs(xi - xo), kd, fc="#ffe9cc", ec=C_ROOF, lw=0.9))
+            if abs(cut - gc["c"]) < gc["hw"]:
+                wx = gc["wall"] - lo - gc["sg"] * half
+                ax2.add_patch(Rectangle((wx - half, H), 2 * half, zc - H, fc="white", ec="k", lw=0.8, hatch="////"))
     ax2.text(S / 2, H + rise + depth + 15, "مداد 5×15 بخلعة على العمود العلوي، مثبت ببراغي",
              ha="center", fontsize=8)
     ax2.text(S / 2, P.floor_list[0]["height"] / 2, "قوائم 7×5 + تلبيس 2.5 من الجهتين", ha="center", fontsize=8)
@@ -807,7 +869,8 @@ def areas_sheet(ctx):
              f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
     if terrace:
-        rows.append(["", "التراس المسقوف" + (" + تراس الدور الأول" if len(P.decks) > 1 else ""),
+        rows.append(["", "التراس المسقوف" + (" + تراس الدور الأول" if len(P.decks) > 1 else "")
+                     + (" (مجاناً)" if P.meta.get("price_scope") == "building" else ""),
                      " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1] for k in (0, 1))
                      + (f" × {len(P.decks)}" if len(P.decks) > 1 else ""), f"{terrace:.2f}"])
     rows.append(["", "المساحة الإجمالية المبنية",
@@ -820,7 +883,8 @@ def areas_sheet(ctx):
     info = [["المشروع", P.title], ["العميل", P.client], ["الموقع", m.get("location", "")],
             ["الاستخدام", m.get("usage", "")], ["التاريخ", str(m.get("date", ""))],
             ["نظام البناء", "هيكل خشب 7×5 + تلبيس 2.5 سم من الجهتين"],
-            ["السقف", f"جملون {P.roof.pitch_deg}° — قرميد معدني"]]
+            ["السقف", f"جملون {P.roof.pitch_deg}° — قرميد معدني"
+             + (f" + {len(P.roof.cross_gables)} مثلث بارز" if P.roof.cross_gables else "")]]
     ax2 = fig.add_axes([0.58, 0.52, 0.38, 0.36])
     table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=10)
     ax2.set_title("بيانات المشروع", fontsize=14, weight="bold", color=BRAND, loc="right")
@@ -1061,6 +1125,11 @@ def bom_rows(ctx):
         rows.append([f"مدادات أرضية الدور العلوي {mj['t']}×{mj['w']} كل {mj['spacing']} سم",
                      f"{fj['count']} مداد — " + "، ".join(f"{L}سم×{n}" for L, n in fj["lengths"])
                      + f" (طبلية {fj['stock']} بالطريقة الأولى)"])
+    cr = p.get("cross_rafters") or {}
+    for cx_ in cr.get("items", []):
+        rows.append([f"مدادات المثلث البارز ({'الغربي' if cx_['side'] == 'W' else 'الشرقي' if cx_['side'] == 'E' else cx_['side']}) {cx_['pitch']}°",
+                     f"{cx_['rafters']} مداد حتى {cx_['rafter_length']:.0f} سم (طبلية {cx_['stock']}) + 2 مداد وادي "
+                     f"{cx_['valley_length']:.0f} سم" + (" — وصلة" if not cx_["valley_stock"] else "")])
     rows += [["إجمالي الطبليات 5×22.5", str(p["total_pallets"])],
              ["إجمالي قطع 7×5", str(p["stud_pieces_total"])],
              ["قائمة تقطيع 7×5", "  |  ".join(f"{L}سم×{n}" for L, n in p["stud_cut_list"][:9])]]
