@@ -1,0 +1,95 @@
+# عميل: كوخ 5×6 — غرفة نوم + دورة مياه + صالة ومطبخ صغير + تراس مسقوف (نفس شكل الكوخ السابق)
+# منطق التصميم:
+#  - صف أمامي: صالة + مطبخ صغير على الجدار الغربي (مغسلة على جدار خارجي) — 4.76 × 2.94
+#  - صف خلفي: غرفة نوم (سرير 160×200) + دورة مياه في الزاوية الخلفية تلمس جدارين خارجيين
+#  - باب الغرفة وباب الحمام من الصالة مباشرة — بدون ممرات
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، التراس جنوب.
+name: cabin-1br-terrace-5x6
+title: كوخ غرفة وتراس مسقوف 5×6
+client: "عميل — تصميم حسب الصورة"
+meta:
+  location: "—"
+  usage: استراحة / استجمام
+  date: 2026-09-29
+  price_note: عرض اليوم الوطني
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}   # خشب بلونه الطبيعي (طلب العميل)
+wall_height: 280
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 25, overhang: 35, ext_start: 240}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (التراس)
+    gable_glass: true
+    start: [0, 0]
+    end: [488, 0]
+    openings:
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 20, width: 80, height: 210, sill: 30, style: fixed, transom: 215}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج, offset: 124, width: 240, height: 265, style: sliding, leaves: 2, transom: 215}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 388, width: 80, height: 210, sill: 30, style: fixed, transom: 215}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [488, 0]
+    end: [488, 588]
+    openings:
+      - {kind: window, code: ش1, name: ش1 صالة, offset: 60, width: 120, height: 110, sill: 100}
+      - {kind: window, code: ش3, name: ش3 حمام, offset: 420, width: 60, height: 60, sill: 150}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [488, 588]
+    end: [0, 588]
+    openings:
+      - {kind: window, code: ش3, name: ش3 حمام, offset: 48, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش1, name: ش1 غرفة النوم, offset: 328, width: 100, height: 110, sill: 100}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 588]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش4, name: ش4 شريطي فوق السرير, offset: 71, width: 140, height: 45, sill: 165}
+      - {kind: window, code: ش2, name: ش2 مطبخ, offset: 338, width: 100, height: 100, sill: 110}
+  - name: د1-فاصل الصالة
+    exterior: false
+    start: [0, 306]
+    end: [488, 306]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 240, width: 80, height: 210}
+      - {kind: door, code: ب3, name: ب3 حمام, offset: 356, width: 70, height: 210}
+  - name: د2-جدار الحمام
+    exterior: false
+    start: [336, 306]
+    end: [336, 588]
+
+rooms:
+  - {name: الصالة والمطبخ, rect: [6, 6, 482, 300]}
+  - {name: غرفة النوم, rect: [6, 312, 330, 582], label: [225, 350]}
+  - {name: دورة مياه, rect: [342, 312, 482, 582], wet: true}
+
+decks:
+  - name: التراس
+    rect: [-6, -246, 494, -6]
+    height: 45
+    railing: [W, E]
+    stairs: {side: S, offset: 130, width: 240}
+
+posts:
+  - {at: [0, -238], size: 16}
+  - {at: [488, -238], size: 16}
+
+furniture:
+  - {name: كاونتر, rect: [6, 60, 66, 300]}
+  - {name: طاولة, rect: [110, 200, 180, 270]}
+  - {name: "", rect: [185, 215, 225, 255]}
+  - {name: كنبة 3 مقاعد, rect: [397, 30, 482, 230]}
+  - {name: طاولة, rect: [300, 95, 360, 165]}
+  - {name: سرير 160×200, rect: [6, 367, 206, 527]}
+  - {name: "", rect: [6, 320, 48, 362]}
+  - {name: "", rect: [6, 532, 48, 574]}
+  - {name: دولاب, rect: [270, 400, 330, 582]}
+  - {name: دش, rect: [342, 492, 482, 582], shape: shower}
+  - {name: "", rect: [440, 400, 480, 450], shape: wc}
+  - {name: "", rect: [440, 325, 482, 380], shape: basin}

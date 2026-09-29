@@ -199,10 +199,14 @@ def title_block(fig, ctx, sheet, code, i, n, scale="1:50"):
         if key == "brand":
             fig.patches.append(Rectangle((xa, y0), w, y1 - y0, transform=fig.transFigure, fc=BRAND_SOFT,
                                          ec="none"))
-            draw_logo(fig, x - w * 0.14, (y0 + y1) / 2, (y1 - y0) * fig.get_size_inches()[1] * 0.78)
-            fig.text(x - w * 0.29, (y0 + y1) / 2 + 0.008, "مصنع وتد الأخشاب", ha="right", va="center",
+            FW, FH = fig.get_size_inches()
+            lg = min((y1 - y0) * FH * 0.78, 0.55)          # حجم الشعار بالإنش (ثابت في الطولي والعرضي)
+            pad = 0.12 / FW
+            draw_logo(fig, x - pad - lg / FW / 2, (y0 + y1) / 2, lg)
+            tx = x - 2 * pad - lg / FW
+            fig.text(tx, (y0 + y1) / 2 + 0.1 / FH, "مصنع وتد الأخشاب", ha="right", va="center",
                      fontsize=12, weight="bold", color=BRAND)
-            fig.text(x - w * 0.29, (y0 + y1) / 2 - 0.012, "Watad Wood Factory", ha="right", va="center",
+            fig.text(tx, (y0 + y1) / 2 - 0.13 / FH, "Watad Wood Factory", ha="right", va="center",
                      fontsize=8.5, color="#6B5A4C")
         else:
             val = {"المشروع / العميل": f"{P.title}\n{P.client}", "عنوان اللوحة": sheet, "المقياس": scale,
