@@ -655,7 +655,7 @@ def perspective_sheet(ctx):
             ("الزجاج", st["glass_ar"], st["glass"]),
             ("إطارات الشبابيك والأبواب", st["frame_ar"], st["frame"]),
             ("الكنار والزوايا", "نفس الصبغة أغمق درجة", st["trim"]),
-            ("الصبة", "خرسانة 20 سم", st["slab"])]
+            ("الصبة", f"خرسانة {ctx['project'].slab_height:.0f} سم", st["slab"])]
     y = 0.84
     fig.text(0.95, y + 0.02, "جدول المواد والألوان", ha="right", fontsize=13, weight="bold")
     for k, v, c in rows:
@@ -668,6 +668,9 @@ def perspective_sheet(ctx):
     fig.text(0.95, y, f"الدربزين: {st['railing_ar']}", ha="right", fontsize=10)
     grid_ar = {"none": "بدون", "mullion": "قاطع رأسي", "grid": "شبكة"}[st["window_grid"]]
     door_ar = {"panel": "خشب مصمت", "french": "زجاج بتقسيمات (فرنسي)"}[st["door_style"]]
+    ext_doors = [o for w in ctx["project"].exterior_walls for o in w.openings if o.kind == "door"]
+    if ext_doors and ext_doors[0].style == "sliding":
+        door_ar = "سحاب زجاج"
     fig.text(0.95, y - 0.03, f"تقسيم الشبابيك: {grid_ar}  |  الباب الرئيسي: {door_ar}",
              ha="right", fontsize=9, color="#444")
     fig.text(0.5, 0.29, "أنواع الدربزين المعتمدة (من مشاريع المصنع)", ha="center", fontsize=12)
