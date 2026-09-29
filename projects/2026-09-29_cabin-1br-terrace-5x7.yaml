@@ -11,7 +11,7 @@ meta:
   date: 2026-09-29
   price_note: عرض اليوم الوطني
   price_scope: all          # التسعير يشمل التراس
-price_per_m2: 1096
+price_per_m2: 1150
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}   # خشب بلونه الطبيعي
 wall_height: 280
 slab_height: 45

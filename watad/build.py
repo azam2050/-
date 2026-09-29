@@ -72,6 +72,10 @@ def build(project_path, out_dir, rules_path=None, real=False):
                    strip=rules["cladding"]["effective_cover"])
     renders.append((pth, "المقطع العلوي بالفرش", True))
     real_shots = []
+    prev = sorted((out / "realistic").glob("v*.jpg")) if (out / "realistic").exists() else []
+    if prev and not real:     # إعادة استخدام الصور الواقعية السابقة إذا ما تغيّر الشكل (مثل تعديل السعر)
+        from .realistic import VIEWS
+        real_shots = [(p_, VIEWS[i][0].replace("واقعي-", "").replace("-", " ")) for i, p_ in enumerate(prev[:len(VIEWS)])]
     if real:
         from .realistic import available, render_real
         if available():
