@@ -1,0 +1,43 @@
+# مثال تجريبي فقط (ليس عميل حقيقي) — كوخ 8×5 م بغرفة ودورة مياه وبانتري
+name: sample-cabin
+client: مثال تجريبي
+wall_height: 280
+roof:
+  ridge_axis: x
+  pitch_deg: 25
+  overhang: 0
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+walls:
+  - name: W1-جنوب
+    start: [0, 0]
+    end: [800, 0]
+    openings:
+      - {kind: door, name: باب رئيسي, offset: 340, width: 100, height: 210}
+      - {kind: window, name: ش1, offset: 80, width: 150, height: 120, sill: 90}
+      - {kind: window, name: ش2, offset: 570, width: 150, height: 120, sill: 90}
+  - name: W2-شرق
+    start: [800, 0]
+    end: [800, 500]
+    wet_inner: true
+    openings:
+      - {kind: window, name: ش-حمام, offset: 300, width: 60, height: 50, sill: 160}
+  - name: W3-شمال
+    start: [800, 500]
+    end: [0, 500]
+    openings:
+      - {kind: window, name: ش3, offset: 300, width: 200, height: 120, sill: 90}
+  - name: W4-غرب
+    start: [0, 500]
+    end: [0, 0]
+    openings:
+      - {kind: window, name: ش4, offset: 180, width: 120, height: 120, sill: 90}
+  - name: W5-داخلي
+    start: [600, 0]
+    end: [600, 500]
+    exterior: false
+    openings:
+      - {kind: door, name: باب حمام, offset: 60, width: 80, height: 210}
+notes:
+  - الجدار الداخلي W5 تحت خط المدادات؟ يُراجع مع اتجاه الجملون.

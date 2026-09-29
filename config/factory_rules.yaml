@@ -1,0 +1,60 @@
+# قواعد مصنع وتد — كل الأطوال بالسنتيمتر
+# المرجع: docs/factory-spec.md  (رقم البند بين قوسين)
+# القيم المعلّمة بـ TO_CONFIRM استنتاج مؤقت يحتاج تأكيد من المصنع.
+
+cladding:                     # (1) تلبيس الجدران
+  thickness: 2.5
+  lengths: [300, 390, 400]
+  width_nominal: 19.45        # 19.4 - 19.5 بعد التفريز
+  width_alt: 22               # بديل عند عدم التوفر
+  # TO_CONFIRM: التغطية الصافية لكل صف بعد التعشيق.
+  # 280 / 15 صف = 18.67 — مستنتجة من أن 2.80 م يطلع فيها آخر لوح كامل.
+  effective_cover: 18.67
+  cladding_start_offset: 0    # TO_CONFIRM: هل التلبيس يبدأ من أسفل القاعدة أو ينزل على الصبة؟
+  orientation: horizontal
+  both_sides: true            # (5)
+
+pallet:                       # (1)(2) الطبلية الخام
+  thickness: 5
+  width: 22.5
+  lengths: [320, 480, 520]
+  saw_kerf: 0.5               # 22.5 - 15 = 7.5 → 7 فعلياً
+
+members:                      # (3)
+  stud: {w: 7, t: 5}          # عمود / قاعدة / علوي / إطار فتحات
+  rafter: {w: 15, t: 5}       # (8) مداد
+
+wall:                         # (3)(7)
+  default_height: 280
+  stud_spacing: 60
+  top_plates: 1               # واحد فقط
+  bottom_plates: 1
+  corner_studs: 2             # (4) طريقة المصنع الحالية
+  door_bottom_plate_continuous: true   # يُقطع بعد تماسك الكوخ
+
+slab:                         # (3)
+  height: 20
+  open_under_wet_rooms: true
+
+wet_room:                     # (5)
+  inner_finish: cement_board
+  cement_board: {thickness: 1.2, w: 122, h: 244}
+
+insulation:                   # (6)
+  default: false
+  type: rockwool_80
+  panel: {w: 120, h: 60}
+
+roof:                         # (8)
+  type: gable
+  rafter_spacing: 60
+  rafter_lengths: [320, 480, 520]
+  fixing: birdsmouth_screwed  # خلعة + براغي
+  pitch_deg: null             # يُؤخذ من الرسمة + زيادة بسيطة
+  # TO_CONFIRM: أقصى بحر للمداد بدون جدار داخلي قبل إضافة التقوية 7×5 (يصير 20×5)
+  max_unsupported_span: null
+
+program:                      # (9)
+  laundry_room: false
+  kitchen: pantry
+  stack_wet_rooms: true
