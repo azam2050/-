@@ -62,6 +62,19 @@ def room_faces(project, room, rules):
     return out
 
 
+def is_front(project, w):
+    """الواجهة الأمامية: عنوانها فيه «الأمامية» أو أمامها تراس/دكة."""
+    if "الأمامية" in (w.title or ""):
+        return True
+    nx, ny = w.n
+    for d in project.decks:
+        cx, cy = (d.rect[0] + d.rect[2]) / 2, (d.rect[1] + d.rect[3]) / 2
+        sd = (cx - w.start[0]) * nx + (cy - w.start[1]) * ny
+        if sd < 0 and abs(sd) < 400 and (d.rect[3] - d.rect[1]) < (d.rect[2] - d.rect[0]) * 2:
+            return True
+    return False
+
+
 def review(project, rules, heights, height_info, rafters):
     issues = []
     add = lambda lvl, title, detail, fix="": issues.append(  # noqa: E731
@@ -133,6 +146,20 @@ def review(project, rules, heights, height_info, rafters):
             for w in project.walls if w.floor == r.floor for o in w.openings)
         if not has_window:
             add(WARN, f"تهوية {r.name}", "لا يوجد شباك — يحتاج شفاط هواء.", "إضافة شفاط أو شباك صغير.")
+
+    # 4أ) شباك دورة المياه ما ينحط في الواجهة الأمامية (قاعدة ثابتة من المصنع)
+    if rules.get("design", {}).get("no_wet_window_on_front", True):
+        for r in rooms:
+            if not r.wet:
+                continue
+            for w, t0, t1, side in room_faces(project, r, rules):
+                if not (w.exterior and is_front(project, w)):
+                    continue
+                for o in w.openings:
+                    if o.kind == "window" and t0 - 1 <= o.offset and o.offset + o.width <= t1 + 1:
+                        add(ERROR, f"{o.name} في الواجهة الأمامية",
+                            f"شباك {r.name} على {w.title or w.name} — ممنوع حسب قاعدة المصنع.",
+                            "يُنقل الشباك للواجهة الجانبية أو الخلفية.")
 
     # 4ب) تكديس الحمامات فوق بعض في الدورين (9)
     if project.top_floor > 0:

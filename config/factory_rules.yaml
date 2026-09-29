@@ -55,6 +55,10 @@ roof:                         # (8)
   # TO_CONFIRM: أقصى بحر للمداد بدون جدار داخلي قبل إضافة التقوية 7×5 (يصير 20×5)
   max_unsupported_span: null
 
+design:                       # (10) قواعد تصميم ثابتة من المصنع
+  no_wet_window_on_front: true   # شباك دورة المياه ما ينحط في الواجهة الأمامية — بالجنب أو الخلف فقط
+  terrace_priced_as_cabin: true  # التراس يُسعّر بنفس سعر متر الكوخ
+
 program:                      # (9)
   laundry_room: false
   kitchen: pantry

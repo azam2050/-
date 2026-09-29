@@ -79,3 +79,16 @@ def test_railing_catalog_code_and_catalog_pdf(tmp_path):
     codes = build_catalog(tmp_path / "c.pdf")
     assert len(ROOFS) >= 15 and any(c == "B08" for c, _ in codes)
     assert (tmp_path / "c.pdf").stat().st_size > 50_000
+
+
+def test_no_bathroom_window_on_front_facade(tmp_path):
+    import yaml
+    from watad.build import build
+    d = yaml.safe_load(open("projects/2026-09-29_cabin-2floor-3br-120.yaml", encoding="utf-8"))
+    front = next(w for w in d["walls"] if w["name"] == "ب-جنوب")
+    front["openings"].append({"kind": "window", "code": "ش3", "name": "ش3 تجربة", "offset": 600,
+                              "width": 60, "height": 60, "sill": 150})
+    p = tmp_path / "t.yaml"
+    p.write_text(yaml.safe_dump(d, allow_unicode=True), encoding="utf-8")
+    issues = build(p, tmp_path / "o")[3]
+    assert any("الواجهة الأمامية" in i["title"] and i["level"] == "خطأ" for i in issues)

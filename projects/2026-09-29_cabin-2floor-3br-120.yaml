@@ -13,6 +13,9 @@ meta:
   location: "—"
   usage: سكن / استجمام
   date: 2026-09-29
+  price_note: عرض اليوم الوطني
+  price_scope: all          # التراس بنفس سعر الكوخ (سياسة المصنع)
+price_per_m2: 1096
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
 wall_height: 280
 floors:
@@ -49,9 +52,9 @@ walls:
   # ================= الدور الأول =================
   - {name: ب-جنوب, floor: 1, title: الواجهة الأمامية (التراس), gable_glass: true, start: [0, 0], end: [768, 0], openings: [
       {kind: window, code: ز2, name: زجاج ثابت ماستر, offset: 30, width: 100, height: 210, sill: 30, style: fixed},
-      {kind: door, code: ب4, name: ب4 سحاب للبلكونة, offset: 150, width: 240, height: 240, style: sliding, leaves: 2},
-      {kind: window, code: ش3, name: ش3 حمام ماستر, offset: 600, width: 60, height: 60, sill: 150}]}
+      {kind: door, code: ب4, name: ب4 سحاب للبلكونة, offset: 150, width: 240, height: 240, style: sliding, leaves: 2}]}
   - {name: ب-شرق, floor: 1, title: الواجهة الشرقية, start: [768, 0], end: [768, 768], openings: [
+      {kind: window, code: ش3, name: ش3 حمام ماستر, offset: 60, width: 60, height: 60, sill: 150},
       {kind: window, code: ش1, name: ش1 الدرج, offset: 520, width: 100, height: 110, sill: 100}]}
   - {name: ب-شمال, floor: 1, title: الواجهة الخلفية, start: [768, 768], end: [0, 768], openings: [
       {kind: window, code: ش3, name: ش3 حمام, offset: 328, width: 60, height: 60, sill: 150},
