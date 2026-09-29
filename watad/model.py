@@ -87,6 +87,17 @@ class Furniture:
 
 
 @dataclass
+class Deck:
+    """دكة/جلسة خارجية مع دربزين (اختياري)."""
+    name: str
+    rect: list                 # [x0, y0, x1, y1]
+    height: float = 20         # منسوب سطح الدكة من الأرض الطبيعية
+    railing: list = field(default_factory=lambda: ["S", "E", "W"])   # الجهات اللي عليها دربزين
+    stairs: dict = None        # {side: S, offset: 100, width: 120} فتحة الدرج في الدربزين
+    railing_style: str = None  # يغلب نمط المشروع
+
+
+@dataclass
 class Roof:
     ridge_axis: str = "x"     # اتجاه خط الجملون (x أو y)
     pitch_deg: float = 25
@@ -107,6 +118,8 @@ class Project:
     cladding_board_length: float = 300
     pallet_length: float = 320
     price_per_m2: float = None
+    style: object = None
+    decks: list = field(default_factory=list)
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
 
@@ -136,6 +149,8 @@ def load_project(path, rules):
         cladding_board_length=d.get("cladding_board_length", rules["cladding"]["lengths"][0]),
         pallet_length=d.get("pallet_length", rules["pallet"]["lengths"][0]),
         price_per_m2=d.get("price_per_m2"),
+        style=d.get("style"),
+        decks=[Deck(**k) for k in d.get("decks", [])],
         meta=d.get("meta", {}),
         notes=d.get("notes", []),
     )

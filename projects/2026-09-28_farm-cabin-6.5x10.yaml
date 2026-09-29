@@ -11,6 +11,7 @@ meta:
   manager: م. أحمد
   date: 2026-09-28
 price_per_m2: 1096
+style: honey_burgundy   # اختيار مبدئي — يتغير حسب رغبة العميل
 wall_height: 280
 roof: {ridge_axis: y, pitch_deg: 29, overhang: 45}
 insulation: false

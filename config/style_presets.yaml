@@ -1,0 +1,97 @@
+# أنماط الألوان والمواد — مستنتجة من صور مشاريع مصنع وتد السابقة
+# تُستخدم في: الواجهات الملونة، نموذج 3D (مواد 3ds Max)، صفحة المواد للعميل.
+# الألوان تقريبية من الصور (تتأثر بالإضاءة) — تُعاير لاحقاً بكود الصبغة الفعلي من المورد.
+
+materials:
+  wood:
+    natural_pine:   {ar: خشب طبيعي فاتح (بدون صبغة),  color: "#E3B57C", line: "#B98A55"}
+    honey_cedar:    {ar: صبغة عسلي / سيدر,            color: "#C07A34", line: "#8A4F1C"}
+    orange_cedar:   {ar: صبغة برتقالي محمر,            color: "#C4673A", line: "#924526"}
+    dark_walnut:    {ar: صبغة جوزي غامق,               color: "#5B3C27", line: "#35231A"}
+    espresso:       {ar: بني قهوة (شريط زخرفي),        color: "#2F2520", line: "#1C1612"}
+  roof:   # قرميد معدني مطلي بحبيبات حجرية
+    charcoal:       {ar: قرميد فحمي / أسود مزرق,       color: "#2C313B"}
+    burgundy:       {ar: قرميد عنابي,                   color: "#5F2024"}
+    graphite:       {ar: قرميد رمادي غامق,             color: "#2B2B2E"}
+  glass:
+    dark_tinted:    {ar: زجاج عاكس غامق,               color: "#1F262C", alpha: 0.85}
+    clear:          {ar: زجاج شفاف,                    color: "#9FB7C4", alpha: 0.45}
+  frame:
+    wood_dark:      {ar: إطار خشب بنفس الصبغة أغمق}
+    black:          {ar: إطار ألمنيوم أسود,            color: "#161616"}
+  other:
+    slab:           {ar: صبة خرسانية,                  color: "#B9B6AE"}
+    stone:          {ar: حجر (مدخنة/أسوار),            color: "#6E6259"}
+
+railings:   # أنواع الدربزين من الصور
+  vertical_balusters:
+    ar: قوائم رأسية متقاربة + درابزين علوي (صورة 1 — الدرج)
+    post: 9          # مقطع العمود سم
+    post_spacing: 150
+    height: 95
+    top_rail: {w: 9, h: 5}
+    bottom_rail: {w: 7, h: 5, gap: 8}
+    baluster: {w: 4, clear: 11}   # فراغ بين القوائم ≤ 11 سم (أمان الأطفال)
+  three_rail:
+    ar: أعمدة + 3 مرابيع أفقية (صورة 2)
+    post: 9
+    post_spacing: 170
+    height: 95
+    rails: 3
+    rail: {w: 9, h: 5}
+  x_cross:
+    ar: أعمدة + مربوع علوي وسفلي + تقاطع X (صورة 5)
+    post: 9
+    post_spacing: 120
+    height: 90
+    top_rail: {w: 9, h: 5}
+    bottom_rail: {w: 7, h: 5, gap: 10}
+    diagonal: {w: 7, t: 3}
+
+trims:      # تفاصيل ظاهرة في كل الصور
+  corner_boards: {w: 10, t: 2.5}      # ألواح زوايا رأسية
+  window_trim: {w: 7, t: 2.5}         # كنار حول الشبابيك
+  fascia: {h: 18, t: 2.5}             # لوح واجهة المداد (طرف الرفرف)
+  barge_board: {h: 18, t: 2.5}        # لوح حافة الجملون
+
+presets:
+  honey_burgundy:       # صورة 2 — كوخ L بجملونين وإضاءة رفرف
+    ar: عسلي + قرميد عنابي
+    wood: honey_cedar
+    roof: burgundy
+    glass: dark_tinted
+    frame: wood_dark
+    window_grid: mullion
+    door_style: french       # أبواب زجاج بتقسيمات
+    railing: three_rail
+    exposed_rafter_tails: false
+  pine_charcoal:        # صورة 1 — جملون حاد + دكة ودرج
+    ar: خشب طبيعي + قرميد فحمي
+    wood: natural_pine
+    roof: charcoal
+    glass: clear
+    frame: wood_dark
+    window_grid: mullion
+    door_style: panel
+    railing: vertical_balusters
+    exposed_rafter_tails: false
+  walnut_black:         # صورة 3 — دورين، جوزي غامق، إطارات سوداء
+    ar: جوزي غامق + إطارات سوداء
+    wood: dark_walnut
+    roof: graphite
+    glass: dark_tinted
+    frame: black
+    window_grid: grid
+    door_style: french
+    railing: vertical_balusters
+    exposed_rafter_tails: true
+  cedar_charcoal_porch: # صورة 5 — جلسة أمامية تحت امتداد السقف
+    ar: برتقالي محمر + قرميد فحمي + دربزين X
+    wood: orange_cedar
+    roof: charcoal
+    glass: dark_tinted
+    frame: wood_dark
+    window_grid: grid
+    door_style: panel
+    railing: x_cross
+    exposed_rafter_tails: true

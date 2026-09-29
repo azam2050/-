@@ -531,6 +531,45 @@ def areas_sheet(ctx):
     return fig, "المساحات والتسعير"
 
 
+# ---------------------------------------------------------------- المنظور والمواد
+def perspective_sheet(ctx):
+    st = ctx["style"]
+    fig = new_page()
+    fig.text(0.5, 0.93, "المنظور ثلاثي الأبعاد والمواد", ha="center", fontsize=18)
+    fig.text(0.5, 0.905, f"النمط: {st['ar']}  —  معاينة تقريبية، الإخراج النهائي من 3ds Max",
+             ha="center", fontsize=10, color="#555")
+    ax = fig.add_axes([0.03, 0.3, 0.64, 0.58])
+    ax.imshow(plt.imread(ctx["preview"]))
+    ax.axis("off")
+    rows = [("الخشب / الصبغة", st["wood_ar"], st["wood"]),
+            ("القرميد", st["roof_ar"], st["roof"]),
+            ("الزجاج", st["glass_ar"], st["glass"]),
+            ("إطارات الشبابيك والأبواب", st["frame_ar"], st["frame"]),
+            ("الكنار والزوايا", "نفس الصبغة أغمق درجة", st["trim"]),
+            ("الصبة", "خرسانة 20 سم", st["slab"])]
+    y = 0.84
+    fig.text(0.95, y + 0.02, "جدول المواد والألوان", ha="right", fontsize=13, weight="bold")
+    for k, v, c in rows:
+        y -= 0.065
+        fig.patches.append(Rectangle((0.70, y - 0.012), 0.035, 0.045, transform=fig.transFigure,
+                                     fc=c, ec="k", lw=0.6))
+        fig.text(0.95, y + 0.018, k, ha="right", fontsize=10, weight="bold")
+        fig.text(0.95, y - 0.008, v, ha="right", fontsize=9, color="#444")
+    y -= 0.07
+    fig.text(0.95, y, f"الدربزين: {st['railing_ar']}", ha="right", fontsize=10)
+    grid_ar = {"none": "بدون", "mullion": "قاطع رأسي", "grid": "شبكة"}[st["window_grid"]]
+    door_ar = {"panel": "خشب مصمت", "french": "زجاج بتقسيمات (فرنسي)"}[st["door_style"]]
+    fig.text(0.95, y - 0.03, f"تقسيم الشبابيك: {grid_ar}  |  الباب الرئيسي: {door_ar}",
+             ha="right", fontsize=9, color="#444")
+    fig.text(0.5, 0.29, "أنواع الدربزين المعتمدة (من مشاريع المصنع)", ha="center", fontsize=12)
+    for i, (pth, name) in enumerate(ctx["railings"]):
+        ax2 = fig.add_axes([0.06 + i * 0.3, 0.09, 0.28, 0.18])
+        ax2.imshow(plt.imread(pth))
+        ax2.axis("off")
+        ax2.text(0.5, -0.04, name, transform=ax2.transAxes, ha="center", va="top", fontsize=9)
+    return fig, "المنظور والمواد"
+
+
 # ---------------------------------------------------------------- لوحات الورشة
 def framing_ax(ax, ctx, w):
     rules = ctx["rules"]
@@ -623,7 +662,7 @@ def bom_rows(ctx):
 
 
 def build_pdf(ctx, path):
-    pages = [plan_sheet(ctx)] + elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
+    pages = [perspective_sheet(ctx), plan_sheet(ctx)] + elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
                                                          areas_sheet(ctx)]
     pages += framing_sheets(ctx)
     pages += text_table_sheet(ctx, "جدول الكميات وخطة تقطيع الطبليات", bom_rows(ctx), "الكميات")

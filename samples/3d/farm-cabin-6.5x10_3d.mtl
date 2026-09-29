@@ -1,0 +1,59 @@
+newmtl slab
+Kd 0.725 0.714 0.682
+Ka 0.145 0.143 0.136
+d 1.00
+illum 2
+
+newmtl wood
+Kd 0.753 0.478 0.204
+Ka 0.151 0.096 0.041
+d 1.00
+illum 2
+
+newmtl trim
+Kd 0.600 0.380 0.161
+Ka 0.120 0.076 0.032
+d 1.00
+illum 2
+
+newmtl frame
+Kd 0.451 0.286 0.122
+Ka 0.090 0.057 0.024
+d 1.00
+illum 2
+
+newmtl glass
+Kd 0.122 0.149 0.173
+Ka 0.024 0.030 0.035
+d 0.85
+illum 2
+
+newmtl roof_tiles
+Kd 0.373 0.125 0.141
+Ka 0.075 0.025 0.028
+d 1.00
+illum 2
+
+newmtl rafters
+Kd 0.600 0.380 0.161
+Ka 0.120 0.076 0.032
+d 1.00
+illum 2
+
+newmtl sheathing
+Kd 0.600 0.380 0.161
+Ka 0.120 0.076 0.032
+d 1.00
+illum 2
+
+newmtl wood_in
+Kd 0.753 0.478 0.204
+Ka 0.151 0.096 0.041
+d 1.00
+illum 2
+
+newmtl door
+Kd 0.451 0.286 0.122
+Ka 0.090 0.057 0.024
+d 1.00
+illum 2

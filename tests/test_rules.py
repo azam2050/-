@@ -60,3 +60,13 @@ def test_reference_project_review_flags_known_errors(tmp_path):
     assert "ب2 غرفة النوم" in titles
     assert q["pallets"]["roof"]["stock_length"] == 480
     assert all(f.exists() for f in files.values())
+
+
+def test_style_and_3d_export(tmp_path):
+    import trimesh
+    from watad.build import build
+    files, *_ = build("examples/sample_cabin.yaml", tmp_path)
+    glb = trimesh.load(files["model3d_glb"])
+    assert {"wood", "roof_tiles", "glass", "trim"} <= set(glb.geometry)
+    assert files["model3d_obj"].with_suffix(".mtl").exists()
+    assert files["preview"].stat().st_size > 10_000

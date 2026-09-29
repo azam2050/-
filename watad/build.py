@@ -9,7 +9,9 @@ from .model import load_project
 from .obj_out import write_obj
 from .quantities import build_quantities
 from .rules import load_rules
+from .model3d import build_scene, railing_catalog, render_preview
 from .sheets import build_pdf
+from .style import resolve_style
 
 
 def open_questions(rules):
@@ -40,14 +42,26 @@ def build(project_path, out_dir, rules_path=None):
     files = {
         "pdf": out / f"{stem}.pdf",
         "dxf": out / f"{stem}.dxf",
+        "model3d_obj": out / f"{stem}_3d.obj",
+        "model3d_glb": out / f"{stem}_3d.glb",
+        "preview": out / f"{stem}_3d.png",
         "obj": out / f"{stem}_frame.obj",
         "json": out / f"{stem}_bom.json",
     }
+    style = resolve_style(project.style)
+    scene = build_scene(project, rules, style, heights)
+    scene.write_obj(files["model3d_obj"], project.title)
+    scene.write_glb(files["model3d_glb"])
+    render_preview(scene, files["preview"], strip=rules["cladding"]["effective_cover"])
+    railings = railing_catalog(out, style)
     ctx = {"project": project, "rules": rules, "heights": heights, "members": members, "q": q,
-           "height": hi, "issues": issues, "questions": qs}
+           "height": hi, "issues": issues, "questions": qs, "style": style,
+           "preview": files["preview"], "railings": railings}
     build_pdf(ctx, files["pdf"])
     write_dxf(project, members, heights, rules, files["dxf"])
     write_obj(project, members, rules, files["obj"])
     files["json"].write_text(json.dumps({"height": hi, **q, "issues": issues, "open_questions": qs},
                                         ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    for pth, _ in railings:
+        pth.unlink(missing_ok=True)
     return files, q, hi, issues
