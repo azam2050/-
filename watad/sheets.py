@@ -716,8 +716,9 @@ def areas_sheet(ctx):
     net = sum(r.area_m2 for r in P.rooms)
     terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
     fig = new_page()
-    fig.text(0.5, 0.945, "جدول المساحات وبيانات المشروع والتسعير", ha="center", fontsize=18, weight="bold",
-             color=BRAND)
+    hide_price = bool(P.meta.get("hide_pricing"))
+    fig.text(0.5, 0.945, "جدول المساحات وبيانات المشروع" + ("" if hide_price else " والتسعير"), ha="center",
+             fontsize=18, weight="bold", color=BRAND)
     # جدول المساحات
     ax = fig.add_axes([0.04, 0.3, 0.5, 0.58])
     rows = [[i + 1, r.name, f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"]
@@ -739,6 +740,8 @@ def areas_sheet(ctx):
     ax2 = fig.add_axes([0.58, 0.52, 0.38, 0.36])
     table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=10)
     ax2.set_title("بيانات المشروع", fontsize=14, weight="bold", color=BRAND, loc="right")
+    if hide_price:           # بدون تسعير لهذا العميل
+        return fig, "المساحات وبيانات المشروع"
     # التسعير
     ax3 = fig.add_axes([0.58, 0.2, 0.38, 0.25])
     price = P.price_per_m2
