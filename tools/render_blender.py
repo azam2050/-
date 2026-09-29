@@ -112,7 +112,7 @@ MATS = {
     "sheathing": tex_material("W_sheath", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "door": tex_material("W_door", "WoodFloor043", 1.2, C["frame"], 0.6, bump=0.05),
     "stair": tex_material("W_stair", "WoodFloor043", 1.2, C["trim"], 0.8, bump=0.05),
-    "roof_tiles": tex_material("W_roof", "RoofingTiles006", 1.0, C["roof"], 1.0, bump=1.0, metal=0.05),
+    "roof_tiles": tex_material("W_roof", "RoofingTiles006", 1.0, C["roof"], 1.0, rough=0.85, bump=1.0, metal=0.0),
     "slab": flat_material("W_slab", "#6F6B64", rough=0.95),
     "ceiling": tex_material("W_ceil", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_in_mix", 0.7)),
     "floor": tex_material("W_floor", "WoodFloor043", 1.5, None, bump=0.05),

@@ -31,8 +31,8 @@ roof:
   overhang: 40
   ext_start: 240
   cross_gables:             # مثلث بارز من الجهتين (مثل صورة الكوخ) — شباك الغربي لغرفة 2 والشرقي للدرج
-    - {side: W, center: 500, width: 400, pitch: 45, overhang: 50, window_width: 110, window_height: 140}
-    - {side: E, center: 500, width: 400, pitch: 45, overhang: 50, window_width: 110, window_height: 140}
+    - {side: W, center: 259, width: 400, pitch: 45, overhang: 50, window_width: 110, window_height: 140}
+    - {side: E, center: 259, width: 400, pitch: 45, overhang: 50, window_width: 110, window_height: 140}
 insulation: false
 cladding_board_length: 400
 pallet_length: 320

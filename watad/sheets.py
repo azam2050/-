@@ -1004,10 +1004,18 @@ def perspective_sheet(ctx):
     st = ctx["style"]
     fig = new_page()
     fig.text(0.5, 0.93, "المنظور ثلاثي الأبعاد والمواد", ha="center", fontsize=18)
-    fig.text(0.5, 0.905, f"النمط: {st['ar']}  —  معاينة تقريبية، الإخراج النهائي من 3ds Max",
+    fig.text(0.5, 0.905, f"النمط: {st['ar']}  —  رندر واقعي بخامات حقيقية",
              ha="center", fontsize=10, color="#555")
     ax = fig.add_axes([0.03, 0.3, 0.64, 0.58])
-    ax.imshow(plt.imread(ctx["preview"]))
+    real = (ctx.get("real_shots") or {}) if isinstance(ctx.get("real_shots"), dict) else {}
+    ext = real.get("exterior") or []
+    if len(ext) >= 2:      # الصور الواقعية بدل المعاينة المبسطة (أدق للسقف والمواد)
+        import numpy as _np
+        a, b = plt.imread(ext[0][0]), plt.imread(ext[3 if len(ext) > 3 else 1][0])
+        h = min(a.shape[0], b.shape[0])
+        ax.imshow(_np.concatenate([a[:h, :, :3], _np.full((h, 30, 3), 255, a.dtype), b[:h, :, :3]], axis=1))
+    else:
+        ax.imshow(plt.imread(ctx["preview"]))
     ax.axis("off")
     rows = [("الخشب / الصبغة", st["wood_ar"], st["wood"]),
             ("القرميد", st["roof_ar"], st["roof"]),
@@ -1149,7 +1157,11 @@ def build_client_pdf(ctx, path, with_perspective=True):
         [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
     pages += [(r, "—") for r in real_sheets(ctx)]
-    pages += [(r, "—") for r in renders_sheets(ctx)]
+    # المعاينة المبسطة للخارج تنشال إذا فيه صور واقعية (السقف فيها تقريبي) — يبقى المقطع بالفرش
+    rs = renders_sheets(ctx)
+    if isinstance(ctx.get("real_shots"), dict) and ctx["real_shots"].get("exterior"):
+        rs = [r for r in rs if r[1] != "لقطات المنظور"]
+    pages += [(r, "—") for r in rs]
     if with_perspective:
         pages.append((perspective_sheet(ctx), "—"))
     n = len(pages)

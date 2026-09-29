@@ -143,7 +143,11 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     """يرجع {"exterior": [(مسار، اسم)], "dusk": [...], "interior": [...]} ويحفظ shots.json للإعادة."""
     out = Path(out_dir) / "realistic"
     out.mkdir(parents=True, exist_ok=True)
+    # WATAD_REAL_PARTS=exterior,dusk → يعيد الخارج فقط ويحتفظ بصور الداخل السابقة (تعديل سقف/واجهة)
+    parts = set(os.environ.get("WATAD_REAL_PARTS", "exterior,dusk,interior").split(","))
     for old in out.glob("*.jpg"):
+        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] == "d" and "dusk" not in parts):
+            continue
         old.unlink()
     scene = build_scene(project, rules, style, heights, furniture="floors")
     glb = out / "scene.glb"
@@ -158,10 +162,13 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "views": [], "furnish": items, "furnish_py": str(ROOT / "tools" / "blender_furnish.py"),
             "landscape": plan_landscape(project, keep_clear=[tuple(s[2][:2]) for s in ext]),
             "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35}
-    day = [[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] + [[s[0], s[2], s[3], s[4], s[5], 0.6] for s in inn]
-    _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 15)}, out)
+    day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
+        ([[s[0], s[2], s[3], s[4], s[5], 0.6] for s in inn] if "interior" in parts else [])
+    if day:
+        _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
-    _run({**base, **DUSK, "tag": "dusk", "shots": dusk, "area_lights": _areas(project, 40)}, out)
+    if "dusk" in parts:
+        _run({**base, **DUSK, "tag": "dusk", "shots": dusk, "area_lights": _areas(project, 40)}, out)
     glb.unlink(missing_ok=True)
     meta = {"exterior": [[f"{s[0]}.jpg", s[1]] for s in ext],
             "dusk": [[f"d{s[0][1:]}.jpg", s[1] + " — وقت الغروب"] for s in ext[:2]],
