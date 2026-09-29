@@ -131,6 +131,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     S.material("rafters", style["trim"])
     S.material("sheathing", style["trim"])
     S.material("wood_in", style["wood"])
+    S.material("ceiling", style["wood"])
     S.material("door", style["frame"])
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(project, rules)
@@ -203,11 +204,11 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                     nxt.append((hx1, max(b0, hy0), a1, min(b1, hy1)))
             pieces = nxt
         for a0, b0, a1, b1 in pieces:
-            S.box("trim", a0, b0, lev - 25, a1, b1, lev)
+            S.box("ceiling", a0, b0, lev - 25, a1, b1, lev)
     for st in project.stairs:
         add_stair(S, project, st, cut)
-    if furniture:
-        add_interior(S, project, style, cut)
+    if furniture:      # "floors" = أرضيات فقط (الفرش الحقيقي يضيفه Blender)
+        add_interior(S, project, style, cut, pieces=furniture != "floors")
 
     if not cut:
         # السقف: مدادات + تطبيق خشب + قرميد
@@ -352,7 +353,7 @@ FURN_H = [("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 8
           ("ثلاجة", 180, "white")]
 
 
-def add_interior(S, project, style, cut=None):
+def add_interior(S, project, style, cut=None, pieces=True):
     """أرضيات + فرش مبسط (للمقطع العلوي والعرض الداخلي) — كل دور على منسوبه."""
     S.material("floor", "#B89066")
     S.material("tiles", "#D5D9DC")
@@ -370,7 +371,7 @@ def add_interior(S, project, style, cut=None):
         S.zoff = project.level(r.floor)
         x0, y0, x1, y1 = r.rect
         S.box("tiles" if r.wet else "floor", x0, y0, 0, x1, y1, 1.2)
-    for f in project.furniture:
+    for f in (project.furniture if pieces else []):
         if cut and cut <= project.level(f.floor):
             continue
         S.zoff = project.level(f.floor)

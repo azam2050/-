@@ -106,7 +106,7 @@ def flat_material(name, color, rough=0.5, metal=0.0, transmission=0.0, ior=1.45)
 C = cfg["colors"]
 MATS = {
     "wood": tex_material("W_wood", "WoodSiding008", 2.4, C["wood"], 0.7),
-    "wood_in": tex_material("W_wood_in", "WoodSiding008", 2.4, C["wood"], 0.7),
+    "wood_in": tex_material("W_wood_in", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_in_mix", 0.7)),
     "trim": tex_material("W_trim", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "rafters": tex_material("W_raft", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "sheathing": tex_material("W_sheath", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
@@ -114,6 +114,7 @@ MATS = {
     "stair": tex_material("W_stair", "WoodFloor043", 1.2, C["trim"], 0.8, bump=0.05),
     "roof_tiles": tex_material("W_roof", "RoofingTiles006", 1.0, C["roof"], 1.0, bump=1.0, metal=0.05),
     "slab": flat_material("W_slab", "#6F6B64", rough=0.95),
+    "ceiling": tex_material("W_ceil", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_in_mix", 0.7)),
     "floor": tex_material("W_floor", "WoodFloor043", 1.5, None, bump=0.05),
     "tiles": flat_material("W_tiles", "#D5D9DC", rough=0.3),
     "furn": flat_material("W_furn", "#CDBBA2", rough=0.6),
@@ -178,6 +179,11 @@ for i, (x, y, z) in enumerate(cfg.get("lights", [])):
     o.visible_camera = False
     scene.collection.objects.link(o)
 
+# فرش حقيقي للقطات الداخلية
+if cfg.get("furnish"):
+    import os as _os
+    exec(open(cfg["furnish_py"], encoding="utf-8").read())
+
 # الريندر
 scene.render.engine = "CYCLES"
 scene.cycles.device = "CPU"
@@ -187,6 +193,7 @@ scene.cycles.max_bounces = 6
 scene.render.resolution_x, scene.render.resolution_y = cfg.get("res", [1600, 1000])
 scene.view_settings.view_transform = "AgX"
 scene.view_settings.look = "AgX - Medium High Contrast"
+scene.view_settings.exposure = cfg.get("exposure", 0.0)
 scene.render.image_settings.file_format = "JPEG"
 scene.render.image_settings.quality = 90
 
@@ -202,6 +209,19 @@ tr = cam.constraints.new("TRACK_TO")
 tr.target = target
 tr.track_axis = "TRACK_NEGATIVE_Z"
 tr.up_axis = "UP_Y"
+
+# لقطات داخلية: كاميرا بموقع وهدف محدد (متر) — [name, [x,y,z], [tx,ty,tz], lens]
+for name, cpos, tpos, lens, *rest in cfg.get("shots", []):
+    cam_data.lens = lens
+    cam_data.shift_y = rest[0] if rest else 0.0
+    cam.location = Vector(cpos)
+    target.location = Vector(tpos)
+    scene.render.filepath = f"{cfg['out_dir']}/{name}.jpg"
+    bpy.ops.render.render(write_still=True)
+    print("RENDERED", name)
+cam_data.lens = cfg.get("lens", 32)
+cam_data.shift_y = 0.0
+target.location = center + Vector((0, 0, -0.6))
 
 for name, elev, azim, k in cfg["views"]:
     e, a = math.radians(elev), math.radians(azim)
