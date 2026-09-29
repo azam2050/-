@@ -1,0 +1,325 @@
+<title>مرجع تصاميم وتد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: عمود واحد بعرض مريح، شريط علوي لاصق فيه التقدم والحفظ، أقسام بشبكة بطاقات صور تنطوي للجوال */
+:root{
+  --bg:#EEF1F2; --surface:#FFFFFF; --sunk:#E4E9EC; --fg:#23262B; --muted:#5E6670; --line:#D3DADF;
+  --accent:#A95A1C; --accent-soft:#F3E3D3; --ok:#2E7D4F; --ok-soft:#DCEFE3; --star:#C08A00;
+  --render:#E6EDF2;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15181B; --surface:#1E2226; --sunk:#262B30; --fg:#E9E6E1; --muted:#A3A9B0; --line:#343A40;
+  --accent:#E0924A; --accent-soft:#3A2A1C; --ok:#5BC08A; --ok-soft:#1E3328; --star:#F0C040; --render:#DDE5EA; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15181B; --surface:#1E2226; --sunk:#262B30; --fg:#E9E6E1; --muted:#A3A9B0; --line:#343A40;
+  --accent:#E0924A; --accent-soft:#3A2A1C; --ok:#5BC08A; --ok-soft:#1E3328; --star:#F0C040; --render:#DDE5EA; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6;direction:rtl}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:10px}
+.brand{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--accent);white-space:nowrap}
+nav.sec{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+@media (max-width:700px){nav.sec{flex-wrap:nowrap;overflow-x:auto;flex-basis:100%;order:3;padding-bottom:2px;scrollbar-width:none}}
+nav.sec a{font-size:13px;text-decoration:none;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
+nav.sec a b{font-family:var(--f-mono);font-weight:500;color:var(--ok);margin-inline-start:4px}
+.save{font-size:13px;color:var(--muted);white-space:nowrap}
+.save.ok{color:var(--ok)}
+.save.err{color:#C0392B}
+h1{font-family:var(--f-display);font-size:clamp(28px,5vw,40px);line-height:1.25;margin:28px 0 6px;text-wrap:balance}
+.lead{color:var(--muted);max-width:68ch;margin:0 0 18px}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.how{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:14px 0 0}
+.how span{display:inline-flex;gap:6px;align-items:center}
+section.s{margin-top:44px;scroll-margin-top:90px}
+section.s>h2{font-family:var(--f-display);font-size:26px;margin:0 0 2px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+section.s>h2 small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:500}
+.sub{font-weight:600;margin:18px 0 8px;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px}
+.grid.sm{grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr))}
+.card{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;text-align:start;font:inherit;color:inherit;padding:0;transition:border-color .15s, box-shadow .15s}
+.card:hover{border-color:var(--accent)}
+.card[aria-pressed="true"]{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-soft)}
+.card .pic{background:var(--render);aspect-ratio:4/3;display:grid;place-items:center;max-width:100%}
+.card .pic img{width:100%;height:100%;object-fit:contain}
+.card .txt{padding:8px 10px 10px;display:grid;gap:2px;min-width:0}
+.code{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.name{font-weight:600;font-size:14px}
+.note{font-size:12px;color:var(--muted)}
+.tick{position:absolute;top:8px;inset-inline-end:8px;width:26px;height:26px;border-radius:50%;background:var(--surface);border:1.5px solid var(--line);display:grid;place-items:center;font-size:15px;color:transparent}
+.card[aria-pressed="true"] .tick{background:var(--ok);border-color:var(--ok);color:#fff}
+.star{position:absolute;top:8px;inset-inline-start:8px;border:1.5px solid var(--line);background:var(--surface);border-radius:99px;font:inherit;font-size:12px;padding:1px 8px;color:var(--muted);cursor:pointer}
+.star[aria-pressed="true"]{border-color:var(--star);color:var(--star);font-weight:700}
+.card[aria-pressed="false"] .star{display:none}
+.sw{aspect-ratio:4/3;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:99px;padding:6px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ok);background:var(--ok-soft)}
+.chip .q{font-size:11px;color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:20px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+aside.prev{position:sticky;top:96px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+aside.prev h3{margin:0 0 6px;font-size:14px}
+aside.prev p{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:9px 18px;cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--accent)}
+.others{font-size:13px;color:var(--muted)}
+.others button{font:inherit;font-size:13px;background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;padding:0 4px}
+pre#summary{white-space:pre-wrap;background:var(--sunk);border-radius:8px;padding:12px;font-size:12.5px;max-height:260px;overflow:auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="brand">وتد · مرجع التصاميم</div>
+  <nav class="sec" id="nav"></nav>
+  <div class="save" id="save" role="status">اكتب اسمك للحفظ</div>
+</div></header>
+
+<main class="wrap">
+  <h1>اختر ما يعتمده المصنع</h1>
+  <p class="lead">هذي الصفحة تصير المرجع الدائم للمصمم: كل شكل تعتمده هنا يصير خيار جاهز للعملاء، واللي تعلّمه «الأكثر طلباً» يصير الاقتراح الأول. الصور من محرك التصميم نفسه، فاللي تختاره هو اللي ينرسم.</p>
+
+  <div class="who">
+    <label class="f" for="who-name">الاسم
+      <input id="who-name" type="text" autocomplete="name" placeholder="مثال: م. أحمد">
+    </label>
+    <label class="f" for="who-role">الصفة
+      <select id="who-role">
+        <option value="مدير المصنع">مدير المصنع</option>
+        <option value="المالك">المالك</option>
+        <option value="مشرف التركيب">مشرف التركيب</option>
+        <option value="مبيعات">مبيعات</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+    </label>
+    <div class="others" id="others"></div>
+  </div>
+  <div class="how">
+    <span><b style="color:var(--ok)">✓</b> اضغط البطاقة = معتمد</span>
+    <span><b style="color:var(--star)">★</b> بعد الاعتماد: «الأكثر طلباً»</span>
+    <span>الحفظ تلقائي بعد كل اختيار</span>
+  </div>
+
+  <div id="sections"></div>
+
+  <section class="s" id="notes">
+    <h2>ملاحظات وإضافات</h2>
+    <label class="f" for="n-missing">أشكال تسوونها وما هي موجودة هنا (سقف، شباك، باب، دربزين)
+      <textarea id="n-missing" placeholder="مثال: باب مزدوج بقوس — نسويه كثير في الطائف"></textarea>
+    </label>
+    <label class="f" for="n-general" style="margin-top:12px">ملاحظات عامة (أسعار، موردين، أكواد صبغات وقرميد...)
+      <textarea id="n-general" placeholder="مثال: الصبغة العسلي من مورد ... كود ..."></textarea>
+    </label>
+    <div class="bar">
+      <button class="btn" id="b-save" type="button">حفظ الآن</button>
+      <button class="btn ghost" id="b-copy" type="button">نسخ الاختيارات كنص</button>
+      <span class="save" id="save2"></span>
+    </div>
+    <p class="note">إذا الحفظ ما اشتغل عندك، انسخ النص والصقه في المحادثة.</p>
+    <pre id="summary"></pre>
+  </section>
+</main>
+
+<script>
+const DATA = /*DATA*/;
+
+const WOOD = [
+  {code:"C01",ar:"طبيعي فاتح (صنوبر)",c:"#E3B57C",l:"#B98A55",note:"بدون صبغة — زيت شفاف (صورة 1)"},
+  {code:"C02",ar:"عسلي / سيدر",c:"#C07A34",l:"#8A4F1C",note:"صورة 2"},
+  {code:"C03",ar:"برتقالي محمر",c:"#C4673A",l:"#924526",note:"صورة 5"},
+  {code:"C04",ar:"تيك",c:"#9A6A3A",l:"#6E4A26",note:"بني متوسط دافئ"},
+  {code:"C05",ar:"ماهوجني",c:"#7A3325",l:"#521F16",note:"بني محمر غامق"},
+  {code:"C06",ar:"جوزي غامق",c:"#5B3C27",l:"#35231A",note:"صورة 3"},
+  {code:"C07",ar:"بني قهوة (إسبريسو)",c:"#2F2520",l:"#1C1612",note:"للشرائط والكنار (صورة 3)"},
+  {code:"C08",ar:"رمادي معتّق",c:"#8C8A83",l:"#66645E",note:"طابع خشب قديم"},
+  {code:"C09",ar:"أبيض مغسول",c:"#D9CFC0",l:"#B3A794",note:"إسكندنافي فاتح"},
+  {code:"C10",ar:"أسود فحمي",c:"#2A2826",l:"#141312",note:"عصري — مع إطارات فاتحة"},
+];
+const TILE = [
+  {code:"K01",ar:"فحمي مزرق",c:"#2C313B",note:"صورة 1 و 5"},
+  {code:"K02",ar:"أسود",c:"#1C1C1E"},
+  {code:"K03",ar:"عنابي",c:"#5F2024",note:"صورة 2"},
+  {code:"K04",ar:"أحمر طوبي",c:"#8E2A22"},
+  {code:"K05",ar:"تيراكوتا",c:"#A8522F"},
+  {code:"K06",ar:"بني",c:"#5A3A28"},
+  {code:"K07",ar:"رمادي غامق",c:"#2B2B2E",note:"صورة 3"},
+  {code:"K08",ar:"رمادي فاتح",c:"#6A6D70"},
+  {code:"K09",ar:"أخضر غامق",c:"#2F4A36"},
+  {code:"K10",ar:"أزرق غامق",c:"#27405E"},
+];
+const PROFILE = [
+  {code:"P01",ar:"كلاسيك (روماني مموج)",note:"الموجود في كل صور المصنع"},
+  {code:"P02",ar:"شينغل (مستطيلات متداخلة)"},
+  {code:"P03",ar:"شيك (ألواح خشب غير منتظمة)"},
+  {code:"P04",ar:"بوند / مسطح بخطوط"},
+  {code:"P05",ar:"صاج مموج"},
+];
+const CHIPS = {
+  species:{t:"نوع الخشب",o:["صنوبر سويدي","صنوبر فنلندي","شوح (سبروس) روسي","سيدر أحمر","خشب معالج حرارياً (ثيرمو)","معالج بالضغط (ضد الرطوبة والحشرات)"]},
+  grade:{t:"درجة الخشب",o:["درجة A — عقد قليلة جداً","درجة AB — متوسطة","درجة B — عقد ظاهرة (ريفي)"]},
+  finish:{t:"التشطيب",o:["زيت شفاف","صبغة نصف شفافة (تبين العروق)","صبغة مغطية","ورنيش لامع","ورنيش مطفي"]},
+  glass:{t:"نوع الزجاج",o:["شفاف","عاكس غامق","مدخن رمادي","برونزي","مصنفر (للحمامات)","دبل جلاس (عازل)"]},
+  frame:{t:"مادة الإطارات",o:["خشب بنفس الصبغة","ألمنيوم أسود","ألمنيوم بني","UPVC أبيض","ألمنيوم بلون خشب"]},
+  doorframe:{t:"استخدام الأبواب",o:["الباب الرئيسي: خشب مصمت","الباب الرئيسي: فرنسي زجاج","الأبواب الداخلية: حشوات","الأبواب الداخلية: ألواح ريفي","باب الحمام: بفتحات تهوية"]},
+};
+
+/* ---------- الحالة ---------- */
+const state = {sel:{}, chips:{}};
+const KEYS = ["roofs","railings","wood","tile","profile","windows","doors"];
+KEYS.forEach(k=>state.sel[k]={});
+Object.keys(CHIPS).forEach(k=>state.chips[k]=[]);
+
+/* ---------- عرض ---------- */
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function woodSVG(c,l){
+  let rows="";for(let i=0;i<9;i++){const y=i*20;rows+=`<rect x="0" y="${y}" width="240" height="19" fill="${c}"/><rect x="0" y="${y+17.5}" width="240" height="2.5" fill="${l}"/>`;
+  for(let j=0;j<3;j++){const x=(i*53+j*97)%240;rows+=`<path d="M${x} ${y+6} q30 -3 60 1" stroke="${l}" stroke-opacity=".35" fill="none" stroke-width="1"/>`}
+  const jx=(i*71)%200+20;rows+=`<rect x="${jx}" y="${y}" width="1.5" height="18" fill="${l}"/>`}
+  return `<svg class="sw" viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice" role="img" aria-label="عينة لون">${rows}</svg>`}
+function tileSVG(c,prof="P01"){
+  let g="";
+  if(prof==="P01"){for(let r=0;r<7;r++){const y=r*26;for(let x=-20;x<260;x+=40){g+=`<path d="M${x} ${y+24} q10 -22 20 0 q10 -22 20 0 v4 h-40z" fill="${c}"/><path d="M${x} ${y+24} q10 -22 20 0" stroke="#000" stroke-opacity=".35" fill="none"/>`}g+=`<rect x="0" y="${y+23}" width="240" height="3" fill="#000" fill-opacity=".35"/>`}}
+  if(prof==="P02"){for(let r=0;r<9;r++){const y=r*20,o=r%2?15:0;g+=`<rect x="0" y="${y}" width="240" height="20" fill="${c}"/>`;for(let x=-o;x<240;x+=30){g+=`<rect x="${x}" y="${y}" width="1.5" height="20" fill="#000" fill-opacity=".4"/>`}g+=`<rect x="0" y="${y+18}" width="240" height="2" fill="#000" fill-opacity=".45"/>`}}
+  if(prof==="P03"){for(let r=0;r<8;r++){const y=r*23;g+=`<rect x="0" y="${y}" width="240" height="23" fill="${c}"/>`;let x=0,k=r*7;while(x<240){const w=14+((k*37)%22);g+=`<rect x="${x}" y="${y}" width="1.5" height="23" fill="#000" fill-opacity=".45"/><rect x="${x+2}" y="${y+3+(k%3)}" width="${w-4}" height="1" fill="#fff" fill-opacity=".08"/>`;x+=w;k++}g+=`<rect x="0" y="${y+21}" width="240" height="2" fill="#000" fill-opacity=".4"/>`}}
+  if(prof==="P04"){g+=`<rect width="240" height="180" fill="${c}"/>`;for(let r=0;r<5;r++){g+=`<rect x="0" y="${r*36+34}" width="240" height="2.5" fill="#000" fill-opacity=".45"/>`;for(let x=0;x<240;x+=24){g+=`<rect x="${x}" y="${r*36}" width="1" height="34" fill="#fff" fill-opacity=".1"/>`}}}
+  if(prof==="P05"){g+=`<rect width="240" height="180" fill="${c}"/>`;for(let x=0;x<240;x+=16){g+=`<rect x="${x}" y="0" width="8" height="180" fill="#fff" fill-opacity=".09"/><rect x="${x+8}" y="0" width="2" height="180" fill="#000" fill-opacity=".3"/>`}}
+  return `<svg class="sw" viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice" role="img" aria-label="عينة قرميد">${g}</svg>`}
+
+function card(kind,it,pic){
+  return `<button type="button" class="card" data-kind="${kind}" data-code="${it.code}" aria-pressed="false">
+    <div class="pic">${pic}</div>
+    <span class="tick" aria-hidden="true">✓</span>
+    <span class="star" role="button" tabindex="0" data-star aria-pressed="false">★ الأكثر طلباً</span>
+    <div class="txt"><span class="code">${it.code}</span><span class="name">${esc(it.ar)}</span>${it.note?`<span class="note">${esc(it.note)}</span>`:""}</div>
+  </button>`}
+function imgCard(kind,it){return card(kind,it,`<img src="${it.img}" alt="${esc(it.ar)}" loading="lazy">`)}
+function chips(key){const c=CHIPS[key];return `<div class="sub">${c.t}</div><div class="chips">${c.o.map(o=>`<button type="button" class="chip" data-chip="${key}" data-val="${esc(o)}" aria-pressed="false">${esc(o)}</button>`).join("")}</div>`}
+
+const SECTIONS = [
+  {id:"roofs",t:"أشكال الأسقف",sm:"18 شكل — كلها جملون",html:()=>["دور","دور ونص","دورين"].map(f=>`<div class="sub">${f}</div><div class="grid">${DATA.roofs.filter(r=>r.floors===f).map(r=>imgCard("roofs",{...r,note:r.note+" · التعقيد "+"★".repeat(r.stars)})).join("")}</div>`).join("")},
+  {id:"railings",t:"الدربزين",sm:"للدكة والدرج والبلكونة",html:()=>`<div class="grid">${DATA.railings.map(r=>imgCard("railings",r)).join("")}</div>`},
+  {id:"wood",t:"الخشب والصبغة",sm:"النوع، الدرجة، التشطيب، اللون",preview:true,html:()=>chips("species")+chips("grade")+chips("finish")+`<div class="sub">لون الصبغة</div><div class="grid sm">${WOOD.map(w=>card("wood",w,woodSVG(w.c,w.l))).join("")}</div>`},
+  {id:"tile",t:"القرميد",sm:"الشكل واللون — قرميد معدني بحبيبات حجرية",preview:true,html:()=>`<div class="sub">شكل القرميد</div><div class="grid sm">${PROFILE.map(p=>card("profile",p,tileSVG("#3A3F48",p.code))).join("")}</div><div class="sub">لون القرميد</div><div class="grid sm">${TILE.map(t=>card("tile",t,tileSVG(t.c,"P01"))).join("")}</div>`},
+  {id:"windows",t:"الشبابيك",sm:"14 شكل + الزجاج والإطارات",html:()=>`<div class="grid sm">${DATA.windows.map(w=>imgCard("windows",w)).join("")}</div>`+chips("glass")+chips("frame")},
+  {id:"doors",t:"الأبواب",sm:"12 شكل",html:()=>`<div class="grid sm">${DATA.doors.map(d=>imgCard("doors",d)).join("")}</div>`+chips("doorframe")},
+];
+
+function cabinSVG(){
+  const pick=(k,arr,def)=>{const s=state.sel[k];const fav=Object.keys(s).find(c=>s[c]?.fav);const ok=fav||Object.keys(s).find(c=>s[c]?.ok);return arr.find(a=>a.code===ok)||def};
+  const w=pick("wood",WOOD,WOOD[1]), t=pick("tile",TILE,TILE[2]);
+  const trim=w.l; let clad="";
+  for(let y=150;y<270;y+=9)clad+=`<line x1="40" y1="${y}" x2="300" y2="${y}" stroke="${w.l}" stroke-width="1"/>`;
+  let gable="";for(let y=108;y<150;y+=9){const h=(150-y)/60*130;gable+=`<line x1="${170-(130-h)}" y1="${y}" x2="${170+(130-h)}" y2="${y}" stroke="${w.l}" stroke-width="1"/>`}
+  return `<svg viewBox="0 0 340 290" role="img" aria-label="معاينة الكوخ بالألوان المختارة" style="width:100%;height:auto;background:var(--render);border-radius:8px">
+   <rect x="0" y="270" width="340" height="20" fill="#B9B6AE"/>
+   <polygon points="40,150 170,90 300,150" fill="${w.c}"/>${gable}
+   <rect x="40" y="150" width="260" height="120" fill="${w.c}"/>${clad}
+   <polygon points="18,164 170,82 322,164 322,172 170,90 18,172" fill="${t.c}"/>
+   <polygon points="18,172 170,90 322,172 322,176 170,94 18,176" fill="${trim}"/>
+   <rect x="40" y="150" width="7" height="120" fill="${trim}"/><rect x="293" y="150" width="7" height="120" fill="${trim}"/>
+   <rect x="148" y="190" width="44" height="80" fill="${trim}"/><rect x="152" y="194" width="36" height="76" fill="#1F262C"/>
+   <rect x="68" y="185" width="52" height="46" fill="${trim}"/><rect x="72" y="189" width="44" height="38" fill="#1F262C"/><rect x="93" y="189" width="2" height="38" fill="${trim}"/>
+   <rect x="220" y="185" width="52" height="46" fill="${trim}"/><rect x="224" y="189" width="44" height="38" fill="#1F262C"/><rect x="245" y="189" width="2" height="38" fill="${trim}"/>
+   <polygon points="150,112 190,112 170,100" fill="#1F262C" stroke="${trim}" stroke-width="3"/>
+  </svg><p>الخشب: <b>${esc(w.ar)}</b> · القرميد: <b>${esc(t.ar)}</b><br>تعرض «الأكثر طلباً» أو أول لون معتمد.</p>`}
+
+function render(){
+  document.getElementById("sections").innerHTML = SECTIONS.map(s=>{
+    const body=s.html();
+    return `<section class="s" id="${s.id}"><h2>${s.t} <small>${s.sm}</small></h2>${s.preview?`<div class="two"><div>${body}</div><aside class="prev"><h3>المعاينة</h3><div class="pv"></div></aside></div>`:body}</section>`}).join("");
+  document.getElementById("nav").innerHTML = SECTIONS.map(s=>`<a href="#${s.id}">${s.t}<b data-count="${s.id}">0</b></a>`).join("")+`<a href="#notes">ملاحظات</a>`;
+}
+function paint(){
+  document.querySelectorAll(".card").forEach(el=>{const v=state.sel[el.dataset.kind][el.dataset.code];el.setAttribute("aria-pressed",v?.ok?"true":"false");el.querySelector("[data-star]").setAttribute("aria-pressed",v?.fav?"true":"false")});
+  document.querySelectorAll(".chip").forEach(el=>el.setAttribute("aria-pressed",state.chips[el.dataset.chip].includes(el.dataset.val)?"true":"false"));
+  const cnt={roofs:["roofs"],railings:["railings"],wood:["wood"],tile:["tile","profile"],windows:["windows"],doors:["doors"]};
+  Object.entries(cnt).forEach(([id,ks])=>{const n=ks.reduce((a,k)=>a+Object.values(state.sel[k]).filter(v=>v.ok).length,0);const b=document.querySelector(`[data-count="${id}"]`);if(b)b.textContent=n});
+  document.querySelectorAll(".pv").forEach(p=>p.innerHTML=cabinSVG());
+  document.getElementById("summary").textContent=summary();
+}
+function summary(){
+  const L=[];const nm=document.getElementById("who-name").value.trim();
+  L.push(`مرجع تصاميم وتد — ${nm||"بدون اسم"} (${document.getElementById("who-role").value})`);
+  const lab={roofs:"الأسقف",railings:"الدربزين",wood:"ألوان الصبغة",tile:"ألوان القرميد",profile:"أشكال القرميد",windows:"الشبابيك",doors:"الأبواب"};
+  KEYS.forEach(k=>{const e=Object.entries(state.sel[k]).filter(([,v])=>v.ok);if(e.length)L.push(`${lab[k]}: ${e.map(([c,v])=>c+(v.fav?"★":"")).join("، ")}`)});
+  Object.entries(state.chips).forEach(([k,v])=>{if(v.length)L.push(`${CHIPS[k].t}: ${v.join("، ")}`)});
+  const m=document.getElementById("n-missing").value.trim(),g=document.getElementById("n-general").value.trim();
+  if(m)L.push("أشكال ناقصة: "+m); if(g)L.push("ملاحظات: "+g);
+  return L.join("\n");
+}
+
+/* ---------- التفاعل ---------- */
+document.addEventListener("click",e=>{
+  const star=e.target.closest("[data-star]");
+  const c=e.target.closest(".card");
+  if(star&&c){e.preventDefault();e.stopPropagation();const v=state.sel[c.dataset.kind][c.dataset.code];if(v?.ok){v.fav=!v.fav;changed()}return}
+  if(c){const s=state.sel[c.dataset.kind];const v=s[c.dataset.code];if(v?.ok)delete s[c.dataset.code];else s[c.dataset.code]={ok:true,fav:false};changed();return}
+  const ch=e.target.closest(".chip");
+  if(ch){const a=state.chips[ch.dataset.chip];const i=a.indexOf(ch.dataset.val);i>=0?a.splice(i,1):a.push(ch.dataset.val);changed()}
+});
+document.addEventListener("keydown",e=>{const s=e.target.closest?.("[data-star]");if(s&&(e.key==="Enter"||e.key===" ")){e.preventDefault();s.click()}});
+["n-missing","n-general","who-role"].forEach(id=>document.getElementById(id).addEventListener("input",changed));
+
+/* ---------- الحفظ ---------- */
+let db=null,timer=null;
+const $save=document.getElementById("save"),$save2=document.getElementById("save2");
+function status(t,cls){[$save,$save2].forEach(el=>{el.textContent=t;el.className="save"+(cls?" "+cls:"")})}
+function slug(s){/* معرف لاتيني ثابت لكل اسم (المعرفات تقبل حروف لاتينية فقط) */return "r-"+Array.from(s.trim().replace(/\s+/g," ").slice(0,40)).map(c=>c.codePointAt(0).toString(36)).join(".")}
+function draft(){try{localStorage.setItem("watad-survey",JSON.stringify(payload()))}catch(_){}}
+function payload(){return {name:document.getElementById("who-name").value.trim(),role:document.getElementById("who-role").value,
+  sel:state.sel,chips:state.chips,missing:document.getElementById("n-missing").value,general:document.getElementById("n-general").value,
+  summary:summary(),updatedAt:new Date().toISOString()}}
+function changed(){paint();draft();clearTimeout(timer);timer=setTimeout(saveNow,1200)}
+async function saveNow(){
+  const p=payload();
+  if(!p.name){status("اكتب اسمك فوق عشان ينحفظ","err");return}
+  if(!db){status("الحفظ غير متاح هنا — استخدم النسخ","err");return}
+  try{status("جاري الحفظ…");await db.doc("responses/"+slug(p.name)).set(p);
+    status("محفوظ ✓ "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"}),"ok");listOthers()}
+  catch(err){status(err?.code==="not_granted"||err?.code==="forbidden"?"ما عندك صلاحية حفظ — انسخ النص وأرسله":"تعذر الحفظ — حاول مرة ثانية","err")}
+}
+function apply(d){
+  if(!d)return;
+  KEYS.forEach(k=>state.sel[k]=d.sel?.[k]||{});
+  Object.keys(CHIPS).forEach(k=>state.chips[k]=d.chips?.[k]||[]);
+  if(d.name)document.getElementById("who-name").value=d.name;
+  if(d.role)document.getElementById("who-role").value=d.role;
+  document.getElementById("n-missing").value=d.missing||"";
+  document.getElementById("n-general").value=d.general||"";
+  paint();
+}
+async function listOthers(){
+  const box=document.getElementById("others");if(!db){box.textContent="";return}
+  try{const q=await db.collection("responses").get();const docs=(q.docs||[]).map(x=>x.data()).filter(Boolean);
+    box.innerHTML=docs.length?`ردود محفوظة: ${docs.map(d=>`<button type="button" data-load="${esc(d.name)}">${esc(d.name)}</button>`).join("")}`:"لا توجد ردود محفوظة بعد — ردك يكون الأول."}
+  catch(_){box.textContent=""}
+}
+document.getElementById("others").addEventListener("click",async e=>{const b=e.target.closest("[data-load]");if(!b||!db)return;
+  const s=await db.doc("responses/"+slug(b.dataset.load)).get();if(s.exists)apply(s.data())});
+document.getElementById("who-name").addEventListener("change",async e=>{
+  const nm=e.target.value.trim();if(!nm)return;
+  if(db){try{const s=await db.doc("responses/"+slug(nm)).get();if(s.exists){apply(s.data());status("تم تحميل اختياراتك السابقة","ok");return}}catch(_){}}
+  changed()});
+document.getElementById("b-save").addEventListener("click",saveNow);
+document.getElementById("b-copy").addEventListener("click",async()=>{const t=summary();
+  try{await navigator.clipboard.writeText(t);status("تم النسخ ✓","ok")}
+  catch(_){const r=document.createRange();r.selectNodeContents(document.getElementById("summary"));const s=getSelection();s.removeAllRanges();s.addRange(r);status("النص محدد — انسخه يدوياً")}});
+
+render();
+try{const d=JSON.parse(localStorage.getItem("watad-survey")||"null");if(d)apply(d)}catch(_){}
+paint();
+(async()=>{try{db=await window.claude?.use?.("db")}catch(_){db=null}
+  if(db){listOthers();if(document.getElementById("who-name").value.trim())status("جاهز للحفظ")}
+  else status("الحفظ غير متاح هنا — استخدم النسخ")})();
+</script>
