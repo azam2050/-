@@ -1,4 +1,9 @@
-"""نموذج المشروع: جدران، فتحات، سقف. كل الأطوال بالسنتيمتر."""
+"""نموذج المشروع: جدران، فتحات، غرف، فرش، سقف. كل الأطوال بالسنتيمتر.
+
+الإحداثيات: محور الجدار (centerline). +y = الشمال.
+الجدران الخارجية تُكتب بعكس عقارب الساعة (جنوب ← شرق ← شمال ← غرب)
+فيكون يسار الجدار = الداخل، وبداية الجدار = يسار الواجهة عند النظر من الخارج.
+"""
 import math
 from dataclasses import dataclass, field
 
@@ -8,11 +13,17 @@ import yaml
 @dataclass
 class Opening:
     kind: str            # window | door
-    offset: float        # من بداية الجدار إلى الحافة اليسرى للفتحة الصافية
+    offset: float        # من بداية الجدار (المحور) إلى الحافة الأقرب للفتحة الصافية
     width: float
     height: float
-    sill: float = 0      # ارتفاع جلسة الشباك من أعلى القاعدة (للأبواب = 0)
+    sill: float = 0      # ارتفاع الجلسة من وجه الصبة (للأبواب = 0)
+    code: str = ""       # ش1، ب2 ...
     name: str = ""
+    swing: str = "left"  # جهة فتح الباب بالنسبة لاتجاه الجدار: left | right
+    leaves: int = 1      # عدد الضلف
+
+    def __post_init__(self):
+        self.name = self.name or self.code
 
 
 @dataclass
@@ -21,20 +32,65 @@ class Wall:
     start: tuple
     end: tuple
     exterior: bool = True
-    wet_inner: bool = False   # داخلها دورة مياه → أسمنت بورد من الداخل
     openings: list = field(default_factory=list)
     height: float = None
+    title: str = ""      # اسم الواجهة (للخارجي)
 
     @property
     def length(self):
         return math.dist(self.start, self.end)
+
+    @property
+    def u(self):
+        (x0, y0), (x1, y1) = self.start, self.end
+        L = self.length
+        return (x1 - x0) / L, (y1 - y0) / L
+
+    @property
+    def n(self):
+        """العمودي على يسار اتجاه الجدار (= الداخل للجدران الخارجية)."""
+        ux, uy = self.u
+        return -uy, ux
+
+    def point(self, t, s=0.0):
+        """نقطة على بُعد t على طول الجدار و s على العمودي الأيسر."""
+        ux, uy = self.u
+        nx, ny = self.n
+        return self.start[0] + ux * t + nx * s, self.start[1] + uy * t + ny * s
+
+
+@dataclass
+class Room:
+    name: str
+    rect: list           # [x0, y0, x1, y1] الأبعاد الداخلية الصافية
+    wet: bool = False
+    kind: str = ""
+
+    @property
+    def w(self):
+        return self.rect[2] - self.rect[0]
+
+    @property
+    def h(self):
+        return self.rect[3] - self.rect[1]
+
+    @property
+    def area_m2(self):
+        return self.w * self.h / 1e4
+
+
+@dataclass
+class Furniture:
+    name: str
+    rect: list
+    shape: str = "rect"  # rect | circle | wc | basin | shower
 
 
 @dataclass
 class Roof:
     ridge_axis: str = "x"     # اتجاه خط الجملون (x أو y)
     pitch_deg: float = 25
-    overhang: float = 0       # TO_CONFIRM: بروز المداد خارج الجدار
+    overhang: float = 0       # بروز المداد خارج الجدار (أفقي)
 
 
 @dataclass
@@ -44,10 +100,19 @@ class Project:
     walls: list
     wall_height: float
     roof: Roof
+    title: str = ""
+    rooms: list = field(default_factory=list)
+    furniture: list = field(default_factory=list)
     insulation: bool = False
     cladding_board_length: float = 300
     pallet_length: float = 320
+    price_per_m2: float = None
+    meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
+
+    @property
+    def exterior_walls(self):
+        return [w for w in self.walls if w.exterior]
 
 
 def load_project(path, rules):
@@ -55,16 +120,34 @@ def load_project(path, rules):
         d = yaml.safe_load(f)
     walls = []
     for w in d["walls"]:
+        w = dict(w)
         ops = [Opening(**o) for o in w.pop("openings", [])]
         walls.append(Wall(start=tuple(w.pop("start")), end=tuple(w.pop("end")), openings=ops, **w))
     return Project(
         name=d["name"],
+        title=d.get("title", d["name"]),
         client=d.get("client", ""),
         walls=walls,
+        rooms=[Room(**r) for r in d.get("rooms", [])],
+        furniture=[Furniture(**f) for f in d.get("furniture", [])],
         wall_height=d.get("wall_height", rules["wall"]["default_height"]),
         roof=Roof(**d.get("roof", {})),
         insulation=d.get("insulation", rules["insulation"]["default"]),
         cladding_board_length=d.get("cladding_board_length", rules["cladding"]["lengths"][0]),
         pallet_length=d.get("pallet_length", rules["pallet"]["lengths"][0]),
+        price_per_m2=d.get("price_per_m2"),
+        meta=d.get("meta", {}),
         notes=d.get("notes", []),
     )
+
+
+def wall_thickness(rules):
+    return rules["members"]["stud"]["w"] + 2 * rules["cladding"]["thickness"]
+
+
+def outer_bbox(project, rules):
+    """حدود المبنى الخارجية (وجه التلبيس الخارجي)."""
+    t = wall_thickness(rules) / 2
+    xs = [p[0] for w in project.exterior_walls for p in (w.start, w.end)]
+    ys = [p[1] for w in project.exterior_walls for p in (w.start, w.end)]
+    return min(xs) - t, min(ys) - t, max(xs) + t, max(ys) + t

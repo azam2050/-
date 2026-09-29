@@ -20,7 +20,6 @@ walls:
   - name: W2-شرق
     start: [800, 0]
     end: [800, 500]
-    wet_inner: true
     openings:
       - {kind: window, name: ش-حمام, offset: 300, width: 60, height: 50, sill: 160}
   - name: W3-شمال
@@ -39,5 +38,8 @@ walls:
     exterior: false
     openings:
       - {kind: door, name: باب حمام, offset: 60, width: 80, height: 210}
+rooms:
+  - {name: الصالة والغرفة, rect: [6, 6, 594, 494]}
+  - {name: حمام, rect: [606, 6, 794, 494], wet: true}
 notes:
   - الجدار الداخلي W5 تحت خط المدادات؟ يُراجع مع اتجاه الجملون.

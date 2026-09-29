@@ -9,7 +9,7 @@ def main():
     ap.add_argument("-o", "--out", default="out")
     ap.add_argument("--rules", default=None)
     a = ap.parse_args()
-    files, q, hi = build(a.project, a.out, a.rules)
+    files, q, hi, issues = build(a.project, a.out, a.rules)
     p = q["pallets"]
     print(f"height: {hi['requested']} -> {hi['suggested']} ({hi['rows']} rows)")
     print(f"rafters: {p['roof']['rafter_count']} x {p['roof']['rafter_length']}cm")
@@ -17,6 +17,8 @@ def main():
           f"total={p['total_pallets']}")
     print(f"cladding boards: {q['cladding']['boards']}, cement board: "
           f"{q['cladding']['cement_board_sheets']}")
+    for i in issues:
+        print(f"[{i['level']}] {i['title']}: {i['detail']}")
     for k, v in files.items():
         print(f"{k}: {v}")
 

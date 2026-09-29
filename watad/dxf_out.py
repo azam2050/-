@@ -5,7 +5,7 @@ import ezdxf
 
 LAYERS = {
     "WALL": 7, "OPENING": 4, "FRAME-PLATE": 1, "FRAME-STUD": 3,
-    "FRAME-OPENING": 5, "FRAME-CRIPPLE": 6, "DIM": 8, "TEXT": 2,
+    "FRAME-OPENING": 5, "FRAME-CRIPPLE": 6, "DIM": 8, "TEXT": 2, "FURNITURE": 6,
 }
 KIND_LAYER = {
     "bottom_plate": "FRAME-PLATE", "top_plate": "FRAME-PLATE",
@@ -46,6 +46,14 @@ def write_dxf(project, members, heights, rules, path):
         d.render()
         msp.add_text(w.name, height=15, dxfattribs={"layer": "TEXT"}).set_placement(
             ((x0 + x1) / 2 - nx * 4, (y0 + y1) / 2 - ny * 4))
+
+    for r in project.rooms:
+        cx, cy = (r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2
+        msp.add_text(f"{r.name}  {r.area_m2:.2f} m2", height=12,
+                     dxfattribs={"layer": "TEXT"}).set_placement(
+            (cx, cy), align=ezdxf.enums.TextEntityAlignment.MIDDLE_CENTER)
+    for f in project.furniture:
+        _rect(msp, *f.rect, "FURNITURE")
 
     # الواجهات تحت المسقط
     ys = [p[1] for w in project.walls for p in (w.start, w.end)]

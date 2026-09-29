@@ -1,0 +1,111 @@
+# مشروع مرجعي: كوخ مزرعة 6.5×10 — غرفتين وصالة (تصميم العميل بتاريخ 2026-09-28)
+# أُدخل من ملف PDF المصمم يدوياً. المقاسات مقاسة من الرسمة (المقياس 1:50) لأن
+# خطوط الأبعاد في الملف الأصلي بدون أرقام — دقة ±2 سم.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الشمال، المدخل جنوب.
+name: farm-cabin-6.5x10
+title: كوخ مزرعة 6.5×10 - غرفتين وصالة
+client: "........"
+meta:
+  location: مزرعة ريفية
+  usage: شخصي واستثماري
+  manager: م. أحمد
+  date: 2026-09-28
+price_per_m2: 1096
+wall_height: 280
+roof: {ridge_axis: y, pitch_deg: 29, overhang: 45}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ---------- الخارجية (عكس عقارب الساعة) ----------
+  - name: جنوب
+    title: الواجهة الجنوبية (الرئيسية)
+    start: [0, 0]
+    end: [643, 0]
+    openings:
+      - {kind: window, code: ش1, offset: 57, width: 120, height: 120, sill: 90}
+      - {kind: door, code: ب1, name: ب1 مدخل, offset: 257, width: 120, height: 210, leaves: 2}
+      - {kind: window, code: ش1, offset: 456, width: 120, height: 120, sill: 90}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [643, 0]
+    end: [643, 986]
+    openings:
+      - {kind: window, code: ش1, offset: 314, width: 120, height: 120, sill: 90}
+      - {kind: window, code: ش2, offset: 494, width: 100, height: 90, sill: 120}
+      - {kind: window, code: ش1, offset: 772, width: 120, height: 120, sill: 90}
+  - name: شمال
+    title: الواجهة الشمالية
+    start: [643, 986]
+    end: [0, 986]
+    openings:
+      - {kind: window, code: ش1, offset: 85, width: 120, height: 120, sill: 90}
+      - {kind: window, code: ش1, offset: 407, width: 120, height: 120, sill: 90}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 986]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, offset: 112, width: 120, height: 120, sill: 90}
+      - {kind: window, code: ش3, offset: 450, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش1, offset: 721, width: 120, height: 120, sill: 90}
+  # ---------- الداخلية ----------
+  - name: د1-جنوب الحمامات
+    exterior: false
+    start: [0, 450]
+    end: [303, 450]
+    openings:
+      - {kind: door, code: ب2, name: ب2 حمام ضيوف, offset: 197, width: 80, height: 210, swing: right}
+  - name: د2-بين الحمامين
+    exterior: false
+    start: [151, 450]
+    end: [151, 643]
+  - name: د3-شرق حمام الضيوف
+    exterior: false
+    start: [303, 450]
+    end: [303, 643]
+  - name: د4-جنوب الغرف
+    exterior: false
+    start: [0, 643]
+    end: [643, 643]
+    openings:
+      - {kind: door, code: ب2, name: ب2 حمام خاص, offset: 36, width: 80, height: 210}
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 297, width: 80, height: 210}
+      - {kind: door, code: ب2, name: ب2 غرفة الأولاد, offset: 386, width: 80, height: 210}
+  - name: د5-بين الغرفتين
+    exterior: false
+    start: [380, 643]
+    end: [380, 986]
+
+rooms:
+  - {name: الصالة والمجلس, rect: [6, 6, 637, 444]}
+  - {name: حمام خاص, rect: [6, 456, 145, 637], wet: true}
+  - {name: حمام ضيوف, rect: [157, 456, 297, 637], wet: true}
+  - {name: ممر, rect: [309, 456, 377, 637], kind: corridor}
+  - {name: مطبخ خدمة, rect: [377, 456, 637, 637]}
+  - {name: غرفة النوم, rect: [6, 649, 374, 980]}
+  - {name: غرفة الأولاد, rect: [386, 649, 637, 980]}
+
+furniture:
+  - {name: سرير 200×220, rect: [96, 761, 297, 980]}
+  - {name: "", rect: [50, 930, 95, 975]}
+  - {name: "", rect: [298, 930, 343, 975]}
+  - {name: دولاب, rect: [121, 654, 292, 710]}
+  - {name: سرير 90×200, rect: [397, 773, 488, 972]}
+  - {name: سرير 90×200, rect: [543, 773, 633, 972]}
+  - {name: دولاب, rect: [479, 654, 634, 710]}
+  - {name: "", rect: [468, 581, 634, 637]}
+  - {name: "", rect: [577, 519, 634, 581]}
+  - {name: ثلاجة, rect: [575, 465, 634, 519]}
+  - {name: طاولة طعام, rect: [327, 294, 487, 384]}
+  - {name: كنب زاوية, rect: [12, 10, 247, 89]}
+  - {name: "", rect: [12, 89, 91, 245]}
+  - {name: طاولة, rect: [137, 125, 207, 194]}
+  - {name: تلفزيون, rect: [610, 85, 634, 235]}
+  - {name: دش, rect: [62, 455, 144, 539], shape: shower}
+  - {name: "", rect: [20, 560, 60, 610], shape: wc}
+  - {name: "", rect: [8, 600, 38, 637], shape: basin}
+  - {name: دش, rect: [157, 556, 243, 637], shape: shower}
+  - {name: "", rect: [170, 470, 210, 520], shape: wc}
+  - {name: "", rect: [260, 520, 297, 580], shape: basin}

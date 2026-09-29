@@ -77,9 +77,9 @@ def pallet_plan(project, rules, walls_members):
     }
 
 
-def row_segments(wall, y0, y1, yb):
-    """المقاطع الأفقية المتصلة في صف تلبيس (مع خصم الفتحات)."""
-    cuts = []
+def row_segments(wall, y0, y1, yb, extra_cuts=()):
+    """المقاطع الأفقية المتصلة في صف تلبيس (مع خصم الفتحات ومناطق الأسمنت بورد)."""
+    cuts = list(extra_cuts)
     for o in wall.openings:
         bot = yb + o.sill if o.kind == "window" else 0
         top = yb + (o.sill + o.height if o.kind == "window" else o.height)
@@ -95,28 +95,39 @@ def row_segments(wall, y0, y1, yb):
     return segs
 
 
+def wet_faces(project, rules):
+    """{(اسم الجدار, الجهة): [(t0, t1), ...]} للوجوه الداخلية لدورات المياه."""
+    from .checks import room_faces
+    out = {}
+    for r in project.rooms:
+        if r.wet:
+            for w, t0, t1, side in room_faces(project, r, rules):
+                out.setdefault((w.name, side), []).append((t0, t1))
+    return out
+
+
 def cladding(project, rules, heights):
     c = rules["cladding"]
     cover, stock = c["effective_cover"], project.cladding_board_length
     t = rules["members"]["stud"]["t"]
     cb = rules["wet_room"]["cement_board"]
-    pieces, sheets, sides = [], 0, 0
+    wet = wet_faces(project, rules)
+    pieces, sheets, faces = [], 0, 0
     for w in project.walls:
         H = heights[w.name]
         rows = math.ceil(round((H + c["cladding_start_offset"]) / cover, 6))
-        faces = ["out", "in"]
-        if w.wet_inner:
-            faces = ["out"]
-            sheets += math.ceil(w.length / cb["w"]) * math.ceil(H / cb["h"])
-        if not w.exterior and w.wet_inner:
-            faces = ["in"]   # جدار داخلي: الوجه الآخر غير المبلل
-        for _ in faces:
-            sides += 1
+        for side in (1, -1):          # الوجهين دائماً (5)
+            cuts = wet.get((w.name, side), [])
+            if w.exterior and side == -1:
+                cuts = []             # الوجه الخارجي خشب دائماً
+            for a, b in cuts:
+                sheets += math.ceil((b - a) / cb["w"]) * math.ceil(H / cb["h"])
+            faces += 1
             for r in range(rows):
                 y0 = r * cover - c["cladding_start_offset"]
-                pieces += row_segments(w, y0, y0 + cover, t)
+                pieces += row_segments(w, y0, y0 + cover, t, cuts)
     bins = pack(split_long(pieces, stock), stock, 0)
-    return {"boards": len(bins), "board_length": stock, "faces": sides,
+    return {"boards": len(bins), "board_length": stock, "faces": faces,
             "total_run_m": round(sum(pieces) / 100, 1), "cement_board_sheets": sheets}
 
 
@@ -130,9 +141,7 @@ def insulation(project, rules, heights):
 
 
 def build_quantities(project, rules, heights):
-    members = {}
-    for i, w in enumerate(project.walls):
-        members[w.name] = frame_wall(w, heights[w.name], rules)
+    members = {w.name: frame_wall(w, heights[w.name], rules) for w in project.walls}
     return members, {
         "pallets": pallet_plan(project, rules, members),
         "cladding": cladding(project, rules, heights),

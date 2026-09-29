@@ -49,3 +49,14 @@ def test_pallet_plan_one_method1_pallet_per_rafter():
     assert pp["method1_pallets"]["count"] == pp["roof"]["rafter_count"] == 22
     assert pp["total_pallets"] == pp["method1_pallets"]["count"] + pp["method2_pallets"]["count"] \
         + pp["method2_long_pallets"]["count"]
+
+
+def test_reference_project_review_flags_known_errors(tmp_path):
+    from watad.build import build
+    files, q, hi, issues = build("projects/2026-09-28_farm-cabin-6.5x10.yaml", tmp_path)
+    titles = " ".join(i["title"] for i in issues)
+    assert "حمام ضيوف بدون جدار خارجي" in titles
+    assert "عرض ممر" in titles
+    assert "ب2 غرفة النوم" in titles
+    assert q["pallets"]["roof"]["stock_length"] == 480
+    assert all(f.exists() for f in files.values())
