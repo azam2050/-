@@ -1,0 +1,56 @@
+<title>كوخ غرفتين وتراس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=Reem+Kufi:wght@600&display=swap">
+<style>
+/* Layout: عمود واحد، رأس فيه زر تحميل PDF، ثم صفحات المخطط بعرض كامل تُكبَّر بالضغط */
+:root{
+  --bg:#EEF1F2; --surface:#FFFFFF; --fg:#23262B; --muted:#5E6670; --line:#D3DADF; --accent:#6B4226; --accent-fg:#FFFFFF;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181B;--surface:#1E2226;--fg:#E9E6E1;--muted:#A3A9B0;--line:#343A40;--accent:#D49A62;--accent-fg:#15181B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181B;--surface:#1E2226;--fg:#E9E6E1;--muted:#A3A9B0;--line:#343A40;--accent:#D49A62;--accent-fg:#15181B;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);direction:rtl;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:20px 60px}
+h1{font-family:var(--f-display);font-size:clamp(24px,5vw,34px);margin:0 0 4px;text-wrap:balance}
+.meta{color:var(--muted);font-size:14px;margin:0 0 14px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:0;list-style:none}
+.facts li{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:13px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px 20px;background:var(--accent);color:var(--accent-fg);cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+#st{font-size:13px;color:var(--muted)}
+figure{margin:0 0 22px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+figure img{display:block;width:100%;height:auto;max-width:100%;background:#fff;cursor:zoom-in}
+figcaption{padding:8px 12px;font-size:14px;font-weight:600}
+figcaption span{color:var(--muted);font-weight:400}
+</style>
+
+<main class="wrap">
+  <h1>كوخ غرفتين وتراس مسقوف 7.80 × 7.80</h1>
+  <p class="meta">مصنع وتد الأخشاب · تصميم حسب صورة العميل · 2026-09-29</p>
+  <ul class="facts">
+    <li>60.84 م² + تراس 21.6 م²</li><li>ماستر بحمام خاص</li><li>غرفة ثانية</li><li>حمام مشترك</li><li>صالة ومطبخ خدمة</li>
+  </ul>
+  <div class="bar">
+    <button class="btn" id="dl" type="button">تحميل ملف PDF</button>
+    <span id="st" role="status">اضغط أي صفحة لتكبيرها</span>
+  </div>
+  <div id="pages"></div>
+</main>
+
+<script>
+const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات وبيانات المشروع"],["7","المنظور ثلاثي الأبعاد والمواد"]];
+document.getElementById("pages").innerHTML=PAGES.map(([n,t])=>`<figure><a href="pages/page-${n}.jpg" target="_blank" rel="noopener"><img src="pages/page-${n}.jpg" alt="${t}" loading="${n==="1"?"eager":"lazy"}"></a><figcaption>صفحة ${n} <span>· ${t}</span></figcaption></figure>`).join("");
+const st=document.getElementById("st");
+document.getElementById("dl").addEventListener("click",async()=>{
+  let dl=null;try{dl=await window.claude?.use?.("downloads")}catch(_){}
+  if(!dl){st.textContent="التحميل غير متاح في هذا العرض — افتح الصفحات بالضغط عليها";return}
+  try{st.textContent="جاري التجهيز…";const b=await (await fetch("cabin-2br-terrace.pdf")).blob();
+    const r=await dl.save({filename:"كوخ-غرفتين-وتراس.pdf",data:b});
+    st.textContent=r.status==="saved"?"تم الحفظ ✓":"تم الإرسال ✓"}
+  catch(e){st.textContent=e?.code==="cancelled"||e?.code==="declined"?"تم الإلغاء":"تعذر التحميل — جرّب مرة ثانية"}
+});
+</script>

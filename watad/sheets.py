@@ -18,6 +18,7 @@ from .model import outer_bbox, wall_thickness
 from .roof import rafter_positions, roof_geometry
 
 plt.rcParams["font.family"] = "DejaVu Sans"
+plt.rcParams["pdf.fonttype"] = 42      # خطوط TrueType مضمّنة — تفتح في كل برامج PDF والجوالات
 plt.rcParams["hatch.linewidth"] = 0.5
 A3 = (16.54, 11.69)
 BROWN = "#5a3a22"
