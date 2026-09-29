@@ -386,6 +386,95 @@ def t07(M):
     M.window(("y", 0, -1), 330, 470, 430, 600)
 
 
+def _gable_truss(M, x0, x1, y, zb, pitch, panels=2):
+    """جملون مكشوف زخرفي: جسر أفقي + قوائم + تقاطعات X (مثل فيديو 3)."""
+    w = Wall("tr", (x0, y), (x1, y))
+    L = x1 - x0
+    rise = L / 2 * math.tan(math.radians(pitch))
+    s0, s1 = -8, 0
+    M.S.wbox("trim", w, 0, L, s0, s1, zb, zb + 15)
+    xs = [L * i / (2 * panels) for i in range(2 * panels + 1)]
+    ztop = lambda t: zb + 15 + (min(t, L - t) / (L / 2)) * (rise - 15)  # noqa: E731
+    for t in xs[1:-1]:
+        M.S.wbox("trim", w, t - 5, t + 5, s0, s1, zb + 15, ztop(t))
+    for a, b in zip(xs[1:-1], xs[2:-1]):
+        if b - a > 40:
+            M.S.wdiag("trim", w, a + 5, zb + 15, b - 5, ztop(b) - 8, 8, s0, s1)
+            M.S.wdiag("trim", w, a + 5, ztop(a) - 8, b - 5, zb + 15, 8, s0 - 1, s1 - 1)
+
+
+@roof("R12", "جملونات متتالية بواجهة زجاج وجملون مكشوف", "دور",
+      "وحدات جملون متدرجة، جلسة أمامية تحت الجملون، تربيعات X زخرفية (فيديو المشروع 3)", 3, view=(16, -62))
+def r12(M):
+    M.base(0, -170, 1540, 900)
+    for i, (x0, y0) in enumerate(((0, 0), (640, 120), (1140, 220))):
+        wdt = 620 if i == 0 else 480
+        M.block(x0, y0, x0 + wdt, 850, 0, 280)
+        front = y0 - (170 if i == 0 else 60)
+        M.profile_roof("y", front, 850, M.gable_prof(x0, x0 + wdt, 280, 28, 35), 0, z_wall_top=280)
+        if i == 0:
+            for x in (x0 + 6, x0 + wdt - 6):
+                M.post(x, front + 6, 0, 280)
+            _gable_truss(M, x0, x0 + wdt, front + 8, 280, 28)
+            M.S.box("slab", x0, front, -20, x0 + wdt, y0, 2)
+        g = Wall("g", (x0, y0), (x0 + wdt, y0))
+        rise = wdt / 2 * math.tan(math.radians(28))
+        M.S.wprism("glass", g, [(40, 292), (wdt - 40, 292), (wdt / 2, 280 + rise - 20)], -3, -1)
+        n = 3 if i == 0 else 2
+        for k in range(n):
+            a = 30 + k * (wdt - 60) / n
+            b = a + (wdt - 60) / n - 20
+            if i == 0 and k == 1:
+                M.window(("y", y0, -1), a + 30, b - 30, 0, 230, door=True)
+            else:
+                M.window(("y", y0, -1), a, b, 40, 240)
+
+
+@roof("R13", "جملون عريض بميل خفيف وزجاج يتبع الميل", "دور",
+      "واجهة زجاج طويلة + شبابيك مائلة في مثلث الجملون + قاعدة بلوك مرتفعة (فيديو المشروع 6)", 2, view=(14, -60))
+def r13(M):
+    M.S.box("slab", -10, -10, -45, 1210, 810, 0)
+    M.gable_block("y", 0, 800, 0, 1200, 300, 16, ov=45, ovu=45)
+    M.S.box("trim", 0, -4, 255, 1200, 0, 265)
+    rise = 600 * math.tan(math.radians(16))
+    g = Wall("g", (0, 0), (1200, 0))
+    for a in range(60, 1140, 150):
+        b = a + 130
+        zt = lambda t: 300 + (min(t, 1200 - t) / 600) * rise - 22  # noqa: E731
+        pts = [(a, 290), (b, 290), (b, zt(b)), (a, zt(a))]
+        if min(zt(a), zt(b)) - 290 > 25:
+            M.S.wprism("frame", g, [(a - 5, 285), (b + 5, 285), (b + 5, zt(b) + 5), (a - 5, zt(a) + 5)], -2, 0)
+            M.S.wprism("glass", g, pts, -3.5, -2)
+    for k, a in enumerate(range(40, 1160, 185)):
+        if k == 3:
+            M.window(("y", 0, -1), a + 20, a + 150, 0, 240, door=True)
+        else:
+            M.window(("y", 0, -1), a, a + 165, 30, 240)
+
+
+@roof("T08", "دورين + بلكونة معلقة ومظلة فوق المدخل", "دورين",
+      "بلكونة على كوابيل بدربزين رأسي، مظلة مائلة فوق الباب، إضاءة في الرفرف (فيديو المشروع 5)", 3)
+def t08(M):
+    M.base(0, 0, 700, 600)
+    top = 2 * FLOOR + SLAB2
+    M.gable_block("y", 0, 600, 0, 700, top, 42, ov=60, ovu=50)
+    z2 = FLOOR + SLAB2
+    M.S.box("wood", 120, -140, z2 - SLAB2, 580, 0, z2)
+    for sd, p0, p1 in (("S", (120, -140), (580, -140)), ("E", (580, -140), (580, 0)), ("W", (120, 0), (120, -140))):
+        M.railing(p0, p1, z2, upper=True, name="vertical_balusters")
+    for x in (140, 560):
+        g = Wall("k", (x, 0), (x, -140))
+        M.S.wdiag("trim", g, 0, z2 - 90, 130, z2 - SLAB2, 10, -5, 5)
+    t = math.tan(math.radians(25))
+    M.S.hexa("roof_tiles", [(200, 0, 250), (500, 0, 250), (500, -110, 250 - 110 * t), (200, -110, 250 - 110 * t),
+                            (200, 0, 258), (500, 0, 258), (500, -110, 258 - 110 * t), (200, -110, 258 - 110 * t)])
+    M.window(("y", 0, -1), 285, 415, 0, 225, door=True)
+    M.window(("y", 0, -1), 300, 400, z2, z2 + 215, door=True)
+    M.window(("y", 0, -1), 300, 400, z2 + 260, z2 + 330)
+    M.window(("x", 700, 1), 200, 320, 90, 210)
+    M.window(("x", 700, 1), 200, 320, z2 + 90, z2 + 210)
+
+
 # ======================================================== الإخراج
 def _page(fig_title, items, draw):
     import matplotlib.pyplot as plt

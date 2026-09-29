@@ -163,7 +163,9 @@ def draw_openings_plan(ax, P, rules):
         nx, ny = w.n
         for o in w.openings:
             a, b = o.offset, o.offset + o.width
-            if o.kind == "window":
+            if o.kind == "door" and o.leaves == 0:
+                continue
+            if o.kind == "window" or o.style in ("sliding", "fixed"):
                 for s in (-half, 0, half):
                     p, q = w.point(a, s), w.point(b, s)
                     ax.plot([p[0], q[0]], [p[1], q[1]], color=C_WIN, lw=0.9 if s else 0.6)
@@ -222,11 +224,31 @@ def plan_sheet(ctx):
     for r in P.rooms:
         if r.wet:
             ax.add_patch(Rectangle((r.rect[0], r.rect[1]), r.w, r.h, fc="#eef6ff", ec="none"))
+    for d in P.decks:      # التراس / الدكة
+        dx0, dy0, dx1, dy1 = d.rect
+        ax.add_patch(Rectangle((dx0, dy0), dx1 - dx0, dy1 - dy0, fc="#f6ecdf", ec="#8b5a2b", lw=0.8))
+        yy = dy0 + 14
+        while yy < dy1:
+            ax.plot([dx0, dx1], [yy, yy], color="#d9c2a5", lw=0.4)
+            yy += 14
+        ax.text((dx0 + dx1) / 2, (dy0 + dy1) / 2, f"{d.name}  {(dx1 - dx0) / 100:.2f} × {(dy1 - dy0) / 100:.2f} م",
+                ha="center", va="center", fontsize=10, color="#5a3a22")
+        if d.stairs and d.stairs.get("side") == "S":
+            n = max(1, math.ceil(d.height / 15))
+            a, b = dx0 + d.stairs["offset"], dx0 + d.stairs["offset"] + d.stairs["width"]
+            for k in range(n):
+                ax.add_patch(Rectangle((a, dy0 - 30 * (k + 1)), b - a, 30, fc="white", ec="#8b5a2b", lw=0.6))
+            ax.text((a + b) / 2, dy0 - 30 * n - 12, f"{n} درجات × {d.height / n:.0f} سم", ha="center",
+                    va="top", fontsize=8)
+            y0 = min(y0, dy0 - 30 * n - 30)
+        x0, x1, y0 = min(x0, dx0), max(x1, dx1), min(y0, dy0)
+    for pt in P.posts:
+        ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k", lw=0.6))
     _draw_shape(ax, wall_shapes(P, rules), fc="white", ec="k", lw=0.9, hatch="////")
     draw_openings_plan(ax, P, rules)
     draw_furniture(ax, P)
     for r in P.rooms:
-        cx, cy = (r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2
+        cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
         big = r.area_m2 > 4
         rot = 90 if r.h > 2 * r.w and r.w < 100 else 0
         ax.text(cx, cy + (8 if big else 0), r.name, ha="center", va="bottom", fontsize=12 if big else 8,
@@ -271,9 +293,13 @@ def elevation(ax, ctx, w):
     cover = rules["cladding"]["effective_cover"]
     ux, uy = w.u
     gable_end = (P.roof.ridge_axis == "y") == (abs(uy) < 1e-6)
+    sh = P.slab_height
+    # امتداد السقف على جانب الجملون (تراس مسقوف) يظهر في واجهات الرفرف
+    along = (w.start[1], w.end[1]) if P.roof.ridge_axis == "y" else (w.start[0], w.end[0])
+    ext_l, ext_r = (P.roof.ext_start, P.roof.ext_end) if along[0] <= along[1] else (P.roof.ext_end, P.roof.ext_start)
 
-    ax.plot([-170, L + 170], [-20, -20], color="k", lw=1)
-    ax.add_patch(Rectangle((-10, -20), L + 20, 20, fc="#f2f2f2", ec="#888", lw=0.6))
+    ax.plot([-170 - ext_l, L + 170 + ext_r], [-sh, -sh], color="k", lw=1)
+    ax.add_patch(Rectangle((-10, -sh), L + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
     ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
     y = cover
     while y < H - 1:
@@ -294,14 +320,52 @@ def elevation(ax, ctx, w):
         roof_top = top + depth
     else:
         e = ov * math.tan(p)
-        ax.add_patch(Rectangle((-ov, H - e), L + 2 * ov, rise + e + depth, fc="#fff3e0", ec=C_ROOF,
+        x_l, x_r = -ov - ext_l, L + ov + ext_r
+        ax.add_patch(Rectangle((x_l, H - e), x_r - x_l, rise + e + depth, fc="#fff3e0", ec=C_ROOF,
                                lw=0.9))
         yy = H - e + 12
         while yy < top + depth - 5:
-            ax.plot([-ov, L + ov], [yy, yy], color=C_ROOF, lw=0.3)
+            ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
             yy += 12
-        ax.plot([-ov, L + ov], [H - e + depth, H - e + depth], color=C_ROOF, lw=0.7)
+        ax.plot([x_l, x_r], [H - e + depth, H - e + depth], color=C_ROOF, lw=0.7)
+        for pt in P.posts:   # أعمدة التراس الظاهرة في هذي الواجهة
+            px, py = pt["at"]
+            tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
+            if tpos < -5 or tpos > L + 5:
+                ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
         roof_top = top + depth
+    # التراس والأعمدة أمام هذي الواجهة
+    nx_, ny_ = w.n
+    front_posts = []
+    for pt in P.posts:
+        px, py = pt["at"]
+        sd = (px - w.start[0]) * nx_ + (py - w.start[1]) * ny_
+        tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
+        if sd < -half - 20 and -20 <= tpos <= L + 20:
+            front_posts.append(tpos)
+    for d in P.decks:
+        dx0, dy0, dx1, dy1 = d.rect
+        cs = [((cx - w.start[0]) * nx_ + (cy - w.start[1]) * ny_,
+               (cx - w.start[0]) * ux + (cy - w.start[1]) * uy + half)
+              for cx in (dx0, dx1) for cy in (dy0, dy1)]
+        if min(c[0] for c in cs) < -half - 20:
+            t0, t1 = min(c[1] for c in cs), max(c[1] for c in cs)
+            top_d = d.height - sh
+            ax.add_patch(Rectangle((t0, -sh), t1 - t0, sh + top_d, fc="#e9d9c4", ec="#8b5a2b", lw=0.7))
+            if d.stairs and gable_end:
+                n = max(1, math.ceil(d.height / 15))
+                a = t0 + d.stairs["offset"]
+                for k in range(1, n):
+                    ax.add_patch(Rectangle((a, -sh), d.stairs["width"], d.height * k / n, fill=False,
+                                           ec="#8b5a2b", lw=0.6))
+            rh = 95
+            for tt in (t0, t1):
+                ax.add_patch(Rectangle((tt - 5 if tt == t1 else tt, top_d), 5, rh, fc="#8b5a2b", ec="none"))
+    for tp_ in front_posts:
+        ax.add_patch(Rectangle((tp_ - 8, 0), 16, H, fc="#c9a27c", ec="k", lw=0.7))
+    if len(front_posts) >= 2:
+        ax.add_patch(Rectangle((min(front_posts) - 8, H - 22), max(front_posts) - min(front_posts) + 16, 22,
+                               fc="#c9a27c", ec="k", lw=0.7))
     # الفتحات
     for o in w.openings:
         ex = o.offset + half
@@ -310,9 +374,18 @@ def elevation(ax, ctx, w):
         ax.add_patch(Rectangle((ex, b), o.width, o.height, fc="white", ec=col, lw=1))
         ax.add_patch(Rectangle((ex + 4, b + 4), o.width - 8, o.height - (8 if o.kind == "window" else 4),
                                fill=False, ec=col, lw=0.6))
-        if o.kind == "window" and o.width >= 90:
+        if o.kind == "window" and o.width >= 90 and not o.style:
             ax.plot([ex + o.width / 2] * 2, [b + 4, b + o.height - 4], color=col, lw=0.6)
-        if o.kind == "door":
+        if o.transom:
+            ax.plot([ex, ex + o.width], [o.transom] * 2, color=col, lw=0.8)
+        if o.kind == "door" and o.style in ("sliding", "fixed"):
+            n = max(2, round(o.width / 100))
+            for k in range(1, n):
+                ax.plot([ex + o.width * k / n] * 2, [0, o.height], color=col, lw=0.7)
+            if o.style == "sliding":
+                ax.annotate("", (ex + o.width * 0.35, 100), (ex + o.width * 0.15, 100),
+                            arrowprops=dict(arrowstyle="->", color=col, lw=0.6))
+        elif o.kind == "door" and o.leaves:
             n = o.leaves
             lw_ = o.width / n
             for k in range(n):
@@ -324,22 +397,22 @@ def elevation(ax, ctx, w):
                 color=col)
     # المناسيب
     lx = -110
-    level(ax, lx, -20, -0.20, "منسوب الأرض", below=True)
-    level(ax, lx, 0, 0.0001, "وجه الصبة")
-    level(ax, lx, H, H / 100, "أعلى الجدار")
-    level(ax, lx, top, top / 100, "قمة الجملون")
+    level(ax, lx - ext_l, -sh, -sh / 100, "منسوب الأرض", below=True)
+    level(ax, lx - ext_l, 0, 0.0001, "وجه الصبة")
+    level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
+    level(ax, lx - ext_l, top, top / 100, "قمة الجملون")
     # الأبعاد
     ts = [0] + sorted(t + half for o in w.openings for t in (o.offset, o.offset + o.width)) + [L]
-    chain(ax, [(t, -20) for t in ts], -35)
-    dim(ax, (0, -20), (L, -20), -75, fs=8)
+    chain(ax, [(t, -sh) for t in ts], -35)
+    dim(ax, (0, -sh), (L, -sh), -75, fs=8)
     dim(ax, (L, 0), (L, H), -(ov + 50))
     dim(ax, (L, H), (L, top), -(ov + 50))
-    dim(ax, (L, -20), (L, top), -(ov + 95), fs=8)
+    dim(ax, (L, -sh), (L, top), -(ov + 95 + ext_r), fs=8)
     for o in w.openings:
         if o.kind == "window":
             dim(ax, (o.offset + half, 0), (o.offset + half, o.sill), 12, fs=6)
-    ax.set_xlim(-170, L + ov + 140)
-    ax.set_ylim(-140, roof_top + 30)
+    ax.set_xlim(-170 - ext_l, L + ov + 140 + ext_r)
+    ax.set_ylim(-120 - sh, roof_top + 30)
 
 
 def elevation_sheets(ctx):
@@ -369,8 +442,12 @@ def roof_sheet(ctx):
     fig = new_page()
     ax = drawing_ax(fig, [0.05, 0.1, 0.42, 0.8])
     title(ax, "مسقط السقف (جملون)", f"رفرف {ov:.0f} سم من كل جهة  |  مقياس 1:50")
-    ax.add_patch(Rectangle((x0 - ov, y0 - ov), x1 - x0 + 2 * ov, y1 - y0 + 2 * ov, fc="#fff8ee",
-                           ec=C_ROOF, lw=1))
+    es, ee = P.roof.ext_start, P.roof.ext_end
+    if P.roof.ridge_axis == "y":
+        rx0, ry0, rx1, ry1 = x0 - ov, y0 - ov - es, x1 + ov, y1 + ov + ee
+    else:
+        rx0, ry0, rx1, ry1 = x0 - ov - es, y0 - ov, x1 + ov + ee, y1 + ov
+    ax.add_patch(Rectangle((rx0, ry0), rx1 - rx0, ry1 - ry0, fc="#fff8ee", ec=C_ROOF, lw=1))
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
     ridge_y = P.roof.ridge_axis == "y"
     for pos in rafter_positions(P, rules):
@@ -396,11 +473,13 @@ def roof_sheet(ctx):
             ax.text(cx + 15, cy + s * (y1 - y0) * 0.22, f"ميل {P.roof.pitch_deg}°", fontsize=9, color="red")
     ax.text(cx, y0 + 30, f"مدادات 5×15 كل 60 سم — {R['rafter_count']} مداد", ha="center", fontsize=9,
             bbox=dict(fc="white", ec="none"))
-    dim(ax, (x0 - ov, y1 + ov), (x1 + ov, y1 + ov), 40)
-    dim(ax, (x0, y1 + ov), (x1, y1 + ov), 15, fs=6)
-    dim(ax, (x1 + ov, y1 + ov), (x1 + ov, y0 - ov), 40)
-    ax.set_xlim(x0 - ov - 60, x1 + ov + 90)
-    ax.set_ylim(y0 - ov - 40, y1 + ov + 90)
+    dim(ax, (rx0, ry1), (rx1, ry1), 40)
+    dim(ax, (x0, ry1), (x1, ry1), 15, fs=6)
+    dim(ax, (rx1, ry1), (rx1, ry0), 40)
+    for pt in P.posts:
+        ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
+    ax.set_xlim(rx0 - 60, rx1 + 90)
+    ax.set_ylim(ry0 - 40, ry1 + 90)
 
     # القطاع العرضي عمودي على الجملون، يمر بأكبر غرفة
     ax2 = drawing_ax(fig, [0.52, 0.33, 0.44, 0.52])
@@ -422,8 +501,9 @@ def roof_sheet(ctx):
     p = g["pitch"]
     rise = g["rise"]
     depth = rules["members"]["rafter"]["w"] / math.cos(p)
-    ax2.plot([-120, S + 120], [-20, -20], color="k", lw=1)
-    ax2.add_patch(Rectangle((-10, -20), S + 20, 20, fc="#f2f2f2", ec="#888", lw=0.6))
+    sh = P.slab_height
+    ax2.plot([-120, S + 120], [-sh, -sh], color="k", lw=1)
+    ax2.add_patch(Rectangle((-10, -sh), S + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
     for c in walls_cut:
         ax2.add_patch(Rectangle((c - half, 0), 2 * half, H, fc="white", ec="k", lw=0.8, hatch="////"))
     e = ov * math.tan(p)
@@ -436,12 +516,12 @@ def roof_sheet(ctx):
     level(ax2, -80, 0, 0.0001, "وجه الصبة")
     level(ax2, -80, H, H / 100, "أعلى الجدار")
     level(ax2, -80, H + rise, (H + rise) / 100, "قمة الجملون")
-    dim(ax2, (0, -20), (S, -20), -35)
-    dim(ax2, (-ov, -20), (S + ov, -20), -75, fs=6)
+    dim(ax2, (0, -sh), (S, -sh), -35)
+    dim(ax2, (-ov, -sh), (S + ov, -sh), -75, fs=6)
     dim(ax2, (S + ov, 0), (S + ov, H), -40)
     dim(ax2, (S + ov, H), (S + ov, H + rise), -40)
     ax2.set_xlim(-140, S + ov + 90)
-    ax2.set_ylim(-120, H + rise + depth + 40)
+    ax2.set_ylim(-100 - sh, H + rise + depth + 40)
 
     # تفصيلة الخلعة 1:5
     ax3 = drawing_ax(fig, [0.60, 0.08, 0.25, 0.22])

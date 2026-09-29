@@ -21,7 +21,7 @@ def gable_rafters(project, rules):
     g = roof_geometry(project, rules)
     r = project.roof
     spacing = rules["roof"]["rafter_spacing"]
-    roof_len = g["ridge_len"] + 2 * r.overhang
+    roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1
     length = (g["span"] / 2 + r.overhang) / math.cos(g["pitch"])
     stock = next((s for s in sorted(rules["roof"]["rafter_lengths"]) if s >= length), None)
@@ -46,6 +46,6 @@ def rafter_positions(project, rules):
     g = roof_geometry(project, rules)
     r = project.roof
     spacing = rules["roof"]["rafter_spacing"]
-    lo = (g["bbox"][0] if r.ridge_axis == "x" else g["bbox"][1]) - r.overhang
-    n = math.floor((g["ridge_len"] + 2 * r.overhang) / spacing) + 1
+    lo = (g["bbox"][0] if r.ridge_axis == "x" else g["bbox"][1]) - r.overhang - r.ext_start
+    n = math.floor((g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end) / spacing) + 1
     return [lo + i * spacing for i in range(n)]

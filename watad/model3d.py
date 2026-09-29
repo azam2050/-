@@ -132,7 +132,8 @@ def build_scene(project, rules, style, heights):
     S.material("door", style["frame"])
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(project, rules)
-    S.box("slab", x0 - 10, y0 - 10, -20, x1 + 10, y1 + 10, 0)
+    sh = project.slab_height
+    S.box("slab", x0 - 10, y0 - 10, -sh, x1 + 10, y1 + 10, 0)
 
     g = roof_geometry(project, rules)
     ridge_y = project.roof.ridge_axis == "y"
@@ -177,7 +178,7 @@ def build_scene(project, rules, style, heights):
         a_lo, a_hi, b_lo, b_hi = y0, y1, x0, x1
         to_xy = lambda a, b: (b, a)  # noqa: E731
     ac = (a_lo + a_hi) / 2
-    B0, B1 = b_lo - ov, b_hi + ov
+    B0, B1 = b_lo - ov - project.roof.ext_start, b_hi + ov + project.roof.ext_end
     zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
     kv = 1 / math.cos(p)
 
@@ -211,7 +212,22 @@ def build_scene(project, rules, style, heights):
             slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
     for d in project.decks:
-        _deck(S, d, style, x0, y0, x1, y1)
+        _deck(S, d, style, x0, y0, x1, y1, sh)
+    # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
+    pz = []
+    for pt in project.posts:
+        px, py = pt["at"]
+        a = px if ridge_y else py
+        side = -1 if a <= ac else 1
+        ztop = zb(a, side)
+        ps = pt.get("size", 15)
+        S.box("trim", px - ps / 2, py - ps / 2, pt.get("base", 0), px + ps / 2, py + ps / 2, ztop)
+        pz.append((px, py, ztop))
+    if len(pz) >= 2 and project.roof.ext_start:
+        b_edge = sum((py if ridge_y else px) for px, py, _ in pz) / len(pz)
+        a0, a1 = a_lo, a_hi
+        c0, c1 = to_xy(a0, b_edge - 8), to_xy(a1, b_edge + 8)
+        S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), H - 22, max(c0[0], c1[0]), max(c0[1], c1[1]), H)
     return S
 
 
@@ -229,6 +245,8 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
         if grid == "grid" and o.height >= 90:
             m = (z0 + z1) / 2
             S.wbox("frame", w, a, b, -3, 3, m - 2.5, m + 2.5)
+        if getattr(o, "transom", 0):
+            S.wbox("frame", w, a, b, -3, 3, o.transom - 3, o.transom + 3)
         tr = style["trims"]["window_trim"]
         if exterior:
             for (ta, tb, za, zb_) in ((a - tr["w"], a, z0 - tr["w"], z1 + tr["w"]),
@@ -238,28 +256,41 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
     else:
         for (ta, tb, za, zb_) in ((a, a + fw, 0, z1), (b - fw, b, 0, z1), (a, b, z1 - fw, z1)):
             S.wbox("frame", w, ta, tb, out - 2, half, za, zb_)
-        n = o.leaves
-        lw = (o.width - 2 * fw) / n
-        for k in range(n):
-            la, lb = a + fw + k * lw, a + fw + (k + 1) * lw
-            if style["door_style"] == "french" and exterior:
-                S.wbox("glass", w, la + 8, lb - 8, -1, 1, 10, z1 - fw - 8)
-                for (ta, tb, za, zb_) in ((la, la + 8, 0, z1 - fw), (lb - 8, lb, 0, z1 - fw),
-                                          (la, lb, 0, 10), (la, lb, z1 - fw - 8, z1 - fw)):
-                    S.wbox("door", w, ta, tb, -2.5, 2.5, za, zb_)
-                for zz in np.linspace(10, z1 - fw - 8, 5)[1:-1]:
-                    S.wbox("door", w, la + 8, lb - 8, -1.5, 1.5, zz - 1.5, zz + 1.5)
-                mm = (la + lb) / 2
-                S.wbox("door", w, mm - 1.5, mm + 1.5, -1.5, 1.5, 10, z1 - fw - 8)
-            else:
-                S.wbox("door", w, la, lb, -2, 2, 0, z1 - fw)
+        if o.leaves == 0:
+            return
+        if getattr(o, "style", "") in ("sliding", "fixed"):
+            S.wbox("glass", w, a + fw, b - fw, -1, 1, 0, z1 - fw)
+            n = max(2, round(o.width / 100))
+            for k in range(1, n):
+                t = a + (b - a) * k / n
+                S.wbox("frame", w, t - 3, t + 3, -3, 3, 0, z1)
+            S.wbox("frame", w, a, b, -3, 3, 0, 5)
+        else:
+            n = o.leaves
+            lw = (o.width - 2 * fw) / n
+            for k in range(n):
+                la, lb = a + fw + k * lw, a + fw + (k + 1) * lw
+                if style["door_style"] == "french" and exterior:
+                    S.wbox("glass", w, la + 8, lb - 8, -1, 1, 10, z1 - fw - 8)
+                    for (ta, tb, za, zb_) in ((la, la + 8, 0, z1 - fw), (lb - 8, lb, 0, z1 - fw),
+                                              (la, lb, 0, 10), (la, lb, z1 - fw - 8, z1 - fw)):
+                        S.wbox("door", w, ta, tb, -2.5, 2.5, za, zb_)
+                    for zz in np.linspace(10, z1 - fw - 8, 5)[1:-1]:
+                        S.wbox("door", w, la + 8, lb - 8, -1.5, 1.5, zz - 1.5, zz + 1.5)
+                    mm = (la + lb) / 2
+                    S.wbox("door", w, mm - 1.5, mm + 1.5, -1.5, 1.5, 10, z1 - fw - 8)
+                else:
+                    S.wbox("door", w, la, lb, -2, 2, 0, z1 - fw)
+    if getattr(o, "transom", 0):
+        zt = o.transom
+        S.wbox("frame", w, a, b, out - 2, half, zt - 3, zt + 3)
 
 
 # ---------------------------------------------------------------- الدكة والدربزين
-def _deck(S, d, style, bx0, by0, bx1, by1):
+def _deck(S, d, style, bx0, by0, bx1, by1, sh=20):
     x0, y0, x1, y1 = d.rect
-    top = d.height - 20
-    S.box("wood", x0, y0, -20, x1, y1, top)
+    top = d.height - sh
+    S.box("wood", x0, y0, -sh, x1, y1, top)
     spec_name = d.railing_style or style["railing"]
     import yaml
     from .style import PRESETS
@@ -283,7 +314,7 @@ def _deck(S, d, style, bx0, by0, bx1, by1):
         rise = d.height / n
         a, b = d.stairs["offset"], d.stairs["offset"] + d.stairs["width"]
         for k in range(1, n):
-            S.wbox("wood", w, a, b, -28 * (n - k), 0, -20, -20 + rise * k)
+            S.wbox("wood", w, a, b, -30 * (n - k), 0, -sh, -sh + rise * k)
 
 
 def _clip_line(t0, z0, dt, dz, ta, tb, za, zb):

@@ -1,0 +1,144 @@
+# عميل: كوخ غرفتين (ماستر + غرفة) + دورة مياه مشتركة + تراس خارجي مسقوف
+# المرجع: صورة العميل — جملون أمامي، تراس مسقوف بامتداد السقف على أعمدة، واجهة زجاج كاملة
+# مع شريط علوي، دربزين ألواح أفقية، درج عريض، خشب غامق وقرميد داكن.
+#
+# منطق التصميم (أقل مساحة):
+#  - مستطيل 7.80 × 7.80 م = 13 × 60 سم في الاتجاهين (شبكة الأعمدة بدون هدر)
+#  - صف أمامي: صالة + مطبخ خدمة مفتوح على التراس (7.56 × 3.30)
+#  - صف خلفي: ماستر (يسار) | نواة مبللة + ممر 1.20 (وسط) | غرفة 2 (يمين)
+#  - الحمامين متلاصقين على جدار واحد وعلى الجدار الخلفي الخارجي → صبة مفرغة واحدة ومخرج سباكة واحد
+#  - لا يوجد ممر ضائع: الصالة توزع مباشرة على الماستر والممر القصير
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الشمال (الخلف)، التراس جنوب.
+name: cabin-2br-terrace
+title: كوخ غرفتين وتراس مسقوف 7.8×7.8
+client: "عميل — تصميم حسب الصورة"
+meta:
+  location: "—"
+  usage: استراحة / استجمام
+  manager: "—"
+  date: 2026-09-29
+style: {preset: walnut_black, railing: B04, window_grid: none}
+wall_height: 280
+slab_height: 45            # 3 درجات × 15 سم (دكة مرتفعة مثل الصورة) — يحتاج موافقة المصنع
+roof: {ridge_axis: y, pitch_deg: 25, overhang: 40, ext_start: 240}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ---------- الخارجية ----------
+  - name: جنوب
+    title: الواجهة الأمامية (التراس)
+    start: [0, 0]
+    end: [768, 0]
+    openings:
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 60, width: 140, height: 225, sill: 40, style: fixed, transom: 215}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج, offset: 234, width: 300, height: 265, style: sliding, leaves: 3, transom: 215}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 568, width: 140, height: 225, sill: 40, style: fixed, transom: 215}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [768, 0]
+    end: [768, 768]
+    openings:
+      - {kind: window, code: ش2, name: ش2 مطبخ, offset: 150, width: 100, height: 100, sill: 110}
+      - {kind: window, code: ش1, name: ش1 غرفة 2, offset: 430, width: 100, height: 110, sill: 100}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [768, 768]
+    end: [0, 768]
+    openings:
+      - {kind: window, code: ش1, name: ش1 غرفة 2, offset: 88, width: 100, height: 110, sill: 100}
+      - {kind: window, code: ش3, name: ش3 حمام مشترك, offset: 300, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش3, name: ش3 حمام ماستر, offset: 428, width: 60, height: 60, sill: 150}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 768]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 ماستر, offset: 72, width: 100, height: 110, sill: 100}
+      - {kind: window, code: ش4, name: ش4 شريطي فوق السرير, offset: 188, width: 160, height: 45, sill: 165}
+  # ---------- الداخلية ----------
+  - name: د1-فاصل الصالة
+    exterior: false
+    start: [0, 342]
+    end: [768, 342]
+    openings:
+      - {kind: door, code: ب2, name: ب2 ماستر, offset: 262, width: 80, height: 210}
+      - {kind: door, code: ف1, name: ف1 فتحة الممر, offset: 390, width: 90, height: 210, leaves: 0}
+  - name: د2-جدار النواة
+    exterior: false
+    start: [372, 342]
+    end: [372, 768]
+  - name: د3-غرفة 2
+    exterior: false
+    start: [504, 342]
+    end: [504, 768]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة 2, offset: 98, width: 80, height: 210, swing: right}
+  - name: د4-حمام مشترك
+    exterior: false
+    start: [372, 546]
+    end: [504, 546]
+    openings:
+      - {kind: door, code: ب3, name: ب3 حمام مشترك, offset: 26, width: 70, height: 210, swing: right}
+  - name: د5-حمام ماستر جنوب
+    exterior: false
+    start: [210, 576]
+    end: [372, 576]
+  - name: د6-حمام ماستر غرب
+    exterior: false
+    start: [210, 576]
+    end: [210, 768]
+    openings:
+      - {kind: door, code: ب3, name: ب3 حمام ماستر, offset: 24, width: 70, height: 210}
+
+rooms:
+  - {name: الصالة ومطبخ الخدمة, rect: [6, 6, 762, 336]}
+  - {name: غرفة الماستر, rect: [6, 348, 366, 762], cut: [[204, 570, 372, 768]], label: [118, 650]}
+  - {name: حمام الماستر, rect: [216, 582, 366, 762], wet: true}
+  - {name: ممر, rect: [378, 348, 498, 540], kind: corridor}
+  - {name: حمام مشترك, rect: [378, 552, 498, 762], wet: true}
+  - {name: غرفة 2, rect: [510, 348, 762, 762]}
+
+decks:
+  - name: التراس
+    rect: [-6, -246, 894, -6]
+    height: 45
+    railing: [W, E]
+    stairs: {side: S, offset: 250, width: 280}
+
+posts:
+  - {at: [0, -238], size: 16}
+  - {at: [768, -238], size: 16}
+
+furniture:
+  # الصالة — الكنبة تواجه التراس، مسار الحركة من الباب للغرف حر (x 250-480)
+  - {name: كنبة 3 مقاعد, rect: [20, 248, 240, 332]}
+  - {name: طاولة, rect: [80, 150, 190, 205]}
+  - {name: كرسي, rect: [20, 40, 95, 115]}
+  - {name: تلفزيون, rect: [8, 150, 40, 250]}
+  # مطبخ الخدمة — L على الجدار الشرقي (مغسلة على جدار خارجي) والفاصل
+  - {name: كاونتر, rect: [702, 150, 762, 336]}
+  - {name: كاونتر, rect: [585, 276, 702, 336]}
+  - {name: ثلاجة, rect: [515, 270, 580, 336]}
+  - {name: طاولة 4, rect: [525, 25, 645, 105]}
+  - {name: "", rect: [540, 110, 580, 150], shape: rect}
+  - {name: "", rect: [595, 110, 635, 150], shape: rect}
+  # الماستر — سرير 180×200 رأسه على الجدار الغربي
+  - {name: سرير 180×200, rect: [6, 408, 206, 588]}
+  - {name: "", rect: [6, 360, 50, 404]}
+  - {name: "", rect: [6, 592, 50, 636]}
+  - {name: دولاب, rect: [6, 702, 204, 762]}
+  - {name: "", rect: [230, 360, 360, 400]}
+  # حمام الماستر
+  - {name: دش, rect: [276, 672, 366, 762], shape: shower}
+  - {name: "", rect: [222, 712, 262, 760], shape: wc}
+  - {name: "", rect: [300, 584, 360, 626], shape: basin}
+  # الحمام المشترك (الباب يفتح للخارج)
+  - {name: دش, rect: [378, 672, 498, 762], shape: shower}
+  - {name: "", rect: [382, 600, 422, 648], shape: wc}
+  - {name: "", rect: [456, 590, 498, 650], shape: basin}
+  # غرفة 2 — سرير 140×200
+  - {name: سرير 140×200, rect: [562, 540, 762, 680]}
+  - {name: "", rect: [720, 494, 762, 536]}
+  - {name: دولاب, rect: [520, 348, 760, 408]}

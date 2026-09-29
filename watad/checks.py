@@ -101,6 +101,11 @@ def review(project, rules, heights, height_info, rafters):
         for r2 in rooms[i + 1:]:
             ix = min(r1.rect[2], r2.rect[2]) - max(r1.rect[0], r2.rect[0])
             iy = min(r1.rect[3], r2.rect[3]) - max(r1.rect[1], r2.rect[1])
+            for c in r1.cut + r2.cut:     # الجزء المخصوم من غرفة L ليس تداخلاً
+                cx = min(r1.rect[2], r2.rect[2], c[2]) - max(r1.rect[0], r2.rect[0], c[0])
+                cy = min(r1.rect[3], r2.rect[3], c[3]) - max(r1.rect[1], r2.rect[1], c[1])
+                if cx > 0 and cy > 0:
+                    ix, iy = 0, 0
             if ix > 1 and iy > 1:
                 add(ERROR, "مساحة محسوبة مرتين", f"{r1.name} و {r2.name} متداخلين بمساحة "
                     f"{ix * iy / 1e4:.2f} م².")
@@ -162,6 +167,16 @@ def review(project, rules, heights, height_info, rafters):
         add(INFO, "بحر المدادات", "أطول بحر بدون جدار داخلي يحمل المداد: "
             + "، ".join(f"جهة {k}: {v:.0f} سم" for k, v in worst.items())
             + ". يحتاج رقم المصنع لأقصى بحر مسموح لتحديد المدادات اللي تُقوّى 20×5.")
+
+    # 5ب) الدرج حسب ارتفاع الصبة (قائمة 15 سم — من فيديو الموقع)
+    riser = rules["slab"].get("riser", 15)
+    sh = project.slab_height
+    n = max(1, round(sh / riser))
+    msg = f"ارتفاع الصبة {sh:.0f} سم ← {n} درجة بقائمة {sh / n:.1f} سم."
+    if sh < 30:
+        add(INFO, "الصبة والدرج", msg + " بارتفاع 20 سم ما يطلع إلا درجة وحدة؛ للدكة المرتفعة 45 سم = 3 درجات.")
+    else:
+        add(INFO, "الصبة والدرج", msg)
 
     # 6) تنسيق ارتفاع رؤوس الفتحات
     tops = {o.sill + o.height for w in project.walls for o in w.openings}

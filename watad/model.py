@@ -20,7 +20,9 @@ class Opening:
     code: str = ""       # ش1، ب2 ...
     name: str = ""
     swing: str = "left"  # جهة فتح الباب بالنسبة لاتجاه الجدار: left | right
-    leaves: int = 1      # عدد الضلف
+    leaves: int = 1      # عدد الضلف (0 = فتحة بدون باب)
+    style: str = ""      # sliding | fixed (للأبواب الزجاج)
+    transom: float = 0   # ارتفاع قاطع أفقي (شباك علوي فوق الباب/الزجاج)
 
     def __post_init__(self):
         self.name = self.name or self.code
@@ -65,6 +67,8 @@ class Room:
     rect: list           # [x0, y0, x1, y1] الأبعاد الداخلية الصافية
     wet: bool = False
     kind: str = ""
+    cut: list = field(default_factory=list)   # مستطيلات مخصومة (غرفة على شكل L)
+    label: list = None                         # موضع اسم الغرفة في المسقط (اختياري)
 
     @property
     def w(self):
@@ -76,7 +80,13 @@ class Room:
 
     @property
     def area_m2(self):
-        return self.w * self.h / 1e4
+        a = self.w * self.h
+        for c in self.cut:
+            ix = min(self.rect[2], c[2]) - max(self.rect[0], c[0])
+            iy = min(self.rect[3], c[3]) - max(self.rect[1], c[1])
+            if ix > 0 and iy > 0:
+                a -= ix * iy
+        return a / 1e4
 
 
 @dataclass
@@ -102,6 +112,8 @@ class Roof:
     ridge_axis: str = "x"     # اتجاه خط الجملون (x أو y)
     pitch_deg: float = 25
     overhang: float = 0       # بروز المداد خارج الجدار (أفقي)
+    ext_start: float = 0      # امتداد إضافي للسقف عند بداية محور الجملون (جلسة/تراس مسقوف)
+    ext_end: float = 0        # امتداد إضافي عند نهاية محور الجملون
 
 
 @dataclass
@@ -119,6 +131,8 @@ class Project:
     pallet_length: float = 320
     price_per_m2: float = None
     style: object = None
+    slab_height: float = 20
+    posts: list = field(default_factory=list)
     decks: list = field(default_factory=list)
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
@@ -150,6 +164,8 @@ def load_project(path, rules):
         pallet_length=d.get("pallet_length", rules["pallet"]["lengths"][0]),
         price_per_m2=d.get("price_per_m2"),
         style=d.get("style"),
+        slab_height=d.get("slab_height", rules["slab"]["height"]),
+        posts=d.get("posts", []),
         decks=[Deck(**k) for k in d.get("decks", [])],
         meta=d.get("meta", {}),
         notes=d.get("notes", []),

@@ -34,6 +34,7 @@ wall:                         # (3)(7)
 
 slab:                         # (3)
   height: 20
+  riser: 15                   # قائمة الدرجة القياسية (فيديو الموقع 2026-09-29) — 45 سم = 3 درجات
   open_under_wet_rooms: true
 
 wet_room:                     # (5)
