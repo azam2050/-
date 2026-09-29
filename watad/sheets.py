@@ -762,6 +762,28 @@ def areas_sheet(ctx):
 
 
 # ---------------------------------------------------------------- لقطات 3D
+def real_sheets(ctx):
+    """صور واقعية (Blender): صورة رئيسية كبيرة + ثلاث صغيرة."""
+    shots = ctx.get("real_shots") or []
+    if not shots:
+        return []
+    fig = new_page()
+    fig.text(0.5, 0.945, "الصور الواقعية", ha="center", fontsize=18, weight="bold", color=BRAND)
+    main, rest = shots[0], shots[1:4]
+    ax = fig.add_axes([0.3, 0.3, 0.68, 0.6])
+    ax.imshow(plt.imread(main[0]))
+    ax.axis("off")
+    ax.set_title(main[1], fontsize=12, color=BRAND, loc="right")
+    for q, (pth, name) in enumerate(rest):
+        a2 = fig.add_axes([0.02, 0.64 - q * 0.29, 0.26, 0.25])
+        a2.imshow(plt.imread(pth))
+        a2.axis("off")
+        a2.set_title(name, fontsize=10, color=BRAND, loc="right")
+    fig.text(0.98, 0.25, "رندر واقعي بخامات حقيقية وإضاءة طبيعية — الألوان النهائية حسب عينات المورد",
+             ha="right", fontsize=9, color="#555")
+    return [(fig, "الصور الواقعية")]
+
+
 def renders_sheets(ctx):
     shots = ctx.get("renders") or []
     if not shots:
@@ -928,6 +950,7 @@ def build_client_pdf(ctx, path, with_perspective=True):
     """نسخة العميل بطابع مكتب هندسي: إطار عنوان بالشعار، مسقط، واجهات، سقف وقطاع، جداول، لقطات 3D."""
     pages = [(plan_sheet(ctx), "1:50")] + [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
+    pages += [(r, "—") for r in real_sheets(ctx)]
     pages += [(r, "—") for r in renders_sheets(ctx)]
     if with_perspective:
         pages.append((perspective_sheet(ctx), "—"))

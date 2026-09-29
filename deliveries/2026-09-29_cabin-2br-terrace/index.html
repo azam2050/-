@@ -42,7 +42,7 @@ figcaption span{color:var(--muted);font-weight:400}
 </main>
 
 <script>
-const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات والتسعير — عرض اليوم الوطني"],["7","لقطات المنظور الخارجي"],["8","المقطع العلوي بالفرش"],["9","المنظور والمواد"]];
+const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات والتسعير — عرض اليوم الوطني"],["7","الصور الواقعية"],["8","لقطات المنظور الخارجي"],["9","المقطع العلوي بالفرش"],["10","المنظور والمواد"]];
 document.getElementById("pages").innerHTML=PAGES.map(([n,t])=>`<figure><a href="pages/page-${n}.jpg" target="_blank" rel="noopener"><img src="pages/page-${n}.jpg" alt="${t}" loading="${n==="1"?"eager":"lazy"}"></a><figcaption>صفحة ${n} <span>· ${t}</span></figcaption></figure>`).join("");
 const st=document.getElementById("st");
 document.getElementById("dl").addEventListener("click",async()=>{

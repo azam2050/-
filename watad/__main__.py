@@ -8,8 +8,9 @@ def main():
     ap.add_argument("project", help="ملف المشروع YAML")
     ap.add_argument("-o", "--out", default="out")
     ap.add_argument("--rules", default=None)
+    ap.add_argument("--real", action="store_true", help="رندر واقعي بـ Blender (أبطأ)")
     a = ap.parse_args()
-    files, q, hi, issues = build(a.project, a.out, a.rules)
+    files, q, hi, issues = build(a.project, a.out, a.rules, real=a.real)
     p = q["pallets"]
     print(f"height: {hi['requested']} -> {hi['suggested']} ({hi['rows']} rows)")
     print(f"rafters: {p['roof']['rafter_count']} x {p['roof']['rafter_length']}cm")

@@ -26,7 +26,7 @@ def open_questions(rules):
     return qs
 
 
-def build(project_path, out_dir, rules_path=None):
+def build(project_path, out_dir, rules_path=None, real=False):
     rules = load_rules(rules_path)
     project = load_project(project_path, rules)
     hi = suggest_height(project.wall_height, rules)
@@ -71,9 +71,15 @@ def build(project_path, out_dir, rules_path=None):
     render_preview(cut_scene, pth, views=((58, -62),), size=(10, 8), tight=True, hidden=(),
                    strip=rules["cladding"]["effective_cover"])
     renders.append((pth, "المقطع العلوي بالفرش", True))
+    real_shots = []
+    if real:
+        from .realistic import available, render_real
+        if available():
+            real_shots = render_real(project, rules, style, heights, out)
     ctx = {"project": project, "rules": rules, "heights": heights, "members": members, "q": q,
            "height": hi, "issues": issues, "questions": qs, "style": style,
-           "preview": files["preview"], "railings": railings, "renders": renders}
+           "preview": files["preview"], "railings": railings, "renders": renders,
+           "real_shots": real_shots}
     build_pdf(ctx, files["pdf"])
     build_client_pdf(ctx, files["client_pdf"])
     write_dxf(project, members, heights, rules, files["dxf"])
