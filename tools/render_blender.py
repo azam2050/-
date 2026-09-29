@@ -112,7 +112,7 @@ MATS = {
     "sheathing": tex_material("W_sheath", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "door": tex_material("W_door", "WoodFloor043", 1.2, C["frame"], 0.6, bump=0.05),
     "roof_tiles": tex_material("W_roof", "RoofingTiles006", 1.0, C["roof"], 1.0, bump=1.0, metal=0.05),
-    "slab": flat_material("W_slab", "#8E8A83", rough=0.9),
+    "slab": flat_material("W_slab", "#6F6B64", rough=0.95),
     "floor": tex_material("W_floor", "WoodFloor043", 1.5, None, bump=0.05),
     "tiles": flat_material("W_tiles", "#D5D9DC", rough=0.3),
     "furn": flat_material("W_furn", "#CDBBA2", rough=0.6),
@@ -171,7 +171,7 @@ for i, (x, y, z) in enumerate(cfg.get("lights", [])):
     L_ = bpy.data.lights.new(f"in{i}", "POINT")
     L_.energy = cfg.get("light_w", 120)
     L_.color = (1.0, 0.78, 0.55)
-    L_.shadow_soft_size = 0.3
+    L_.shadow_soft_size = 0.02      # مصدر صغير لا يظهر ككرة في الصورة
     o = bpy.data.objects.new(f"in{i}", L_)
     o.location = (x, y, z)
     o.visible_camera = False
