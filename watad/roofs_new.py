@@ -435,3 +435,123 @@ def build(code, style):
     C = Ctx(M, c["roof"])
     c["fn"](M, C)
     return M.S, drainage_issues(C)
+
+
+# ============================================================ أفكار سقف لعميل الدورين 120 م²
+# الكتلة: 7.80 × 7.70 م لكل دور (60.06 × 2 = 120.1 م²) + تراس أرضي وبلكونة علوية 7.80 × 2.40 (مجاناً خارج المساحة)
+CW, CD, H1, LV2, H2 = 780, 770, 280, 305, 585
+TD = 240
+CLIENT = []
+
+
+def client_idea(code, ar, note):
+    def deco(fn):
+        CLIENT.append({"code": code, "ar": ar, "note": note, "fn": fn, "roof": "roof_tiles"})
+        return fn
+    return deco
+
+
+def _client_mass(M, C):
+    M.S.box("slab", -10, -TD - 10, -20, CW + 10, CD + 10, 0)
+    M.block(0, 0, CW, CD, 0, H1)
+    M.S.box("trim", -3, -3, H1, CW + 3, CD + 3, LV2)          # حزام بين الدورين
+    M.block(0, 0, CW, CD, LV2, H2)
+    # الواجهة الأمامية (نفس مخطط العميل)
+    for a, b in ((60, 200), (568, 708)):
+        M.window(("y", 0, -1), a, b, 30, 240)
+    M.window(("y", 0, -1), 234, 534, 0, 265)
+    for x in (334, 434):
+        M.S.box("frame", x - 3, -2, 0, x + 3, 1.5, 265)
+    M.window(("y", 0, -1), 30, 130, LV2 + 30, LV2 + 240)
+    M.window(("y", 0, -1), 150, 390, LV2, LV2 + 240)
+    # الجوانب والخلف
+    M.window(("x", CW, 1), 120, 240, 110, 210)
+    M.window(("x", CW, 1), 60, 120, LV2 + 150, LV2 + 210)
+    M.window(("x", CW, 1), 520, 620, LV2 + 100, LV2 + 210)
+    for a, b, z0 in ((560, 680, 100), (120, 280, 90), (560, 680, LV2 + 100), (120, 240, LV2 + 100)):
+        M.window(("x", 0, -1), a, b, z0, z0 + 115)
+    # التراس الأرضي + البلكونة العلوية (درابزين 105)
+    M.deck(0, -TD, CW, 0, 0, rail_sides="EW", stairs=("S", 250, 530))
+    M.S.box("wood", 0, -TD, LV2 - 25, CW, 0, LV2)
+    for sd in (((CW, -TD), (0, -TD)), ((0, -TD), (0, 0)), ((CW, 0), (CW, -TD))):
+        M.railing(*sd, LV2, upper=True)
+    for x in (9, CW - 9):
+        M.post(x, -TD + 9, 0, H2, 18)
+
+
+def _kick_ring(C, rect, z, dv, pitch, cover):
+    x0, y0, x1, y1 = rect
+    t = math.tan(math.radians(pitch))
+    o = [(x0 - dv, y0 - dv), (x1 + dv, y0 - dv), (x1 + dv, y1 + dv), (x0 - dv, y1 + dv)]
+    i_ = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+    for k in range(4):
+        (a0, b0), (a1, b1) = o[k], o[(k + 1) % 4]
+        (u1, v1), (u0, v0) = i_[(k + 1) % 4], i_[k]
+        C.roof([(a0, b0, z - dv * t), (a1, b1, z - dv * t), (u1, v1, z), (u0, v0, z)], cover)
+
+
+@client_idea("C1", "رباعي بكسرة الحافة يغطي البلكونة",
+             "سقف رباعي 30° بكسرة ناعمة 20° عند الرفرف، يمتد فوق البلكونة على عمودين — المويه تنزل من الأربع جهات")
+def c1(M, C):
+    _client_mass(M, C)
+    M.S.box("trim", -10, -TD, H2 - 22, CW + 10, -TD + 16, H2)
+    rect = (0, -TD, CW, CD)
+    hip_planes(C, *rect, H2, 30, 0, cover=rect)
+    _kick_ring(C, rect, H2, 80, 20, rect)
+
+
+@client_idea("C2", "شاليه بقمة مشطوفة وواجهة زجاج",
+             "جملون 38° واجهته على التراس، قمته مقصوصة بميل صغير، زجاج بإطار أسود تحت القص ورفرف عميق على كوابيل")
+def c2(M, C):
+    _client_mass(M, C)
+    t = math.tan(math.radians(38))
+    ov, ove = 70, 60
+    xm = CW / 2
+    y0, y1 = -TD, CD
+    ze, zr = H2 - ov * t, H2 + xm * t
+    zc = H2 + xm * t * 0.62
+    xc = -ov + (zc - ze) / t
+    th = math.tan(math.radians(55))
+    dy = (zr - zc) / th - ove
+    rect = (0, -TD, CW, CD)
+    C.roof([(-ov, y1 + ove, ze), (-ov, y0 - ove, ze), (xc, y0 - ove, zc), (xm, y0 + dy, zr), (xm, y1 - dy, zr), (xc, y1 + ove, zc)], rect)
+    xc2 = CW - xc
+    C.roof([(CW + ov, y0 - ove, ze), (CW + ov, y1 + ove, ze), (xc2, y1 + ove, zc), (xm, y1 - dy, zr), (xm, y0 + dy, zr), (xc2, y0 - ove, zc)], rect)
+    C.roof([(xc, y0 - ove, zc), (xc2, y0 - ove, zc), (xm, y0 + dy, zr)], rect)
+    C.roof([(xc2, y1 + ove, zc), (xc, y1 + ove, zc), (xm, y1 - dy, zr)], rect)
+    x1_ = (zc - H2) / t
+    # واجهة زجاج مثلثية مقصوصة فوق البلكونة (على جدار الدور الأول) + الخلف خشب
+    C.vwall("glass", [(0, -1, H2), (x1_, -1, zc - 16), (CW - x1_, -1, zc - 16), (CW, -1, H2)], 3, (0, 1))
+    for x in (x1_, CW / 3, 2 * CW / 3, CW - x1_):
+        z1 = min(H2 + min(x, CW - x) * t, zc) - 16
+        M.S.box("frame", x - 4, -3, H2, x + 4, 2, z1)
+    M.S.box("frame", 0, -3, H2 - 4, CW, 2, H2 + 4)
+    M.S.box("frame", x1_, -3, zc - 22, CW - x1_, 2, zc - 14)
+    C.vwall("wood", [(0, CD, H2), (x1_, CD, zc - 13), (CW - x1_, CD, zc - 13), (CW, CD, H2)], 12, (0, -1))
+    M.S.box("trim", -10, -TD, H2 - 22, CW + 10, -TD + 16, H2)
+    for x in (0, CW):
+        for y in (-TD + 60, CD - 60):
+            C.brace(x, y, H2 - 5, -1 if x == 0 else 1, 0, 80)
+
+
+@client_idea("C3", "باغودا: رباعي فوق ومظلة بين الدورين",
+             "رباعي 30° فوق الدور الأول والبلكونة، ومظلة مائلة 22° تلف الدور الأرضي من ثلاث جهات — شكل طبقتين فخم وحماية للجدران")
+def c3(M, C):
+    _client_mass(M, C)
+    M.S.box("trim", -10, -TD, H2 - 22, CW + 10, -TD + 16, H2)
+    rect = (0, -TD, CW, CD)
+    hip_planes(C, *rect, H2, 30, 70, cover=rect)
+    t = math.tan(math.radians(22))
+    dv, z = 90, H1 + 15
+    for pts in ([(CW + dv, 0, z - dv * t), (CW + dv, CD + dv, z - dv * t), (CW, CD, z), (CW, 0, z)],
+                [(CW + dv, CD + dv, z - dv * t), (-dv, CD + dv, z - dv * t), (0, CD, z), (CW, CD, z)],
+                [(-dv, CD + dv, z - dv * t), (-dv, 0, z - dv * t), (0, 0, z), (0, CD, z)]):
+        C.roof(pts, (0, 0, CW, CD))
+
+
+def build_client(code, style):
+    c = next(c for c in CLIENT if c["code"] == code)
+    M = Maker(style)
+    C = Ctx(M, c["roof"])
+    c["fn"](M, C)
+    return M.S, drainage_issues(C)

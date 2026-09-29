@@ -13,7 +13,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from watad.realistic import BLENDER, DAY, MODELS, TEX  # noqa: E402
-from watad.roofs_new import CONCEPTS, build  # noqa: E402
+from watad.roofs_new import CLIENT, CONCEPTS, build, build_client  # noqa: E402
 from watad.style import resolve_style  # noqa: E402
 
 
@@ -48,10 +48,10 @@ def main():
     res = [1400, 875]
     if "--res" in args:
         res = [int(v) for v in args[args.index("--res") + 1].split("x")]
-    codes = [a for a in args[1:] if a[:1] in "NS" and a[1:].isdigit()] or [c["code"] for c in CONCEPTS]
+    codes = [a for a in args[1:] if a[:1] in "NSC" and a[1:].isdigit()] or [c["code"] for c in CONCEPTS]
     style = resolve_style({"preset": "walnut_black", "wood": "natural_pine"})
     for code in codes:
-        S, issues = build(code, style)
+        S, issues = (build_client if code.startswith("C") else build)(code, style)
         print(code, "تصريف:", issues or "سليم", flush=True)
         glb = out / f"{code}.glb"
         S.write_glb(glb)
