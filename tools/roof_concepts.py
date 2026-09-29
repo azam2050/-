@@ -48,10 +48,11 @@ def main():
     res = [1400, 875]
     if "--res" in args:
         res = [int(v) for v in args[args.index("--res") + 1].split("x")]
-    codes = [a for a in args[1:] if a.startswith("N")] or [c["code"] for c in CONCEPTS]
+    codes = [a for a in args[1:] if a[:1] in "NS" and a[1:].isdigit()] or [c["code"] for c in CONCEPTS]
     style = resolve_style({"preset": "walnut_black", "wood": "natural_pine"})
     for code in codes:
-        S = build(code, style)
+        S, issues = build(code, style)
+        print(code, "تصريف:", issues or "سليم", flush=True)
         glb = out / f"{code}.glb"
         S.write_glb(glb)
         V = np.array([v for V_, _ in S.parts.values() for v in V_]) / 100
