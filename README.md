@@ -30,6 +30,9 @@ python -m watad examples/sample_cabin.yaml -o out/
 الألوان والمواد: `style: honey_burgundy` في ملف المشروع (الأنماط في `config/style_presets.yaml`،
 الشرح في `docs/style-guide.md`). الدكة والدربزين: `decks:` (انظر `examples/sample_cabin.yaml`).
 
+كتالوج الأسقف والدربزين: `python -m watad.catalog out/catalog.pdf` — رموز R01-R11 (دور/دور ونص)،
+T01-T07 (دورين/دور ونص)، B01-B08 (دربزين). رمز الدربزين يُستخدم مباشرة: `style: {preset: honey_burgundy, railing: B03}`.
+
 ## الهيكل
 
 ```

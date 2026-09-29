@@ -286,15 +286,33 @@ def _deck(S, d, style, bx0, by0, bx1, by1):
             S.wbox("wood", w, a, b, -28 * (n - k), 0, -20, -20 + rise * k)
 
 
-def railing_run(S, w, a, b, z0, name, spec):
-    H = spec["height"]
+def _clip_line(t0, z0, dt, dz, ta, tb, za, zb):
+    """قص خط بارامتري على مستطيل (Liang-Barsky)."""
+    lo, hi = -1e9, 1e9
+    for p_, q_ in ((-dt, t0 - ta), (dt, tb - t0), (-dz, z0 - za), (dz, zb - z0)):
+        if abs(p_) < 1e-12:
+            if q_ < 0:
+                return None
+            continue
+        r = q_ / p_
+        if p_ < 0:
+            lo = max(lo, r)
+        else:
+            hi = min(hi, r)
+    if lo > hi:
+        return None
+    return (t0 + dt * lo, z0 + dz * lo, t0 + dt * hi, z0 + dz * hi)
+
+
+def railing_run(S, w, a, b, z0, name, spec, height=None):
+    H = height or spec["height"]
     ps = spec["post"]
     L = b - a
     nb = max(1, math.ceil(L / spec["post_spacing"]))
     posts = [a + (L - ps) * i / nb for i in range(nb + 1)]
-    s0, s1 = -ps / 2, ps / 2
     for t in posts:
-        S.wbox("trim", w, t, t + ps, s0, s1, z0, z0 + H + 5)
+        S.wbox("trim", w, t, t + ps, -ps / 2, ps / 2, z0, z0 + H + 5)
+    bays = [(pa + ps, pb) for pa, pb in zip(posts, posts[1:])]
     if name == "three_rail":
         r = spec["rail"]
         n = spec["rails"]
@@ -302,13 +320,20 @@ def railing_run(S, w, a, b, z0, name, spec):
             zz = z0 + H - r["w"] - k * (H - 25) / (n - 1)
             S.wbox("wood", w, a, b, -r["h"] / 2, r["h"] / 2, zz, zz + r["w"])
         return
+    if name == "horizontal_slats":
+        sl = spec["slat"]
+        zz = z0 + H - sl["w"]
+        while zz > z0 + 5:
+            S.wbox("wood", w, a, b, -ps / 2 - sl["t"], -ps / 2, zz, zz + sl["w"])
+            zz -= sl["w"] + sl["gap"]
+        S.wbox("wood", w, a, b, -ps / 2 - 3, ps / 2, z0 + H, z0 + H + 4)
+        return
     tr_, br = spec["top_rail"], spec["bottom_rail"]
     S.wbox("wood", w, a, b, -tr_["w"] / 2, tr_["w"] / 2, z0 + H - tr_["h"], z0 + H)
     zb0 = z0 + br["gap"]
     S.wbox("wood", w, a, b, -br["w"] / 2, br["w"] / 2, zb0, zb0 + br["h"])
-    for pa, pb in zip(posts, posts[1:]):
-        ia, ib = pa + ps, pb
-        za, zt = zb0 + br["h"], z0 + H - tr_["h"]
+    za, zt = zb0 + br["h"], z0 + H - tr_["h"]
+    for ia, ib in bays:
         if name == "vertical_balusters":
             bw, clr = spec["baluster"]["w"], spec["baluster"]["clear"]
             n = max(0, math.ceil((ib - ia - clr) / (bw + clr)))
@@ -316,17 +341,48 @@ def railing_run(S, w, a, b, z0, name, spec):
             for k in range(n):
                 t = ia + gap + k * (bw + gap)
                 S.wbox("wood", w, t, t + bw, -bw / 2, bw / 2, za, zt)
+        elif name == "wide_boards":
+            bd = spec["board"]
+            n = max(1, round((ib - ia + bd["gap"]) / (bd["w"] + bd["gap"])))
+            wd = (ib - ia - (n - 1) * bd["gap"]) / n
+            for k in range(n):
+                t = ia + k * (wd + bd["gap"])
+                S.wbox("wood", w, t, t + wd, -bd["t"] / 2, bd["t"] / 2, za, zt)
+        elif name == "glass_panel":
+            S.wbox("glass", w, ia + 2, ib - 2, -0.6, 0.6, za + 2, zt - 2)
         elif name == "x_cross":
             dg = spec["diagonal"]
             S.wdiag("wood", w, ia, za, ib, zt, dg["w"], -dg["t"] / 2, dg["t"] / 2)
             S.wdiag("wood", w, ia, zt, ib, za, dg["w"], -dg["t"] / 2 - dg["t"], -dg["t"] / 2)
+        elif name == "zigzag":
+            dg = spec["diagonal"]
+            zm = (za + zt) / 2
+            S.wbox("wood", w, ia, ib, -br["w"] / 2, br["w"] / 2, zm - 2.5, zm + 2.5)
+            k = bays.index((ia, ib)) % 2
+            S.wdiag("wood", w, ia, za if k else zm, ib, zm if k else za, dg["w"], -dg["t"] / 2, dg["t"] / 2)
+            S.wdiag("wood", w, ia, zm if k else zt, ib, zt if k else zm, dg["w"], -dg["t"] / 2, dg["t"] / 2)
+        elif name == "lattice":
+            dg = spec["diagonal"]
+            sp = dg["spacing"]
+            span = (ib - ia) + (zt - za)
+            c = -span
+            while c < span * 2:
+                for sgn, s0 in ((1, -dg["t"]), (-1, 0)):
+                    seg = _clip_line(ia + c, za, sgn * span * 3, span * 3, ia, ib, za, zt) if sgn > 0 else \
+                        _clip_line(ia + c, za, -span * 3, span * 3, ia, ib, za, zt)
+                    if seg and math.hypot(seg[2] - seg[0], seg[3] - seg[1]) > 3:
+                        S.wdiag("wood", w, *seg, dg["w"], s0, s0 + dg["t"])
+                c += sp
 
 
 # ---------------------------------------------------------------- معاينة
 def _subdivide(P, maxlen, strip):
     """يقسم الوجه الرباعي لقطع صغيرة (لترتيب الرسم الصحيح) وشرائح أفقية للتلبيس."""
-    if len(P) != 4:
-        return [(P, 0)]
+    if len(P) != 4:        # مضلع محدب → مثلثات كرباعيات منكمشة ثم تقسيم
+        out = []
+        for i in range(1, len(P) - 1):
+            out += _subdivide(np.array([P[0], P[i], P[i + 1], P[i + 1]]), maxlen, strip)
+        return out
     e1, e2 = P[1] - P[0], P[3] - P[0]
     vertical = abs(np.cross(e1, e2)[2]) < 1e-6 * np.linalg.norm(np.cross(e1, e2)) + 1e-9
     nu = max(1, math.ceil(np.linalg.norm(e1) / maxlen))
@@ -343,49 +399,10 @@ def _subdivide(P, maxlen, strip):
 
 
 def render_preview(scene, path, views=((20, -55), (20, 125)), size=(16, 7), strip=18.67,
-                   hidden=("rafters", "wood_in", "sheathing"), zoom=1.1, tight=False):
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import to_rgb
-    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-    polys, cols = [], []
-    light = np.array([-0.4, -0.7, 0.8])
-    light /= np.linalg.norm(light)
-    for mat, (V, F) in scene.parts.items():
-        if mat in hidden:
-            continue
-        col, a = scene.colors[mat]
-        for f in F:
-            P = np.array([V[i] for i in f])
-            n = np.cross(P[1] - P[0], P[2] - P[0])
-            nn = np.linalg.norm(n)
-            if nn < 1e-9:
-                continue
-            shade = 0.55 + 0.45 * max(0.0, float(np.dot(n / nn, light)))
-            base = np.array(to_rgb(col)) * shade
-            for Q, j in _subdivide(P, 70, strip if mat == "wood" else None):
-                row = int(math.floor(Q[:, 2].mean() / strip))
-                k = 1.0 if (mat != "wood" or row % 2) else 0.92
-                polys.append(Q)
-                cols.append((*np.clip(base * k, 0, 1), a))
-    V = np.vstack(polys)
-    lo, hi = V.min(axis=0), V.max(axis=0)
-    bg = "#e6edf2"
-    fig = plt.figure(figsize=size, facecolor=bg)
-    for i, (el, az) in enumerate(views):
-        ax = fig.add_subplot(1, len(views), i + 1, projection="3d", facecolor=bg)
-        ax.add_collection3d(Poly3DCollection(polys, facecolors=cols, edgecolors="none"))
-        ax.set_xlim(lo[0], hi[0])
-        ax.set_ylim(lo[1], hi[1])
-        ax.set_zlim(lo[2], hi[2])
-        ax.set_box_aspect(hi - lo, zoom=zoom)
-        ax.view_init(el, az)
-        ax.set_axis_off()
-    fig.subplots_adjust(0, 0, 1, 1, 0, 0)
-    fig.savefig(path, dpi=130, facecolor=bg, bbox_inches="tight" if tight else None, pad_inches=0.05)
-    plt.close(fig)
+                   hidden=("rafters", "wood_in", "sheathing"), zoom=1.0, tight=False, dpi=130):
+    """معاينة منظور بالراسم البرمجي (z-buffer)."""
+    from .raster import render
+    render(scene, path, views, int(size[0] * dpi), int(size[1] * dpi), hidden, strip, tight, zoom)
 
 
 def railing_catalog(out_dir, style):

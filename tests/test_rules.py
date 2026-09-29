@@ -70,3 +70,12 @@ def test_style_and_3d_export(tmp_path):
     assert {"wood", "roof_tiles", "glass", "trim"} <= set(glb.geometry)
     assert files["model3d_obj"].with_suffix(".mtl").exists()
     assert files["preview"].stat().st_size > 10_000
+
+
+def test_railing_catalog_code_and_catalog_pdf(tmp_path):
+    from watad.catalog import ROOFS, build_catalog
+    from watad.style import resolve_style
+    assert resolve_style({"preset": "honey_burgundy", "railing": "B03"})["railing"] == "x_cross"
+    codes = build_catalog(tmp_path / "c.pdf")
+    assert len(ROOFS) >= 15 and any(c == "B08" for c, _ in codes)
+    assert (tmp_path / "c.pdf").stat().st_size > 50_000

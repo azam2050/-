@@ -23,6 +23,10 @@ def resolve_style(spec=None, path=None):
         spec = {"preset": spec}
     base = dict(lib["presets"][spec.get("preset", DEFAULT)])
     base.update({k: v for k, v in spec.items() if k != "preset"})
+    codes = list(lib["railings"])
+    rl = str(base.get("railing", "three_rail"))
+    if rl.upper().startswith("B") and rl[1:].isdigit():       # رمز الكتالوج B01..B08
+        base["railing"] = codes[int(rl[1:]) - 1]
     m = lib["materials"]
     wood = m["wood"][base["wood"]]
     frame_color = (m["frame"][base["frame"]].get("color") or _darker(wood["color"], 0.6))

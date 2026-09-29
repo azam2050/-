@@ -25,7 +25,7 @@ materials:
 
 railings:   # أنواع الدربزين من الصور
   vertical_balusters:
-    ar: قوائم رأسية متقاربة + درابزين علوي (صورة 1 — الدرج)
+    ar: قوائم رأسية متقاربة (صورة 1)
     post: 9          # مقطع العمود سم
     post_spacing: 150
     height: 95
@@ -33,20 +33,61 @@ railings:   # أنواع الدربزين من الصور
     bottom_rail: {w: 7, h: 5, gap: 8}
     baluster: {w: 4, clear: 11}   # فراغ بين القوائم ≤ 11 سم (أمان الأطفال)
   three_rail:
-    ar: أعمدة + 3 مرابيع أفقية (صورة 2)
+    ar: 3 مرابيع أفقية (صورة 2)
     post: 9
     post_spacing: 170
     height: 95
     rails: 3
     rail: {w: 9, h: 5}
   x_cross:
-    ar: أعمدة + مربوع علوي وسفلي + تقاطع X (صورة 5)
+    ar: تقاطع X (صورة 5)
     post: 9
     post_spacing: 120
     height: 90
     top_rail: {w: 9, h: 5}
     bottom_rail: {w: 7, h: 5, gap: 10}
     diagonal: {w: 7, t: 3}
+
+  horizontal_slats:
+    ar: ألواح أفقية متقاربة (عصري)
+    post: 9
+    post_spacing: 150
+    height: 95
+    slat: {w: 9, t: 2.5, gap: 4}
+  wide_boards:
+    ar: ألواح رأسية عريضة بفواصل
+    post: 9
+    post_spacing: 150
+    height: 95
+    top_rail: {w: 12, h: 5}
+    bottom_rail: {w: 9, h: 5, gap: 6}
+    board: {w: 14, t: 2.5, gap: 4}
+  glass_panel:
+    ar: زجاج بين أعمدة خشب
+    post: 11
+    post_spacing: 130
+    height: 100
+    top_rail: {w: 11, h: 6}
+    bottom_rail: {w: 7, h: 5, gap: 6}
+  lattice:
+    ar: شبكة معيّنات
+    post: 9
+    post_spacing: 150
+    height: 95
+    top_rail: {w: 9, h: 5}
+    bottom_rail: {w: 7, h: 5, gap: 8}
+    diagonal: {w: 4, t: 2.5, spacing: 22}
+  zigzag:
+    ar: مائل متعاكس (زجزاج) + مربوع وسطي
+    post: 9
+    post_spacing: 120
+    height: 95
+    top_rail: {w: 9, h: 5}
+    bottom_rail: {w: 7, h: 5, gap: 8}
+    diagonal: {w: 7, t: 3}
+
+# ارتفاع الدربزين: أرضي/دكة 90-95 سم — دور علوي/بلكونة 105 سم (سلامة) وفراغ لا يزيد عن 10-11 سم
+railing_upper_height: 105
 
 trims:      # تفاصيل ظاهرة في كل الصور
   corner_boards: {w: 10, t: 2.5}      # ألواح زوايا رأسية
