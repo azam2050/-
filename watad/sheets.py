@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.patches import Arc, Ellipse, Polygon, Rectangle
+from matplotlib.patches import Arc, Ellipse, FancyBboxPatch, Polygon, Rectangle
 from shapely.geometry import LineString, box
 from shapely.ops import unary_union
 
@@ -106,9 +106,15 @@ def level(ax, x, y, value, label, below=False):
     ax.text(x, y + 33, label, ha="center", va="bottom", fontsize=6.5, color=C_LVL)
 
 
-def table(ax, headers, rows, col_w, fs=9, row_h=1.0, head_fc="#e8e8e8", bold_last=0, wrap=None):
-    """جدول من اليمين لليسار. col_w بنفس ترتيب headers (من اليمين).
-    wrap: عدد الحروف لكل وحدة عرض — يلف النص الطويل ويكبّر ارتفاع الصف."""
+BRAND = "#3A2314"          # بني الشعار
+BRAND_SOFT = "#F4EEE7"
+RULE = "#B9AEA3"
+OFFER = "#0B6B3A"          # أخضر اليوم الوطني
+
+
+def table(ax, headers, rows, col_w, fs=9, row_h=1.0, head_fc=None, bold_last=0, wrap=None, zebra=True):
+    """جدول من اليمين لليسار بطابع المكاتب الهندسية: رأس بلون الشعار، صفوف متناوبة، إجماليات مظللة.
+    col_w بنفس ترتيب headers (من اليمين). wrap: حروف لكل وحدة عرض لتلفيف النص الطويل."""
     import textwrap
     total = sum(col_w)
     allrows = [headers] + rows
@@ -116,8 +122,8 @@ def table(ax, headers, rows, col_w, fs=9, row_h=1.0, head_fc="#e8e8e8", bold_las
         allrows = [[textwrap.fill(str(v), max(4, int(col_w[c] * wrap))) for c, v in enumerate(r)]
                    for r in allrows]
     heights = [row_h * max(1, max(str(v).count("\n") + 1 for v in r) * 0.8 + 0.2) for r in allrows]
-    ax.set_xlim(0, total)
-    ax.set_ylim(-sum(heights), 0)
+    ax.set_xlim(-0.02, total + 0.02)
+    ax.set_ylim(-sum(heights) - 0.02, 0.02)
     ax.axis("off")
     xs = [total]
     for w in col_w:
@@ -127,12 +133,97 @@ def table(ax, headers, rows, col_w, fs=9, row_h=1.0, head_fc="#e8e8e8", bold_las
     for r, cells in enumerate(allrows):
         h = heights[r]
         y -= h
-        bold = bold_last and r >= n - bold_last
-        fc = head_fc if (r == 0 or bold) else "white"
+        head = r == 0
+        bold = bool(bold_last) and r >= n - bold_last
+        fc = BRAND if head else (BRAND_SOFT if bold else ("#FAF8F5" if zebra and r % 2 == 0 else "white"))
+        tc = "white" if head else "#1E1E1E"
+        ax.add_patch(Rectangle((0, y), total, h, fc=fc, ec="none"))
         for c, val in enumerate(cells):
-            ax.add_patch(Rectangle((xs[c + 1], y), col_w[c], h, fc=fc, ec="k", lw=0.6))
-            ax.text((xs[c] + xs[c + 1]) / 2, y + h / 2, str(val), ha="center", va="center",
-                    fontsize=fs, weight="bold" if bold else "normal", linespacing=1.3)
+            if c:
+                ax.plot([xs[c], xs[c]], [y, y + h], color="white" if head else RULE, lw=0.5)
+            ax.text((xs[c] + xs[c + 1]) / 2, y + h / 2, str(val), ha="center", va="center", color=tc,
+                    fontsize=fs, weight="bold" if (bold or head) else "normal", linespacing=1.3)
+        ax.plot([0, total], [y, y], color=BRAND if bold and r == n - bold_last else RULE,
+                lw=1.0 if bold and r == n - bold_last else 0.5)
+    ax.add_patch(Rectangle((0, y), total, -y, fill=False, ec=BRAND, lw=1.3))
+
+
+# ---------------------------------------------------------------- الشعار وإطار اللوحة
+_LOGO = None
+
+
+def logo_polys():
+    global _LOGO
+    if _LOGO is None:
+        import json
+        from pathlib import Path
+        f = Path(__file__).resolve().parent.parent / "assets" / "watad_logo.json"
+        _LOGO = json.loads(f.read_text()) if f.exists() else {"polys": [], "color": BRAND}
+    return _LOGO
+
+
+def draw_logo(fig, cx, cy, size_in):
+    """يرسم الشعار (متجه) في إحداثيات الشكل: المركز cx,cy وحجم بالإنش."""
+    W, H = fig.get_size_inches()
+    w, h = size_in / W, size_in / H
+    ax = fig.add_axes([cx - w / 2, cy - h / 2, w, h])
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    L = logo_polys()
+    for pl in L["polys"]:
+        ax.add_patch(Polygon(pl, closed=True, fc=L["color"], ec="none"))
+    ax._watad_fixed = True
+    ax.set_zorder(20)
+    ax.patch.set_alpha(0)
+    return ax
+
+
+def title_block(fig, ctx, sheet, code, i, n, scale="1:50"):
+    """إطار عنوان اللوحة بطابع المكاتب الهندسية أسفل كل صفحة."""
+    P = ctx["project"]
+    m = P.meta
+    x0, x1, y0, y1 = 0.022, 0.978, 0.026, 0.084
+    W = x1 - x0
+    fig.patches.append(Rectangle((x0, y0), W, y1 - y0, transform=fig.transFigure, fc="white", ec=BRAND, lw=1.3))
+    cols = [(0.22, "brand"), (0.27, "المشروع / العميل"), (0.2, "عنوان اللوحة"), (0.08, "المقياس"),
+            (0.1, "التاريخ"), (0.13, "رقم اللوحة")]
+    tot = sum(c for c, _ in cols)
+    x = x1
+    for frac, key in cols:
+        w = W * frac / tot
+        xa = x - w
+        if x != x1:
+            fig.lines.append(plt.Line2D([x, x], [y0, y1], transform=fig.transFigure, color=BRAND, lw=0.8))
+        cx = (xa + x) / 2
+        if key == "brand":
+            fig.patches.append(Rectangle((xa, y0), w, y1 - y0, transform=fig.transFigure, fc=BRAND_SOFT,
+                                         ec="none"))
+            draw_logo(fig, x - w * 0.14, (y0 + y1) / 2, (y1 - y0) * fig.get_size_inches()[1] * 0.78)
+            fig.text(x - w * 0.29, (y0 + y1) / 2 + 0.008, "مصنع وتد الأخشاب", ha="right", va="center",
+                     fontsize=12, weight="bold", color=BRAND)
+            fig.text(x - w * 0.29, (y0 + y1) / 2 - 0.012, "Watad Wood Factory", ha="right", va="center",
+                     fontsize=8.5, color="#6B5A4C")
+        else:
+            val = {"المشروع / العميل": f"{P.title}\n{P.client}", "عنوان اللوحة": sheet, "المقياس": scale,
+                   "التاريخ": str(m.get("date", "")), "رقم اللوحة": f"{code}   ({i}/{n})"}[key]
+            fig.text(x - 0.006, y1 - 0.006, key, ha="right", va="top", fontsize=7, color="#7A6A5C")
+            fig.text(cx, (y0 + y1) / 2 - 0.006, val, ha="center", va="center", fontsize=10 if "\n" not in val else 8.5,
+                     weight="bold", color="#1E1E1E", linespacing=1.4)
+        x = xa
+
+
+def lift_content(fig, bottom=0.095):
+    """يرفع محتوى الصفحة فوق إطار العنوان."""
+    k = (0.975 - bottom) / 0.975
+    for ax in fig.axes:
+        if getattr(ax, "_watad_fixed", False):
+            continue
+        b = ax.get_position()
+        ax.set_position([b.x0, bottom + b.y0 * k, b.width, b.height * k])
+    for t in fig.texts:
+        x, y = t.get_position()
+        t.set_position((x, bottom + y * k))
 
 
 # ---------------------------------------------------------------- المسقط
@@ -619,34 +710,85 @@ def areas_sheet(ctx):
     x0, y0, x1, y1 = outer_bbox(P, rules)
     gross = (x1 - x0) * (y1 - y0) / 1e4
     net = sum(r.area_m2 for r in P.rooms)
+    terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
     fig = new_page()
-    ax = fig.add_axes([0.06, 0.3, 0.5, 0.55])
+    fig.text(0.5, 0.945, "جدول المساحات وبيانات المشروع والتسعير", ha="center", fontsize=18, weight="bold",
+             color=BRAND)
+    # جدول المساحات
+    ax = fig.add_axes([0.04, 0.3, 0.5, 0.58])
     rows = [[i + 1, r.name, f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"]
             for i, r in enumerate(P.rooms)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
-    rows.append(["", "المساحة الإجمالية الخارجية", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}",
-                 f"{gross:.2f}"])
-    table(ax, ["م", "الفراغ", "الأبعاد الداخلية (م)", "المساحة (م2)"], rows, [0.8, 3.5, 3, 2.2],
-          fs=10, bold_last=2)
-    ax.set_title("جدول المساحات", fontsize=15)
+    if terrace:
+        rows.append(["", "التراس المسقوف", " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1]
+                                                     for k in (0, 1)), f"{terrace:.2f}"])
+    rows.append(["", "المساحة الإجمالية المبنية", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}", f"{gross:.2f}"])
+    table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5,
+          bold_last=3 if terrace else 2)
+    ax.set_title("جدول المساحات", fontsize=14, weight="bold", color=BRAND, loc="right")
+    # بيانات المشروع
     m = P.meta
     info = [["المشروع", P.title], ["العميل", P.client], ["الموقع", m.get("location", "")],
-            ["الاستخدام", m.get("usage", "")], ["المدير", m.get("manager", "")],
-            ["التاريخ", str(m.get("date", ""))], ["المقياس", "1:50"], ["الوحدة", "سم"]]
-    ax2 = fig.add_axes([0.6, 0.45, 0.35, 0.4])
-    table(ax2, ["البند", "القيمة"], info, [1.5, 3.5], fs=10)
-    ax2.set_title("مصنع وتد الأخشاب\nWatad Wood Factory", fontsize=14)
-    ax3 = fig.add_axes([0.6, 0.2, 0.35, 0.18])
-    if P.price_per_m2:
-        total = round(gross, 2) * P.price_per_m2
-        price_rows = [["سعر المتر (ريال)", f"{P.price_per_m2:,.0f}"], ["الإجمالي (ريال)", f"{total:,.0f}"]]
+            ["الاستخدام", m.get("usage", "")], ["التاريخ", str(m.get("date", ""))],
+            ["نظام البناء", "هيكل خشب 7×5 + تلبيس 2.5 سم من الجهتين"],
+            ["السقف", f"جملون {P.roof.pitch_deg}° — قرميد معدني"]]
+    ax2 = fig.add_axes([0.58, 0.52, 0.38, 0.36])
+    table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=10)
+    ax2.set_title("بيانات المشروع", fontsize=14, weight="bold", color=BRAND, loc="right")
+    # التسعير
+    ax3 = fig.add_axes([0.58, 0.2, 0.38, 0.25])
+    price = P.price_per_m2
+    note = P.meta.get("price_note", "")
+    if price:
+        total = round(gross, 2) * price
+        prow = [["المساحة المبنية (م2)", f"{gross:.2f}"],
+                ["سعر المتر المربع" + (f" — {note}" if note else ""), f"{price:,.0f} ريال"],
+                ["الإجمالي", f"{total:,.0f} ريال"]]
     else:
-        price_rows = [["سعر المتر (ريال)", "يُحدد بعد الاعتماد"], ["الإجمالي (ريال)", "—"]]
-    extra = [["مساحة التراس المسقوف (م2)", f"{sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4:.2f}"]] if P.decks else []
-    table(ax3, ["البند", "القيمة"], [["المساحة الإجمالية (م2)", f"{gross:.2f}"]] + extra + price_rows,
-          [2.5, 2.5], fs=10, bold_last=1)
-    ax3.set_title("التسعير", fontsize=14)
+        prow = [["المساحة المبنية (م2)", f"{gross:.2f}"], ["سعر المتر المربع", "يُحدد بعد الاعتماد"],
+                ["الإجمالي", "—"]]
+    table(ax3, ["البند", "القيمة"], prow, [3.2, 2.3], fs=11, bold_last=1, row_h=1.15)
+    ax3.set_title("التسعير", fontsize=14, weight="bold", color=BRAND, loc="right")
+    if price and note:
+        ax3.text(0.0, 1.035, f"  {note}  ", transform=ax3.transAxes, ha="left", va="bottom", fontsize=11,
+                 weight="bold", color="white",
+                 bbox=dict(boxstyle="round,pad=0.35", fc=OFFER, ec="none"))
+    terms = P.meta.get("terms") or ["السعر للمساحة المبنية حسب المخطط المعتمد.",
+                                    "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."]
+    fig.text(0.96, 0.175, "ملاحظات:", ha="right", fontsize=9.5, weight="bold", color=BRAND)
+    for k, t in enumerate(terms):
+        fig.text(0.96, 0.152 - k * 0.02, "• " + t, ha="right", fontsize=9, color="#444")
     return fig, "المساحات والتسعير"
+
+
+# ---------------------------------------------------------------- لقطات 3D
+def renders_sheets(ctx):
+    shots = ctx.get("renders") or []
+    if not shots:
+        return []
+    out = []
+    ext = [s_ for s_ in shots if not s_[2]]
+    cut = [s_ for s_ in shots if s_[2]]
+    for k in range(0, len(ext), 6):
+        fig = new_page()
+        fig.text(0.5, 0.945, "لقطات المنظور الخارجي", ha="center", fontsize=18, weight="bold", color=BRAND)
+        for q, (pth, name, _c) in enumerate(ext[k:k + 6]):
+            r, c = divmod(q, 3)
+            ax = fig.add_axes([0.665 - c * 0.315, 0.49 - r * 0.43, 0.3, 0.39])
+            ax.imshow(plt.imread(pth))
+            ax.axis("off")
+            ax.set_title(name, fontsize=12, color=BRAND, loc="right")
+        out.append((fig, "لقطات المنظور"))
+    for pth, name, _c in cut:
+        fig = new_page()
+        fig.text(0.5, 0.945, name, ha="center", fontsize=18, weight="bold", color=BRAND)
+        fig.text(0.5, 0.915, "مقطع أفقي على ارتفاع 1.90 م — توزيع الفرش ومسار الحركة", ha="center", fontsize=10,
+                 color="#555")
+        ax = fig.add_axes([0.1, 0.06, 0.8, 0.84])
+        ax.imshow(plt.imread(pth))
+        ax.axis("off")
+        out.append((fig, name))
+    return out
 
 
 # ---------------------------------------------------------------- المنظور والمواد
@@ -732,7 +874,7 @@ def framing_sheets(ctx):
             framing_ax(ax, ctx, w)
         handles = [Rectangle((0, 0), 1, 1, fc=c) for c in FRAME_COLORS.values()]
         fig.legend(handles, [KIND_AR[k] for k in FRAME_COLORS], loc="lower center", ncol=8, fontsize=8,
-                   frameon=False, bbox_to_anchor=(0.5, 0.06))
+                   frameon=False, bbox_to_anchor=(0.5, 0.1))
         out.append((fig, "لوحات التأطير (للورشة)"))
     return out
 
@@ -783,15 +925,17 @@ def bom_rows(ctx):
 
 
 def build_client_pdf(ctx, path, with_perspective=True):
-    """نسخة العميل بنفس ترتيب ملف المكتب: مسقط، واجهات، سقف وقطاع، جدول الفتحات، المساحات."""
-    pages = [plan_sheet(ctx)] + elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
-                                                         areas_sheet(ctx)]
+    """نسخة العميل بطابع مكتب هندسي: إطار عنوان بالشعار، مسقط، واجهات، سقف وقطاع، جداول، لقطات 3D."""
+    pages = [(plan_sheet(ctx), "1:50")] + [(e, "1:50") for e in elevation_sheets(ctx)] + \
+        [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
+    pages += [(r, "—") for r in renders_sheets(ctx)]
     if with_perspective:
-        pages.append(perspective_sheet(ctx))
+        pages.append((perspective_sheet(ctx), "—"))
     n = len(pages)
     with PdfPages(path) as pdf:
-        for i, (fig, sheet) in enumerate(pages, 1):
-            footer(fig, ctx, sheet, i, n)
+        for i, ((fig, sheet), scale) in enumerate(pages, 1):
+            lift_content(fig)
+            title_block(fig, ctx, sheet, f"A-{i:02d}", i, n, scale)
             pdf.savefig(fig)
             plt.close(fig)
     return n
@@ -808,7 +952,8 @@ def build_pdf(ctx, path):
     n = len(pages)
     with PdfPages(path) as pdf:
         for i, (fig, sheet) in enumerate(pages, 1):
-            footer(fig, ctx, sheet, i, n)
+            lift_content(fig)
+            title_block(fig, ctx, sheet, f"W-{i:02d}", i, n, "1:50" if i <= 5 else "—")
             pdf.savefig(fig)
             plt.close(fig)
     return n

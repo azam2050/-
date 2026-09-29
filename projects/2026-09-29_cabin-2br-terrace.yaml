@@ -17,6 +17,8 @@ meta:
   usage: استراحة / استجمام
   manager: "—"
   date: 2026-09-29
+  price_note: عرض اليوم الوطني
+price_per_m2: 1096
 style: {preset: walnut_black, railing: B04, window_grid: none}
 wall_height: 280
 slab_height: 45            # 3 درجات × 15 سم (دكة مرتفعة مثل الصورة) — يحتاج موافقة المصنع

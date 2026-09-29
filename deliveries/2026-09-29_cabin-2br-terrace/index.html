@@ -32,7 +32,7 @@ figcaption span{color:var(--muted);font-weight:400}
   <h1>كوخ غرفتين وتراس مسقوف 7.80 × 7.80</h1>
   <p class="meta">مصنع وتد الأخشاب · تصميم حسب صورة العميل · 2026-09-29</p>
   <ul class="facts">
-    <li>60.84 م² + تراس 18.7 م²</li><li>ماستر بحمام خاص</li><li>غرفة ثانية</li><li>حمام مشترك</li><li>صالة ومطبخ خدمة</li>
+    <li>60.84 م² + تراس 18.7 م²</li><li>66,681 ريال — عرض اليوم الوطني</li><li>ماستر بحمام خاص</li><li>غرفة ثانية</li><li>حمام مشترك</li><li>صالة ومطبخ خدمة</li>
   </ul>
   <div class="bar">
     <button class="btn" id="dl" type="button">تحميل ملف PDF</button>
@@ -42,7 +42,7 @@ figcaption span{color:var(--muted);font-weight:400}
 </main>
 
 <script>
-const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات وبيانات المشروع"],["7","المنظور ثلاثي الأبعاد والمواد"]];
+const PAGES=[["1","المسقط الأفقي مع الفرش"],["2","الواجهة الأمامية والشرقية"],["3","الواجهة الخلفية والغربية"],["4","مسقط السقف والقطاع"],["5","جدول الأبواب والشبابيك"],["6","المساحات والتسعير — عرض اليوم الوطني"],["7","لقطات المنظور الخارجي"],["8","المقطع العلوي بالفرش"],["9","المنظور والمواد"]];
 document.getElementById("pages").innerHTML=PAGES.map(([n,t])=>`<figure><a href="pages/page-${n}.jpg" target="_blank" rel="noopener"><img src="pages/page-${n}.jpg" alt="${t}" loading="${n==="1"?"eager":"lazy"}"></a><figcaption>صفحة ${n} <span>· ${t}</span></figcaption></figure>`).join("");
 const st=document.getElementById("st");
 document.getElementById("dl").addEventListener("click",async()=>{

@@ -55,9 +55,25 @@ def build(project_path, out_dir, rules_path=None):
     scene.write_glb(files["model3d_glb"])
     render_preview(scene, files["preview"], strip=rules["cladding"]["effective_cover"])
     railings = railing_catalog(out, style)
+    rdir = out / "renders"
+    rdir.mkdir(exist_ok=True)
+    renders = []
+    views = [("المنظور الأمامي", (8, -90)), ("منظور أمامي من اليسار", (20, -55)),
+             ("منظور أمامي من اليمين", (20, -125)), ("المنظور الخلفي", (22, 60)),
+             ("منظور خلفي من اليمين", (20, 125)), ("منظر علوي", (48, -58))]
+    for k, (name, v) in enumerate(views, 1):
+        pth = rdir / f"view-{k}.png"
+        render_preview(scene, pth, views=(v,), size=(8, 6), tight=True,
+                       strip=rules["cladding"]["effective_cover"])
+        renders.append((pth, name, False))
+    cut_scene = build_scene(project, rules, style, heights, cut=190, furniture=True)
+    pth = rdir / "cutaway.png"
+    render_preview(cut_scene, pth, views=((58, -62),), size=(10, 8), tight=True, hidden=(),
+                   strip=rules["cladding"]["effective_cover"])
+    renders.append((pth, "المقطع العلوي بالفرش", True))
     ctx = {"project": project, "rules": rules, "heights": heights, "members": members, "q": q,
            "height": hi, "issues": issues, "questions": qs, "style": style,
-           "preview": files["preview"], "railings": railings}
+           "preview": files["preview"], "railings": railings, "renders": renders}
     build_pdf(ctx, files["pdf"])
     build_client_pdf(ctx, files["client_pdf"])
     write_dxf(project, members, heights, rules, files["dxf"])

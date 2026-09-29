@@ -118,7 +118,8 @@ def _segments(L0, L1, cuts):
     return out
 
 
-def build_scene(project, rules, style, heights):
+def build_scene(project, rules, style, heights, cut=None, furniture=False):
+    """cut: ارتفاع قطع الجدران (مقطع علوي بدون سقف). furniture: إضافة الفرش والأرضيات."""
     S = Scene()
     S.material("slab", style["slab"])
     S.material("wood", style["wood"])
@@ -143,75 +144,82 @@ def build_scene(project, rules, style, heights):
 
     for w in project.walls:
         H = heights[w.name]
+        Hc = min(H, cut) if cut else H
         L = w.length
         t_lo, t_hi = (-half, L + half) if w.exterior else (0, L)
-        cuts = [(o.offset, o.offset + o.width) for o in w.openings]
         wm = "wood" if w.exterior else "wood_in"
+        shown = [o for o in w.openings if not (cut and (o.sill if o.kind == "window" else 0) >= cut)]
+        cuts = [(o.offset, o.offset + o.width) for o in shown]
         for a, b in _segments(t_lo, t_hi, cuts):
-            S.wbox(wm, w, a, b, -half, half, 0, H)
-        for o in w.openings:
+            S.wbox(wm, w, a, b, -half, half, 0, Hc)
+        for o in shown:
             a, b = o.offset, o.offset + o.width
             z0 = o.sill if o.kind == "window" else 0
-            z1 = z0 + o.height
+            z1 = min(z0 + o.height, Hc)
             if z0 > 0:
                 S.wbox(wm, w, a, b, -half, half, 0, z0)
-            if z1 < H:
-                S.wbox(wm, w, a, b, -half, half, z1, H)
+            if z1 < Hc:
+                S.wbox(wm, w, a, b, -half, half, z1, Hc)
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
         ux, uy = w.u
         gable_end = w.exterior and ((abs(uy) < 1e-6) == ridge_y)
-        if gable_end and w.gable_glass:
+        if cut:
+            pass
+        elif gable_end and w.gable_glass:
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
         elif gable_end:
             S.wprism("wood", w, [(-half, H), (L + half, H), (L / 2, H + rise)], -half, half)
         if w.exterior:   # ألواح الزوايا
             cb = tr["corner_boards"]
             for t in (-half, L + half - cb["w"]):
-                S.wbox("trim", w, t, t + cb["w"], -half - cb["t"], -half, 0, H)
+                S.wbox("trim", w, t, t + cb["w"], -half - cb["t"], -half, 0, Hc)
+    if furniture:
+        add_interior(S, project, style)
 
-    # السقف: مدادات + تطبيق خشب + قرميد
-    H = project.wall_height
-    rafter_d = rules["members"]["rafter"]["w"]
-    rafter_t = rules["members"]["rafter"]["t"]
-    if ridge_y:
-        a_lo, a_hi, b_lo, b_hi = x0, x1, y0, y1
-        to_xy = lambda a, b: (a, b)  # noqa: E731
-    else:
-        a_lo, a_hi, b_lo, b_hi = y0, y1, x0, x1
-        to_xy = lambda a, b: (b, a)  # noqa: E731
-    ac = (a_lo + a_hi) / 2
-    B0, B1 = b_lo - ov - project.roof.ext_start, b_hi + ov + project.roof.ext_end
-    zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
-    kv = 1 / math.cos(p)
+    if not cut:
+        # السقف: مدادات + تطبيق خشب + قرميد
+        H = project.wall_height
+        rafter_d = rules["members"]["rafter"]["w"]
+        rafter_t = rules["members"]["rafter"]["t"]
+        if ridge_y:
+            a_lo, a_hi, b_lo, b_hi = x0, x1, y0, y1
+            to_xy = lambda a, b: (a, b)  # noqa: E731
+        else:
+            a_lo, a_hi, b_lo, b_hi = y0, y1, x0, x1
+            to_xy = lambda a, b: (b, a)  # noqa: E731
+        ac = (a_lo + a_hi) / 2
+        B0, B1 = b_lo - ov - project.roof.ext_start, b_hi + ov + project.roof.ext_end
+        zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
+        kv = 1 / math.cos(p)
 
-    def slope_hexa(mat, side, aa, ab, bb0, bb1, z_off0, z_off1):
-        pts = []
-        for zo in (z_off0, z_off1):
-            for a, b in ((aa, bb0), (ab, bb0), (ab, bb1), (aa, bb1)):
-                pts.append((*to_xy(a, b), zb(a, side) + zo * kv))
-        S.hexa(mat, pts)
+        def slope_hexa(mat, side, aa, ab, bb0, bb1, z_off0, z_off1):
+            pts = []
+            for zo in (z_off0, z_off1):
+                for a, b in ((aa, bb0), (ab, bb0), (ab, bb1), (aa, bb1)):
+                    pts.append((*to_xy(a, b), zb(a, side) + zo * kv))
+            S.hexa(mat, pts)
 
-    for side, eave in ((-1, a_lo - ov), (1, a_hi + ov)):
-        aa, ab = (eave, ac) if side < 0 else (ac, eave)
-        slope_hexa("sheathing", side, aa, ab, B0, B1, rafter_d, rafter_d + 2.5)     # تطبيق
-        slope_hexa("roof_tiles", side, aa, ab, B0, B1, rafter_d + 2.5, rafter_d + 6.5)
-        for pos in rafter_positions(project, rules):
-            b0 = max(pos - rafter_t / 2, B0)
-            b1 = min(pos + rafter_t / 2, B1)
-            slope_hexa("rafters", side, aa, ab, b0, b1, 0, rafter_d)
-        if not style["exposed_rafter_tails"]:     # لوح واجهة المداد
-            fa, fb = sorted((eave, eave + side * tr["fascia"]["t"]))
-            ztop = zb(eave, side) + (rafter_d + 6.5) * kv
-            zbot = ztop - tr["fascia"]["h"] - 6.5
-            c0, c1 = to_xy(fa, B0), to_xy(fb, B1)
-            S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), zbot,
-                  max(c0[0], c1[0]), max(c0[1], c1[1]), ztop)
-    # ألواح حافة الجملون (barge boards)
-    bb = tr["barge_board"]
-    for bpos in (B0 - bb["t"], B1):
         for side, eave in ((-1, a_lo - ov), (1, a_hi + ov)):
             aa, ab = (eave, ac) if side < 0 else (ac, eave)
-            slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
+            slope_hexa("sheathing", side, aa, ab, B0, B1, rafter_d, rafter_d + 2.5)     # تطبيق
+            slope_hexa("roof_tiles", side, aa, ab, B0, B1, rafter_d + 2.5, rafter_d + 6.5)
+            for pos in rafter_positions(project, rules):
+                b0 = max(pos - rafter_t / 2, B0)
+                b1 = min(pos + rafter_t / 2, B1)
+                slope_hexa("rafters", side, aa, ab, b0, b1, 0, rafter_d)
+            if not style["exposed_rafter_tails"]:     # لوح واجهة المداد
+                fa, fb = sorted((eave, eave + side * tr["fascia"]["t"]))
+                ztop = zb(eave, side) + (rafter_d + 6.5) * kv
+                zbot = ztop - tr["fascia"]["h"] - 6.5
+                c0, c1 = to_xy(fa, B0), to_xy(fb, B1)
+                S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), zbot,
+                      max(c0[0], c1[0]), max(c0[1], c1[1]), ztop)
+        # ألواح حافة الجملون (barge boards)
+        bb = tr["barge_board"]
+        for bpos in (B0 - bb["t"], B1):
+            for side, eave in ((-1, a_lo - ov), (1, a_hi + ov)):
+                aa, ab = (eave, ac) if side < 0 else (ac, eave)
+                slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
     for d in project.decks:
         _deck(S, d, style, x0, y0, x1, y1, sh)
@@ -219,13 +227,15 @@ def build_scene(project, rules, style, heights):
     pz = []
     for pt in project.posts:
         px, py = pt["at"]
-        a = px if ridge_y else py
-        side = -1 if a <= ac else 1
-        ztop = zb(a, side)
+        if cut:
+            ztop = cut
+        else:
+            a = px if ridge_y else py
+            ztop = zb(a, -1 if a <= ac else 1)
         ps = pt.get("size", 15)
         S.box("trim", px - ps / 2, py - ps / 2, pt.get("base", 0), px + ps / 2, py + ps / 2, ztop)
         pz.append((px, py, ztop))
-    if len(pz) >= 2 and project.roof.ext_start:
+    if len(pz) >= 2 and project.roof.ext_start and not cut:
         b_edge = sum((py if ridge_y else px) for px, py, _ in pz) / len(pz)
         a0, a1 = a_lo, a_hi
         c0, c1 = to_xy(a0, b_edge - 8), to_xy(a1, b_edge + 8)
@@ -298,6 +308,56 @@ def gable_glass_geometry(L, H, rise, tp, border=20, post=10, spacing=110):
     n = max(1, round((L - 2 * tl) / spacing))
     posts = [tl + (L - 2 * tl) * k / n for k in range(1, n)]
     return inner, posts, zin, bv, tl
+
+
+FURN_H = [("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 80, "fabric"), ("كرسي", 80, "fabric"),
+          ("طاولة", 75, "furn"), ("تلفزيون", 110, "dark"), ("كاونتر", 90, "counter"),
+          ("ثلاجة", 180, "white")]
+
+
+def add_interior(S, project, style):
+    """أرضيات + فرش مبسط (للمقطع العلوي والعرض الداخلي)."""
+    S.material("floor", "#B89066")
+    S.material("tiles", "#D5D9DC")
+    S.material("furn", "#CDBBA2")
+    S.material("linen", "#F1EEE8")
+    S.material("fabric", "#8E8A84")
+    S.material("counter", "#E2DDD5")
+    S.material("white", "#F4F4F2")
+    S.material("dark", "#2B2B2B")
+    for r in project.rooms:
+        x0, y0, x1, y1 = r.rect
+        S.box("tiles" if r.wet else "floor", x0, y0, 0, x1, y1, 1.2)
+    for f in project.furniture:
+        x0, y0, x1, y1 = f.rect
+        if f.shape == "shower":
+            S.box("white", x0, y0, 1.2, x1, y1, 6)
+            continue
+        if f.shape == "wc":
+            S.box("white", x0 + 4, y0 + 4, 1.2, x1 - 4, y1 - 4, 42)
+            continue
+        if f.shape == "basin":
+            S.box("white", x0, y0, 70, x1, y1, 86)
+            continue
+        h, m = 50, "furn"
+        for key, hh, mm in FURN_H:
+            if key in f.name:
+                h, m = hh, mm
+                break
+        if m == "linen":      # سرير: قاعدة خشب + مرتبة + لوح رأس
+            S.box("furn", x0, y0, 1.2, x1, y1, 30)
+            S.box("linen", x0 + 2, y0 + 2, 30, x1 - 2, y1 - 2, 52)
+            continue
+        if "طاولة" in f.name:
+            S.box("furn", x0, y0, 71, x1, y1, 75)
+            for lx, ly in ((x0 + 3, y0 + 3), (x1 - 8, y0 + 3), (x0 + 3, y1 - 8), (x1 - 8, y1 - 8)):
+                S.box("furn", lx, ly, 1.2, lx + 5, ly + 5, 71)
+            continue
+        if m == "fabric" and "كنبة" in f.name:
+            S.box("fabric", x0, y0, 1.2, x1, y1, 42)
+            S.box("fabric", x0, y1 - 18, 42, x1, y1, 80)
+            continue
+        S.box(m, x0, y0, 1.2, x1, y1, h)
 
 
 def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
