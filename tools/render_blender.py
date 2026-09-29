@@ -111,6 +111,7 @@ MATS = {
     "rafters": tex_material("W_raft", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "sheathing": tex_material("W_sheath", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "door": tex_material("W_door", "WoodFloor043", 1.2, C["frame"], 0.6, bump=0.05),
+    "stair": tex_material("W_stair", "WoodFloor043", 1.2, C["trim"], 0.8, bump=0.05),
     "roof_tiles": tex_material("W_roof", "RoofingTiles006", 1.0, C["roof"], 1.0, bump=1.0, metal=0.05),
     "slab": flat_material("W_slab", "#6F6B64", rough=0.95),
     "floor": tex_material("W_floor", "WoodFloor043", 1.5, None, bump=0.05),

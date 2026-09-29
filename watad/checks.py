@@ -22,7 +22,7 @@ def junctions(project, w):
     """مواقع التقاء جدران أخرى بهذا الجدار (غير أطرافه)."""
     out = []
     for o in project.walls:
-        if o is w:
+        if o is w or o.floor != w.floor:
             continue
         for p in (o.start, o.end):
             t = _on_wall(w, p)
@@ -43,6 +43,8 @@ def room_faces(project, room, rules):
     for a, b in _room_edges(room):
         mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
         for w in project.walls:
+            if w.floor != room.floor:
+                continue
             ux, uy = w.u
             nx, ny = w.n
             dx, dy = mid[0] - w.start[0], mid[1] - w.start[1]
@@ -99,6 +101,8 @@ def review(project, rules, heights, height_info, rafters):
     rooms = project.rooms
     for i, r1 in enumerate(rooms):
         for r2 in rooms[i + 1:]:
+            if r1.floor != r2.floor:
+                continue
             ix = min(r1.rect[2], r2.rect[2]) - max(r1.rect[0], r2.rect[0])
             iy = min(r1.rect[3], r2.rect[3]) - max(r1.rect[1], r2.rect[1])
             for c in r1.cut + r2.cut:     # الجزء المخصوم من غرفة L ليس تداخلاً
@@ -126,9 +130,20 @@ def review(project, rules, heights, height_info, rafters):
                 "يُنقل الحمام ليلمس جدار خارجي، أو يُعتمد مسار سباكة تحت الصبة بقرار من المصنع.")
         has_window = any(o.kind == "window" and any(
             f[1] - 1 <= o.offset and o.offset + o.width <= f[2] + 1 for f in ext if f[0] is w)
-            for w in project.walls for o in w.openings)
+            for w in project.walls if w.floor == r.floor for o in w.openings)
         if not has_window:
             add(WARN, f"تهوية {r.name}", "لا يوجد شباك — يحتاج شفاط هواء.", "إضافة شفاط أو شباك صغير.")
+
+    # 4ب) تكديس الحمامات فوق بعض في الدورين (9)
+    if project.top_floor > 0:
+        up = [r for r in rooms if r.wet and r.floor > 0]
+        down = [r for r in rooms if r.wet and r.floor == 0]
+        for r in up:
+            stacked = any(min(r.rect[2], d.rect[2]) - max(r.rect[0], d.rect[0]) > 30 and
+                          min(r.rect[3], d.rect[3]) - max(r.rect[1], d.rect[1]) > 30 for d in down)
+            if not stacked:
+                add(INFO, f"{r.name} غير مكدّس", "دورة المياه العلوية ليست فوق دورة مياه أرضية — "
+                    "تحتاج خط صرف خارجي مستقل على الجدار.", "يُفضّل تكديس الحمامات فوق بعض (قاعدة المصنع).")
 
     # 5) المدادات: هل يوجد جدار داخلي يحملها؟ (8)
     g = roof_geometry(project, rules)
@@ -138,7 +153,7 @@ def review(project, rules, heights, height_info, rafters):
     lo_edge, hi_edge = ((x0, x1) if ax == "y" else (y0, y1))
     supports = []   # جدران داخلية موازية للجملون
     for w in project.walls:
-        if w.exterior:
+        if w.exterior or w.floor != project.top_floor:
             continue
         ux, uy = w.u
         if (ax == "y" and abs(ux) < 1e-6) or (ax == "x" and abs(uy) < 1e-6):

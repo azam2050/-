@@ -38,6 +38,7 @@ class Wall:
     height: float = None
     title: str = ""      # اسم الواجهة (للخارجي)
     gable_glass: bool = False   # مثلث الجملون فوق هذا الجدار زجاج بدل خشب
+    floor: int = 0              # رقم الدور (0 أرضي، 1 أول)
 
     @property
     def length(self):
@@ -70,6 +71,7 @@ class Room:
     kind: str = ""
     cut: list = field(default_factory=list)   # مستطيلات مخصومة (غرفة على شكل L)
     label: list = None                         # موضع اسم الغرفة في المسقط (اختياري)
+    floor: int = 0
 
     @property
     def w(self):
@@ -95,6 +97,7 @@ class Furniture:
     name: str
     rect: list
     shape: str = "rect"  # rect | circle | wc | basin | shower
+    floor: int = 0
 
 
 @dataclass
@@ -106,6 +109,7 @@ class Deck:
     railing: list = field(default_factory=lambda: ["S", "E", "W"])   # الجهات اللي عليها دربزين
     stairs: dict = None        # {side: S, offset: 100, width: 120} فتحة الدرج في الدربزين
     railing_style: str = None  # يغلب نمط المشروع
+    level: float = 0           # منسوب سطح الدكة (0 = أرضي). للبلكونة = منسوب أرضية الدور الأول
 
 
 @dataclass
@@ -132,6 +136,8 @@ class Project:
     pallet_length: float = 320
     price_per_m2: float = None
     style: object = None
+    floors: list = field(default_factory=list)   # [{name, level, height}] — فارغ = دور واحد
+    stairs: list = field(default_factory=list)   # درج داخلي
     slab_height: float = 20
     posts: list = field(default_factory=list)
     decks: list = field(default_factory=list)
@@ -141,6 +147,28 @@ class Project:
     @property
     def exterior_walls(self):
         return [w for w in self.walls if w.exterior]
+
+    @property
+    def floor_list(self):
+        if self.floors:
+            return self.floors
+        return [{"name": "الدور الأرضي", "level": 0, "height": self.wall_height}]
+
+    def level(self, floor):
+        return self.floor_list[floor]["level"]
+
+    @property
+    def top_floor(self):
+        return len(self.floor_list) - 1
+
+    @property
+    def roof_base(self):
+        """منسوب أعلى جدار الدور الأخير (قاعدة السقف)."""
+        f = self.floor_list[-1]
+        return f["level"] + f["height"]
+
+    def walls_on(self, floor):
+        return [w for w in self.walls if w.floor == floor]
 
 
 def load_project(path, rules):
@@ -165,6 +193,8 @@ def load_project(path, rules):
         pallet_length=d.get("pallet_length", rules["pallet"]["lengths"][0]),
         price_per_m2=d.get("price_per_m2"),
         style=d.get("style"),
+        floors=d.get("floors", []),
+        stairs=d.get("stairs", []),
         slab_height=d.get("slab_height", rules["slab"]["height"]),
         posts=d.get("posts", []),
         decks=[Deck(**k) for k in d.get("decks", [])],

@@ -14,6 +14,7 @@ class Scene:
     def __init__(self):
         self.parts = {}     # material -> [verts, faces]
         self.colors = {}    # material -> (hex, alpha)
+        self.zoff = 0.0     # إزاحة رأسية (منسوب الدور الحالي)
 
     def material(self, name, color, alpha=1.0):
         self.colors[name] = (color, alpha)
@@ -22,7 +23,7 @@ class Scene:
         """يضيف مجسم محدب؛ يضبط اتجاه الأوجه للخارج."""
         V, F = self.parts.setdefault(mat, [[], []])
         base = len(V)
-        verts = [tuple(map(float, v)) for v in verts]
+        verts = [(float(v[0]), float(v[1]), float(v[2]) + self.zoff) for v in verts]
         c = np.mean(verts, axis=0) if center is None else center
         for f in faces:
             pts = np.array([verts[i] for i in f])
@@ -142,13 +143,18 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     tp = math.tan(p)
     tr = style["trims"]
 
+    top = project.top_floor
     for w in project.walls:
         H = heights[w.name]
-        Hc = min(H, cut) if cut else H
+        lev = project.level(w.floor)
+        if cut and cut - lev <= 5:
+            continue                      # دور فوق مستوى القطع
+        S.zoff = lev
+        Hc = min(H, cut - lev) if cut else H
         L = w.length
         t_lo, t_hi = (-half, L + half) if w.exterior else (0, L)
         wm = "wood" if w.exterior else "wood_in"
-        shown = [o for o in w.openings if not (cut and (o.sill if o.kind == "window" else 0) >= cut)]
+        shown = [o for o in w.openings if not (cut and (o.sill if o.kind == "window" else 0) >= cut - lev)]
         cuts = [(o.offset, o.offset + o.width) for o in shown]
         for a, b in _segments(t_lo, t_hi, cuts):
             S.wbox(wm, w, a, b, -half, half, 0, Hc)
@@ -162,7 +168,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 S.wbox(wm, w, a, b, -half, half, z1, Hc)
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
         ux, uy = w.u
-        gable_end = w.exterior and ((abs(uy) < 1e-6) == ridge_y)
+        gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y)
         if cut:
             pass
         elif gable_end and w.gable_glass:
@@ -173,12 +179,39 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             cb = tr["corner_boards"]
             for t in (-half, L + half - cb["w"]):
                 S.wbox("trim", w, t, t + cb["w"], -half - cb["t"], -half, 0, Hc)
+    S.zoff = 0
+    # أرضيات الأدوار العلوية (جسور + تطبيق) مع فتحة الدرج
+    for f in range(1, top + 1):
+        lev = project.level(f)
+        if cut and cut <= lev:
+            continue
+        holes = [st["rect"] for st in project.stairs if st.get("from", 0) == f - 1]
+        pieces = [(x0, y0, x1, y1)]
+        for hx0, hy0, hx1, hy1 in holes:
+            nxt = []
+            for a0, b0, a1, b1 in pieces:
+                if hx1 <= a0 or hx0 >= a1 or hy1 <= b0 or hy0 >= b1:
+                    nxt.append((a0, b0, a1, b1))
+                    continue
+                if hy0 > b0:
+                    nxt.append((a0, b0, a1, hy0))
+                if hy1 < b1:
+                    nxt.append((a0, hy1, a1, b1))
+                if hx0 > a0:
+                    nxt.append((a0, max(b0, hy0), hx0, min(b1, hy1)))
+                if hx1 < a1:
+                    nxt.append((hx1, max(b0, hy0), a1, min(b1, hy1)))
+            pieces = nxt
+        for a0, b0, a1, b1 in pieces:
+            S.box("trim", a0, b0, lev - 25, a1, b1, lev)
+    for st in project.stairs:
+        add_stair(S, project, st, cut)
     if furniture:
-        add_interior(S, project, style)
+        add_interior(S, project, style, cut)
 
     if not cut:
         # السقف: مدادات + تطبيق خشب + قرميد
-        H = project.wall_height
+        H = project.roof_base
         rafter_d = rules["members"]["rafter"]["w"]
         rafter_t = rules["members"]["rafter"]["t"]
         if ridge_y:
@@ -222,6 +255,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
     for d in project.decks:
+        if cut and d.level > 0 and d.level > cut:
+            continue
         _deck(S, d, style, x0, y0, x1, y1, sh)
     # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
     pz = []
@@ -266,10 +301,12 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
                                       (a, b, z0 - tr["w"], z0), (a, b, z1, z1 + tr["w"])):
                 S.wbox("trim", w, ta, tb, out - tr["t"], out, za, zb_)
     else:
+        if o.leaves == 0:           # فتحة بدون باب — إطار خشب جانبي فقط
+            for (ta, tb) in ((a, a + 4), (b - 4, b)):
+                S.wbox("trim", w, ta, tb, -half, half, 0, z1)
+            return
         for (ta, tb, za, zb_) in ((a, a + fw, 0, z1), (b - fw, b, 0, z1), (a, b, z1 - fw, z1)):
             S.wbox("frame", w, ta, tb, out - 2, half, za, zb_)
-        if o.leaves == 0:
-            return
         if getattr(o, "style", "") in ("sliding", "fixed"):
             S.wbox("glass", w, a + fw, b - fw, -1, 1, 0, z1 - fw)
             n = max(2, round(o.width / 100))
@@ -315,8 +352,8 @@ FURN_H = [("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 8
           ("ثلاجة", 180, "white")]
 
 
-def add_interior(S, project, style):
-    """أرضيات + فرش مبسط (للمقطع العلوي والعرض الداخلي)."""
+def add_interior(S, project, style, cut=None):
+    """أرضيات + فرش مبسط (للمقطع العلوي والعرض الداخلي) — كل دور على منسوبه."""
     S.material("floor", "#B89066")
     S.material("tiles", "#D5D9DC")
     S.material("furn", "#CDBBA2")
@@ -326,9 +363,17 @@ def add_interior(S, project, style):
     S.material("white", "#F4F4F2")
     S.material("dark", "#2B2B2B")
     for r in project.rooms:
+        if cut and cut <= project.level(r.floor):
+            continue
+        if r.kind == "stair":
+            continue
+        S.zoff = project.level(r.floor)
         x0, y0, x1, y1 = r.rect
         S.box("tiles" if r.wet else "floor", x0, y0, 0, x1, y1, 1.2)
     for f in project.furniture:
+        if cut and cut <= project.level(f.floor):
+            continue
+        S.zoff = project.level(f.floor)
         x0, y0, x1, y1 = f.rect
         if f.shape == "shower":
             S.box("white", x0, y0, 1.2, x1, y1, 6)
@@ -358,6 +403,53 @@ def add_interior(S, project, style):
             S.box("fabric", x0, y1 - 18, 42, x1, y1, 80)
             continue
         S.box(m, x0, y0, 1.2, x1, y1, h)
+    S.zoff = 0
+
+
+def stair_geometry(project, st):
+    """درج U: شاحط أول ثم بسطة ثم شاحط راجع. يرجع (قائمة الدرجات [(x0,y0,x1,y1,z_top)], البسطة, رقم القائمة)."""
+    x0, y0, x1, y1 = st["rect"]
+    fw = st.get("flight_w", 90)
+    tread = st.get("tread", 27)
+    rise_total = project.level(st.get("from", 0) + 1) - project.level(st.get("from", 0))
+    n = max(2, round(rise_total / st.get("riser", 17.5)))
+    r = rise_total / n
+    n1 = math.ceil(n / 2)          # قوائم الشاحط الأول (آخرها البسطة)
+    n2 = n - n1                    # قوائم الشاحط الثاني (آخرها أرضية الدور)
+    first_east = st.get("first", "east") == "east"
+    fa = (x1 - fw, x1) if first_east else (x0, x0 + fw)
+    fb = (x0, x0 + fw) if first_east else (x1 - fw, x1)
+    steps = []
+    for i in range(1, n1):         # الشاحط الأول باتجاه الشمال
+        steps.append((fa[0], y0 + (i - 1) * tread, fa[1], y0 + i * tread, i * r))
+    ly0 = y0 + (n1 - 1) * tread
+    landing = (x0, ly0, x1, ly0 + st.get("landing", 90), n1 * r)
+    for j in range(1, n2):         # الشاحط الثاني باتجاه الجنوب
+        steps.append((fb[0], ly0 - j * tread, fb[1], ly0 - (j - 1) * tread, (n1 + j) * r))
+    return steps, landing, r, n
+
+
+def add_stair(S, project, st, cut=None):
+    lev = project.level(st.get("from", 0))
+    S.material("stair", S.colors.get("trim", ("#8B5A2B", 1))[0])
+    steps, landing, r, n = stair_geometry(project, st)
+    S.zoff = lev
+    for x0, y0, x1, y1, zt in steps + [landing]:
+        if cut and lev + zt > cut + 40:
+            continue
+        S.box("stair", x0, y0, max(zt - 30, 0), x1, y1, zt)       # درجة/بسطة بسماكة 30 سم (الكمرة مخفية)
+    S.zoff = 0
+    # دربزين حول فتحة الدرج في الدور العلوي
+    if not cut or cut > project.level(st.get("from", 0) + 1) + 50:
+        x0, y0, x1, y1 = st["rect"]
+        fw = st.get("flight_w", 90)
+        top = project.level(st.get("from", 0) + 1)
+        import yaml
+        from .style import PRESETS
+        spec = yaml.safe_load(open(PRESETS, encoding="utf-8"))["railings"]["vertical_balusters"]
+        first_east = st.get("first", "east") == "east"
+        a, b = (x0 + fw, x1) if first_east else (x0, x1 - fw)
+        railing_run(S, Wall("sr", (a, y0), (b, y0)), 0, b - a, top, "vertical_balusters", spec, height=100)
 
 
 def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
@@ -378,8 +470,9 @@ def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
 # ---------------------------------------------------------------- الدكة والدربزين
 def _deck(S, d, style, bx0, by0, bx1, by1, sh=20):
     x0, y0, x1, y1 = d.rect
-    top = d.height - sh
-    S.box("wood", x0, y0, -sh, x1, y1, top)
+    upper = d.level > 0
+    top = d.level if upper else d.height - sh
+    S.box("wood", x0, y0, (top - 25) if upper else -sh, x1, y1, top)
     spec_name = d.railing_style or style["railing"]
     import yaml
     from .style import PRESETS
@@ -395,8 +488,8 @@ def _deck(S, d, style, bx0, by0, bx1, by1, sh=20):
         if d.stairs and d.stairs.get("side") == side:
             gaps = [(d.stairs["offset"], d.stairs["offset"] + d.stairs["width"])]
         for a, b in _segments(0, L, gaps):
-            railing_run(S, w, a, b, top, spec_name, spec)
-    if d.stairs and d.height > 25:
+            railing_run(S, w, a, b, top, spec_name, spec, height=105 if upper else None)
+    if d.stairs and d.height > 25 and not upper:
         p0, p1 = edges[d.stairs["side"]]
         w = Wall("st", p0, p1)
         n = math.ceil(d.height / 18)

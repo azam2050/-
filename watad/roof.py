@@ -32,7 +32,7 @@ def gable_rafters(project, rules):
         "pitch_deg": r.pitch_deg,
         "overhang": r.overhang,
         "rise": round(g["rise"], 1),
-        "ridge_level": round(project.wall_height + g["rise"], 1),
+        "ridge_level": round(project.roof_base + g["rise"], 1),
         "rafters_per_side": per_side,
         "rafter_count": per_side * 2,
         "rafter_length": round(length, 1),

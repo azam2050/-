@@ -28,6 +28,21 @@ def pack(lengths, stock, kerf, bins=None):
     return bins
 
 
+def floor_joists(project, rules, spacing=40):
+    """جسور أرضية الأدوار العلوية 5×15 — تمتد بين جدران الدور تحته (TO_CONFIRM: التباعد والمقطع)."""
+    out = []
+    for f in range(1, len(project.floor_list)):
+        below = [w for w in project.walls if w.floor == f - 1 and abs(w.u[0]) < 1e-6]
+        xs = sorted({round(w.start[0]) for w in below})
+        ys = [p[1] for w in project.walls if w.floor == f and w.exterior for p in (w.start, w.end)]
+        Ly = max(ys) - min(ys)
+        per_span = math.floor(Ly / spacing) + 1
+        for a, b in zip(xs, xs[1:]):
+            if b - a > 30:
+                out += [b - a + 10] * per_span
+    return out
+
+
 def pallet_plan(project, rules, walls_members):
     """(2) نبدأ بالمدادات: كل مداد = طبلية بالطريقة الأولى (مداد + عمود 7×5).
     باقي الأعمدة من الطبليات بالطريقة الثانية (3 أعمدة لكل طبلية)."""
@@ -35,6 +50,8 @@ def pallet_plan(project, rules, walls_members):
     roof = gable_rafters(project, rules)
     rafter_stock = roof["stock_length"] or max(rules["pallet"]["lengths"])
     n_m1 = roof["rafter_count"]
+    joists = floor_joists(project, rules)
+    j_stock = next((L for L in sorted(rules["pallet"]["lengths"]) if joists and L >= max(joists)), None)
 
     stud_pieces = [m.length for ms in walls_members.values() for m in ms]
     stud_stock = project.pallet_length
@@ -70,7 +87,9 @@ def pallet_plan(project, rules, walls_members):
         "method2_pallets": {"count": m2, "length": stud_stock,
                             "yield": f"{m2 * 3} عمود 7×5 (3 لكل طبلية)"},
         "method2_long_pallets": {"count": m2_long, "length": rafter_stock},
-        "total_pallets": n_m1 + m2 + m2_long,
+        "floor_joists": {"count": len(joists), "lengths": sorted(Counter(round(j) for j in joists).items()),
+                         "stock": j_stock},
+        "total_pallets": n_m1 + m2 + m2_long + len(joists),
         "stud_pieces_total": len(stud_pieces),
         "stud_cut_list": sorted(Counter(round(p) for p in stud_pieces).items(), reverse=True),
         "roof": roof,

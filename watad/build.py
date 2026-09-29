@@ -14,7 +14,7 @@ from .sheets import build_client_pdf, build_pdf
 from .style import resolve_style
 
 
-def open_questions(rules):
+def open_questions(rules, multi=False):
     qs = []
     if rules["roof"]["max_unsupported_span"] is None:
         qs.append("أقصى بحر للمداد بدون جدار داخلي قبل إضافة تقوية 7×5 (مداد 20×5)؟")
@@ -23,6 +23,8 @@ def open_questions(rules):
         "هل يوضع أعمدة قصيرة فوق رأس الشباك/الباب إلى العلوي؟",
         "مكان الوصلة في القاعدة والعلوي إذا الجدار أطول من الطبلية؟",
     ]
+    if multi:
+        qs.append("جسور أرضية الدور العلوي: المقطع 5×15 والتباعد 40 سم مفترض — ما المعتمد عندكم؟")
     return qs
 
 
@@ -31,10 +33,12 @@ def build(project_path, out_dir, rules_path=None, real=False):
     project = load_project(project_path, rules)
     hi = suggest_height(project.wall_height, rules)
     project.wall_height = hi["suggested"]
-    heights = {w.name: (w.height or hi["suggested"]) for w in project.walls}
+    fl = project.floor_list
+    heights = {w.name: (w.height or (fl[w.floor]["height"] if project.floors else hi["suggested"]))
+               for w in project.walls}
     members, q = build_quantities(project, rules, heights)
     issues = review(project, rules, heights, hi, q["pallets"]["roof"])
-    qs = open_questions(rules)
+    qs = open_questions(rules, multi=len(project.floor_list) > 1)
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -66,11 +70,13 @@ def build(project_path, out_dir, rules_path=None, real=False):
         render_preview(scene, pth, views=(v,), size=(8, 6), tight=True,
                        strip=rules["cladding"]["effective_cover"])
         renders.append((pth, name, False))
-    cut_scene = build_scene(project, rules, style, heights, cut=190, furniture=True)
-    pth = rdir / "cutaway.png"
-    render_preview(cut_scene, pth, views=((58, -62),), size=(10, 8), tight=True, hidden=(),
-                   strip=rules["cladding"]["effective_cover"])
-    renders.append((pth, "المقطع العلوي بالفرش", True))
+    for f, fl_ in enumerate(project.floor_list):
+        cut_scene = build_scene(project, rules, style, heights, cut=fl_["level"] + 190, furniture=True)
+        pth = rdir / f"cutaway-{f}.png"
+        render_preview(cut_scene, pth, views=((58, -62),), size=(10, 8), tight=True, hidden=(),
+                       strip=rules["cladding"]["effective_cover"])
+        nm = "المقطع العلوي بالفرش" + (f" — {fl_['name']}" if len(project.floor_list) > 1 else "")
+        renders.append((pth, nm, True))
     real_shots = []
     prev = sorted((out / "realistic").glob("v*.jpg")) if (out / "realistic").exists() else []
     if prev and not real:     # إعادة استخدام الصور الواقعية السابقة إذا ما تغيّر الشكل (مثل تعديل السعر)

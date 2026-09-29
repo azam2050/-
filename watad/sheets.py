@@ -5,6 +5,8 @@
 """
 import math
 
+import numpy as np
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -308,8 +310,51 @@ def draw_furniture(ax, P):
                     rotation=rot)
 
 
-def plan_sheet(ctx):
-    P, rules = ctx["project"], ctx["rules"]
+def floor_view(P, f):
+    """نسخة من المشروع فيها عناصر دور واحد فقط (للمسقط)."""
+    import dataclasses
+    lev = P.level(f)
+    return dataclasses.replace(
+        P, walls=[w for w in P.walls if w.floor == f], rooms=[r for r in P.rooms if r.floor == f],
+        furniture=[x for x in P.furniture if x.floor == f],
+        decks=[d for d in P.decks if (d.level == 0 and f == 0) or (d.level and abs(d.level - lev) < 1)])
+
+
+def draw_stairs_plan(ax, P_full, f):
+    from .model3d import stair_geometry
+    for st in P_full.stairs:
+        base = st.get("from", 0)
+        if f not in (base, base + 1):
+            continue
+        steps, landing, r, n = stair_geometry(P_full, st)
+        cut_z = 120
+        for x0, y0, x1, y1, zt in steps + [landing]:
+            dashed = f == base and zt > cut_z
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a",
+                                   lw=0.4 if dashed else 0.7, ls=(0, (4, 3)) if dashed else "-"))
+        x0, y0, x1, y1 = st["rect"]
+        fw = st.get("flight_w", 90)
+        first_east = st.get("first", "east") == "east"
+        fa = (x1 - fw / 2) if first_east else (x0 + fw / 2)
+        fb = (x0 + fw / 2) if first_east else (x1 - fw / 2)
+        ly = landing[1]
+        if f == base:
+            ax.annotate("", (fa, ly - 10), (fa, y0 + 8), arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9))
+            ax.text(fa, y0 + 20, "صعود", ha="center", va="bottom", fontsize=7, color="#b04020", rotation=90)
+            ax.plot([fa - fw / 2, fa + fw / 2], [y0 + 4 * 27 + 10, y0 + 4 * 27 - 10], color="k", lw=0.8)
+        else:
+            ax.annotate("", (fb, y0 + 30), (fb, ly - 10), arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9))
+            ax.text(fb, ly - 30, "نزول", ha="center", va="top", fontsize=7, color="#b04020", rotation=90)
+            a, b = (x0 + fw, x1) if first_east else (x0, x1 - fw)
+            ax.plot([a, b], [y0, y0], color="#6b4f3a", lw=2.2)
+        ax.text((x0 + x1) / 2, landing[1] + (landing[3] - landing[1]) / 2,
+                f"{n} قائمة × {r:.1f} سم", ha="center", va="center", fontsize=6.5, color="#6b4f3a")
+
+
+def plan_sheet(ctx, floor=0):
+    P_full = ctx["project"]
+    P, rules = floor_view(P_full, floor), ctx["rules"]
+    fname = P_full.floor_list[floor]["name"]
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(P, rules)
     ey0 = min([y0] + [d.rect[1] - (120 if d.stairs else 0) for d in P.decks])
@@ -317,7 +362,10 @@ def plan_sheet(ctx):
     portrait = (y1 - ey0) >= (ex1 - x0) * 0.95
     fig = new_page((A3[1], A3[0]) if portrait else A3)
     ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
-    title(ax, "المسقط الأفقي مع الفرش", "الأبعاد بالسنتيمتر - الجدران: قوائم 7×5 + تلبيس 2.5 من الجهتين (12 سم)")
+    multi = len(P_full.floor_list) > 1
+    title(ax, "المسقط الأفقي مع الفرش" + (f" — {fname}" if multi else ""),
+          "الأبعاد بالسنتيمتر - الجدران: قوائم 7×5 + تلبيس 2.5 من الجهتين (12 سم)"
+          + (f"  |  منسوب الأرضية {P_full.level(floor) / 100:+.2f}" if multi else ""))
 
     for r in P.rooms:
         if r.wet:
@@ -345,9 +393,10 @@ def plan_sheet(ctx):
     _draw_shape(ax, wall_shapes(P, rules), fc="white", ec="k", lw=0.9, hatch="////")
     draw_openings_plan(ax, P, rules)
     draw_furniture(ax, P)
+    draw_stairs_plan(ax, P_full, floor)
     for r in P.rooms:
         cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
-        big = r.area_m2 > 4
+        big = r.area_m2 > 4 and r.kind != "stair"
         rot = 90 if r.h > 2 * r.w and r.w < 100 else 0
         ax.text(cx, cy + (8 if big else 0), r.name, ha="center", va="bottom", fontsize=12 if big else 8,
                 rotation=rot)
@@ -399,15 +448,17 @@ def plan_sheet(ctx):
     ax.text(nx_, ny_ + 42, "ش", ha="center", fontsize=14)
     ax.set_xlim(x0 - 160, x1 + 170)
     ax.set_ylim(y0 - 160, y1 + 170)
-    return fig, "المسقط الأفقي"
+    return fig, "المسقط الأفقي" + (f" — {fname}" if multi else "")
 
 
 # ---------------------------------------------------------------- الواجهات
 def elevation(ax, ctx, w):
     P, rules = ctx["project"], ctx["rules"]
     half = wall_thickness(rules) / 2
-    H = ctx["heights"][w.name]
+    H = P.roof_base                    # ارتفاع الجدار الكلي (كل الأدوار)
     L = w.length + 2 * half
+    stack = [(w2, P.level(w2.floor)) for w2 in P.walls
+             if w2.exterior and tuple(w2.start) == tuple(w.start) and tuple(w2.end) == tuple(w.end)]
     g = roof_geometry(P, rules)
     ov, p = P.roof.overhang, g["pitch"]
     rise = g["rise"]
@@ -428,7 +479,8 @@ def elevation(ax, ctx, w):
         ax.plot([0, L], [y, y], color="#999", lw=0.4)
         y += cover
     top = H + rise
-    if gable_end and w.gable_glass:
+    gglass = any(w2.gable_glass for w2, _l in stack)
+    if gable_end and gglass:
         from .model3d import gable_glass_geometry
         inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
         ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
@@ -437,9 +489,9 @@ def elevation(ax, ctx, w):
             ax.add_patch(Rectangle((t - 5, inner[0][1]), 10, zin(t) - inner[0][1], fc="#e9d9c4", ec="k", lw=0.5))
         ax.text(L / 2, H + 32, "زجاج بإطار خشب 20 سم + قوائم خشب 10 سم", ha="center", fontsize=7, color=C_WIN)
     if gable_end:
-        if not w.gable_glass:
+        if not gglass:
             ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
-        y = H + cover if not w.gable_glass else top
+        y = H + cover if not gglass else top
         while y < top - 5:
             dxg = (top - y) / math.tan(p)
             ax.plot([L / 2 - dxg, L / 2 + dxg], [y, y], color="#999", lw=0.4)
@@ -466,6 +518,7 @@ def elevation(ax, ctx, w):
                 ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
         roof_top = top + depth
     # التراس والأعمدة أمام هذي الواجهة
+    late_rails = []
     nx_, ny_ = w.n
     front_posts = []
     for pt in P.posts:
@@ -481,6 +534,12 @@ def elevation(ax, ctx, w):
               for cx in (dx0, dx1) for cy in (dy0, dy1)]
         if min(c[0] for c in cs) < -half - 20:
             t0, t1 = min(c[1] for c in cs), max(c[1] for c in cs)
+            if d.level > 0:      # بلكونة الدور العلوي
+                top_d = d.level
+                ax.add_patch(Rectangle((t0, top_d - 25), t1 - t0, 25, fc="#e9d9c4", ec="#8b5a2b", lw=0.7))
+                if "S" in d.railing or not gable_end:
+                    late_rails.append((t0, t1, top_d))
+                continue
             top_d = d.height - sh
             ax.add_patch(Rectangle((t0, -sh), t1 - t0, sh + top_d, fc="#e9d9c4", ec="#8b5a2b", lw=0.7))
             if d.stairs and gable_end:
@@ -497,39 +556,53 @@ def elevation(ax, ctx, w):
     if len(front_posts) >= 2:
         ax.add_patch(Rectangle((min(front_posts) - 8, H - 22), max(front_posts) - min(front_posts) + 16, 22,
                                fc="#c9a27c", ec="k", lw=0.7))
-    # الفتحات
-    for o in w.openings:
-        ex = o.offset + half
-        b = o.sill if o.kind == "window" else 0
-        col = C_WIN if o.kind == "window" else C_DOOR
-        ax.add_patch(Rectangle((ex, b), o.width, o.height, fc="white", ec=col, lw=1))
-        ax.add_patch(Rectangle((ex + 4, b + 4), o.width - 8, o.height - (8 if o.kind == "window" else 4),
-                               fill=False, ec=col, lw=0.6))
-        if o.kind == "window" and o.width >= 90 and not o.style:
-            ax.plot([ex + o.width / 2] * 2, [b + 4, b + o.height - 4], color=col, lw=0.6)
-        if o.transom:
-            ax.plot([ex, ex + o.width], [o.transom] * 2, color=col, lw=0.8)
-        if o.kind == "door" and o.style in ("sliding", "fixed"):
-            n = max(2, round(o.width / 100))
-            for k in range(1, n):
-                ax.plot([ex + o.width * k / n] * 2, [0, o.height], color=col, lw=0.7)
-            if o.style == "sliding":
-                ax.annotate("", (ex + o.width * 0.35, 100), (ex + o.width * 0.15, 100),
-                            arrowprops=dict(arrowstyle="->", color=col, lw=0.6))
-        elif o.kind == "door" and o.leaves:
-            n = o.leaves
-            lw_ = o.width / n
-            for k in range(n):
-                xx = ex + k * lw_
-                ax.add_patch(Rectangle((xx + 8, 10), lw_ - 16, o.height - 20, fill=False, ec=col, lw=0.5))
-                hx = xx + (lw_ - 12 if k == 0 else 12)
-                ax.add_patch(Ellipse((hx, 105), 5, 5, fill=False, ec=col, lw=0.5))
-        ax.text(ex + o.width / 2, b + o.height + 8, o.code, ha="center", va="bottom", fontsize=8,
-                color=col)
+    # أحزمة الأدوار (أرضية الدور العلوي)
+    for f_ in range(1, len(P.floor_list)):
+        lv = P.level(f_)
+        ax.add_patch(Rectangle((0, lv - 25), L, 25, fc="#e9d9c4", ec="k", lw=0.6))
+    # الفتحات (لكل دور على منسوبه)
+    for w2, lev in stack:
+        for o in w2.openings:
+            ex = o.offset + half
+            b = lev + (o.sill if o.kind == "window" else 0)
+            col = C_WIN if o.kind == "window" else C_DOOR
+            ax.add_patch(Rectangle((ex, b), o.width, o.height, fc="white", ec=col, lw=1))
+            ax.add_patch(Rectangle((ex + 4, b + 4), o.width - 8, o.height - (8 if o.kind == "window" else 4),
+                                   fill=False, ec=col, lw=0.6))
+            if o.kind == "window" and o.width >= 90 and not o.style:
+                ax.plot([ex + o.width / 2] * 2, [b + 4, b + o.height - 4], color=col, lw=0.6)
+            if o.transom:
+                ax.plot([ex, ex + o.width], [lev + o.transom] * 2, color=col, lw=0.8)
+            if o.kind == "door" and o.style in ("sliding", "fixed"):
+                n = max(2, round(o.width / 100))
+                for k in range(1, n):
+                    ax.plot([ex + o.width * k / n] * 2, [lev, lev + o.height], color=col, lw=0.7)
+                if o.style == "sliding":
+                    ax.annotate("", (ex + o.width * 0.35, lev + 100), (ex + o.width * 0.15, lev + 100),
+                                arrowprops=dict(arrowstyle="->", color=col, lw=0.6))
+            elif o.kind == "door" and o.leaves:
+                n = o.leaves
+                lw_ = o.width / n
+                for k in range(n):
+                    xx = ex + k * lw_
+                    ax.add_patch(Rectangle((xx + 8, lev + 10), lw_ - 16, o.height - 20, fill=False, ec=col, lw=0.5))
+                    hx = xx + (lw_ - 12 if k == 0 else 12)
+                    ax.add_patch(Ellipse((hx, lev + 105), 5, 5, fill=False, ec=col, lw=0.5))
+            ax.text(ex + o.width / 2, b + o.height + 8, o.code, ha="center", va="bottom", fontsize=8,
+                    color=col)
+    for t0, t1, top_d in late_rails:        # دربزين البلكونة فوق الفتحات
+        ax.add_patch(Rectangle((t0, top_d), t1 - t0, 105, fc="#fbf6ef", ec="#8b5a2b", lw=0.9, alpha=0.85))
+        for yy in range(12, 105, 13):
+            ax.plot([t0, t1], [top_d + yy] * 2, color="#8b5a2b", lw=0.5)
+        for tt in np.linspace(t0, t1, 7):
+            ax.plot([tt, tt], [top_d, top_d + 110], color="#8b5a2b", lw=1.2)
     # المناسيب
     lx = -110
     level(ax, lx - ext_l, -sh, -sh / 100, "منسوب الأرض", below=True)
     level(ax, lx - ext_l, 0, 0.0001, "وجه الصبة")
+    for f_ in range(1, len(P.floor_list)):
+        lv = P.level(f_)
+        level(ax, lx - ext_l, lv, lv / 100, "أرضية " + P.floor_list[f_]["name"])
     level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
     level(ax, lx - ext_l, top, top / 100, "قمة الجملون")
     # الأبعاد
@@ -548,7 +621,7 @@ def elevation(ax, ctx, w):
 
 def elevation_sheets(ctx):
     P = ctx["project"]
-    ext = P.exterior_walls
+    ext = [w for w in P.exterior_walls if w.floor == 0]
     out = []
     for i in range(0, len(ext), 2):
         fig = new_page((A3[1], A3[0]))
@@ -616,18 +689,19 @@ def roof_sheet(ctx):
     ax2 = drawing_ax(fig, [0.52, 0.33, 0.44, 0.52])
     title(ax2, "قطاع عرضي أ-أ", "مقياس 1:50  |  الوحدة: سم")
     half = wall_thickness(rules) / 2
-    H = P.wall_height
-    big = max(P.rooms, key=lambda r: r.area_m2) if P.rooms else None
+    H = P.roof_base
+    big = max((r for r in P.rooms if r.floor == 0), key=lambda r: r.area_m2) if P.rooms else None
     cut = ((big.rect[1] + big.rect[3]) / 2 if ridge_y else (big.rect[0] + big.rect[2]) / 2) if big \
         else (cy if ridge_y else cx)
     lo, hi = (x0, x1) if ridge_y else (y0, y1)
-    walls_cut = []
+    walls_cut = []   # (الموقع، منسوب الأسفل، الارتفاع)
     for w in P.walls:
         ux, uy = w.u
+        lv, hh = P.level(w.floor), ctx["heights"][w.name]
         if ridge_y and abs(ux) < 1e-6 and min(w.start[1], w.end[1]) <= cut <= max(w.start[1], w.end[1]):
-            walls_cut.append(w.start[0] - lo)
+            walls_cut.append((w.start[0] - lo, lv, hh))
         if not ridge_y and abs(uy) < 1e-6 and min(w.start[0], w.end[0]) <= cut <= max(w.start[0], w.end[0]):
-            walls_cut.append(w.start[1] - lo)
+            walls_cut.append((w.start[1] - lo, lv, hh))
     S = hi - lo
     p = g["pitch"]
     rise = g["rise"]
@@ -635,15 +709,20 @@ def roof_sheet(ctx):
     sh = P.slab_height
     ax2.plot([-120, S + 120], [-sh, -sh], color="k", lw=1)
     ax2.add_patch(Rectangle((-10, -sh), S + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
-    for c in walls_cut:
-        ax2.add_patch(Rectangle((c - half, 0), 2 * half, H, fc="white", ec="k", lw=0.8, hatch="////"))
+    for c, lv, hh in walls_cut:
+        ax2.add_patch(Rectangle((c - half, lv), 2 * half, hh, fc="white", ec="k", lw=0.8, hatch="////"))
+    for f_ in range(1, len(P.floor_list)):      # أرضية الدور العلوي: جسور 5×15 + تطبيق
+        lv = P.level(f_)
+        ax2.add_patch(Rectangle((0, lv - 25), S, 25, fc="#e9d9c4", ec="k", lw=0.7, hatch=".."))
+        ax2.text(S / 2, lv - 12, "أرضية: جسور 5×15 + تطبيق خشب", ha="center", va="center", fontsize=7)
+        level(ax2, -80, lv, lv / 100, "أرضية " + P.floor_list[f_]["name"])
     e = ov * math.tan(p)
     lower = [(-ov, H - e), (S / 2, H + rise), (S + ov, H - e)]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     ax2.text(S / 2, H + rise + depth + 15, "مداد 5×15 بخلعة على العمود العلوي، مثبت ببراغي",
              ha="center", fontsize=8)
-    ax2.text(S / 2, H / 2, "قوائم 7×5 + تلبيس 2.5 من الجهتين", ha="center", fontsize=8)
+    ax2.text(S / 2, P.floor_list[0]["height"] / 2, "قوائم 7×5 + تلبيس 2.5 من الجهتين", ha="center", fontsize=8)
     level(ax2, -80, 0, 0.0001, "وجه الصبة")
     level(ax2, -80, H, H / 100, "أعلى الجدار")
     level(ax2, -80, H + rise, (H + rise) / 100, "قمة الجملون")
@@ -712,8 +791,9 @@ def schedule_sheet(ctx):
 def areas_sheet(ctx):
     P, rules = ctx["project"], ctx["rules"]
     x0, y0, x1, y1 = outer_bbox(P, rules)
-    gross = (x1 - x0) * (y1 - y0) / 1e4
-    net = sum(r.area_m2 for r in P.rooms)
+    nfl = len(P.floor_list)
+    gross = (x1 - x0) * (y1 - y0) / 1e4 * nfl
+    net = sum(r.area_m2 for r in P.rooms if r.kind != "stair" or r.floor == 0)
     terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
     fig = new_page()
     hide_price = bool(P.meta.get("hide_pricing"))
@@ -721,14 +801,18 @@ def areas_sheet(ctx):
              fontsize=18, weight="bold", color=BRAND)
     # جدول المساحات
     ax = fig.add_axes([0.04, 0.3, 0.5, 0.58])
-    rows = [[i + 1, r.name, f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"]
-            for i, r in enumerate(P.rooms)]
+    short = {0: "أرضي", 1: "أول", 2: "ثاني"}
+    rooms_ = [r for r in P.rooms if not (r.kind == "stair" and r.floor > 0)]
+    rows = [[i + 1, (f"{short.get(r.floor, r.floor)} — " if nfl > 1 else "") + r.name,
+             f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
     if terrace:
-        rows.append(["", "التراس المسقوف", " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1]
-                                                     for k in (0, 1)), f"{terrace:.2f}"])
-    rows.append(["", "المساحة الإجمالية المبنية", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}", f"{gross:.2f}"])
-    table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5,
+        rows.append(["", "التراس المسقوف" + (" + تراس الدور الأول" if len(P.decks) > 1 else ""),
+                     " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1] for k in (0, 1))
+                     + (f" × {len(P.decks)}" if len(P.decks) > 1 else ""), f"{terrace:.2f}"])
+    rows.append(["", "المساحة الإجمالية المبنية",
+                 f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""), f"{gross:.2f}"])
+    table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5 if len(rows) < 12 else 9,
           bold_last=3 if terrace else 2)
     ax.set_title("جدول المساحات", fontsize=14, weight="bold", color=BRAND, loc="right")
     # بيانات المشروع
@@ -944,6 +1028,11 @@ def bom_rows(ctx):
     if p["method2_long_pallets"]["count"]:
         rows.append(["طبليات الطريقة الثانية (طويلة)",
                      f"{p['method2_long_pallets']['count']} طبلية × {p['method2_long_pallets']['length']} سم"])
+    fj = p.get("floor_joists") or {}
+    if fj.get("count"):
+        rows.append(["جسور أرضية الدور العلوي 5×15 كل 40 سم",
+                     f"{fj['count']} جسر — " + "، ".join(f"{L}سم×{n}" for L, n in fj["lengths"])
+                     + f" (طبلية {fj['stock']} بالطريقة الأولى)"])
     rows += [["إجمالي الطبليات 5×22.5", str(p["total_pallets"])],
              ["إجمالي قطع 7×5", str(p["stud_pieces_total"])],
              ["قائمة تقطيع 7×5", "  |  ".join(f"{L}سم×{n}" for L, n in p["stud_cut_list"][:9])]]
@@ -959,7 +1048,8 @@ def bom_rows(ctx):
 
 def build_client_pdf(ctx, path, with_perspective=True):
     """نسخة العميل بطابع مكتب هندسي: إطار عنوان بالشعار، مسقط، واجهات، سقف وقطاع، جداول، لقطات 3D."""
-    pages = [(plan_sheet(ctx), "1:50")] + [(e, "1:50") for e in elevation_sheets(ctx)] + \
+    pages = [(plan_sheet(ctx, f), "1:50") for f in range(len(ctx["project"].floor_list))] + \
+        [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
     pages += [(r, "—") for r in real_sheets(ctx)]
     pages += [(r, "—") for r in renders_sheets(ctx)]
@@ -976,7 +1066,8 @@ def build_client_pdf(ctx, path, with_perspective=True):
 
 
 def build_pdf(ctx, path):
-    pages = [perspective_sheet(ctx), plan_sheet(ctx)] + elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
+    pages = [perspective_sheet(ctx)] + [plan_sheet(ctx, f) for f in range(len(ctx["project"].floor_list))] + \
+        elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
                                                          areas_sheet(ctx)]
     pages += framing_sheets(ctx)
     pages += text_table_sheet(ctx, "جدول الكميات وخطة تقطيع الطبليات", bom_rows(ctx), "الكميات")
