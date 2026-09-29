@@ -132,6 +132,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     S.material("sheathing", style["trim"])
     S.material("wood_in", style["wood"])
     S.material("ceiling", style["wood"])
+    S.material("joist", style["wood"])
     S.material("door", style["frame"])
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(project, rules)
@@ -203,8 +204,21 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 if hx1 < a1:
                     nxt.append((hx1, max(b0, hy0), a1, min(b1, hy1)))
             pieces = nxt
+        # الأرضية العلوية مكشوفة من تحت مثل الواقع: تطبيق خشب (نفس خشب الأرضية) فوق مدادات 5×15 @40
+        # تمتد بين الجدران الحاملة، وحزام (رِم) فوق كل جدار من الدور اللي تحته
+        deck_t, jd, jw, sp = 2.5, 15, 5, 40
         for a0, b0, a1, b1 in pieces:
-            S.box("ceiling", a0, b0, lev - 25, a1, b1, lev)
+            S.box("ceiling", a0, b0, lev - deck_t, a1, b1, lev)
+            yy = b0 + half + jw
+            while a1 - a0 > 40 and yy + jw <= b1 - half:
+                S.box("joist", max(a0, x0 + 2 * half + 1), yy, lev - deck_t - jd,
+                      min(a1, x1 - 2 * half - 1), yy + jw, lev - deck_t)
+                yy += sp
+        S.zoff = lev - 25
+        for w in project.walls_on(f - 1):
+            t_lo, t_hi = (-half, w.length + half) if w.exterior else (0, w.length)
+            S.wbox("wood" if w.exterior else "joist", w, t_lo, t_hi, -half, half, 0, 25 - deck_t)
+        S.zoff = 0
     for st in project.stairs:
         add_stair(S, project, st, cut)
     if furniture:      # "floors" = أرضيات فقط (الفرش الحقيقي يضيفه Blender)
@@ -366,7 +380,7 @@ def add_interior(S, project, style, cut=None, pieces=True):
     for r in project.rooms:
         if cut and cut <= project.level(r.floor):
             continue
-        if r.kind == "stair":
+        if r.kind == "stair" and r.floor > 0:      # فتحة الدرج في الدور العلوي
             continue
         S.zoff = project.level(r.floor)
         x0, y0, x1, y1 = r.rect
@@ -435,10 +449,33 @@ def add_stair(S, project, st, cut=None):
     S.material("stair", S.colors.get("trim", ("#8B5A2B", 1))[0])
     steps, landing, r, n = stair_geometry(project, st)
     S.zoff = lev
-    for x0, y0, x1, y1, zt in steps + [landing]:
+    # درج خشب حقيقي: قائمة 4 سم + قفلة 2 سم على كل درجة، وجانبين (كمرات مائلة 5×30) لكل شاحط
+    tread = st.get("tread", 27)
+    for x0, y0, x1, y1, zt in steps:
         if cut and lev + zt > cut + 40:
             continue
-        S.box("stair", x0, y0, max(zt - 30, 0), x1, y1, zt)       # درجة/بسطة بسماكة 30 سم (الكمرة مخفية)
+        S.box("stair", x0, y0, zt - 4, x1, y1, zt)
+        going_n = y1 - y0 > 0 and zt <= landing[4]
+        yr = (y0, y0 + 2) if going_n else (y1 - 2, y1)            # القفلة تحت مقدمة الدرجة
+        S.box("stair", x0 + 2, yr[0], max(zt - r, 0), x1 - 2, yr[1], zt - 4)
+    lx0, ly0, lx1, ly1, lz = landing
+    if not (cut and lev + lz > cut + 40):
+        S.box("stair", lx0, ly0, lz - 20, lx1, ly1, lz)
+    fw = st.get("flight_w", 90)
+    sx0, sy0, sx1, sy1 = st["rect"]
+    first_east = st.get("first", "east") == "east"
+    fa = (sx1 - fw, sx1) if first_east else (sx0, sx0 + fw)
+    fb = (sx0, sx0 + fw) if first_east else (sx1 - fw, sx1)
+    top = project.level(st.get("from", 0) + 1) - lev
+    k = r / tread
+    flights = [(fa, sy0, r, ly0, lz), (fb, ly0, lz + r, sy0 + tread, top)]
+    for (xa, xb), ya, za, yb, zb in flights:
+        if cut and lev + min(za, zb) > cut + 40:
+            continue
+        for xs in (xa, xb - 5):
+            lo_a, lo_b = max(za - 34, 0), zb - 34
+            S.hexa("stair", [(xs, ya, lo_a), (xs + 5, ya, lo_a), (xs + 5, yb, lo_b), (xs, yb, lo_b),
+                             (xs, ya, za + 4), (xs + 5, ya, za + 4), (xs + 5, yb, zb + 4), (xs, yb, zb + 4)])
     S.zoff = 0
     # دربزين حول فتحة الدرج في الدور العلوي
     if not cut or cut > project.level(st.get("from", 0) + 1) + 50:
@@ -451,6 +488,64 @@ def add_stair(S, project, st, cut=None):
         first_east = st.get("first", "east") == "east"
         a, b = (x0 + fw, x1) if first_east else (x0, x1 - fw)
         railing_run(S, Wall("sr", (a, y0), (b, y0)), 0, b - a, top, "vertical_balusters", spec, height=100)
+        # الجهة المفتوحة للشاحط الثاني على موزع الدور العلوي (لين أول جدار)
+        xo = x0 if first_east else x1
+        ywall = min([min(w.start[1], w.end[1]) for w in project.walls_on(st.get("from", 0) + 1)
+                     if abs(w.start[0] - w.end[0]) < 1 and abs(w.start[0] - xo) < 10
+                     and max(w.start[1], w.end[1]) > y0] + [y1])
+        if ywall - y0 > 30:
+            railing_run(S, Wall("sr2", (xo, y0), (xo, ywall)), 0, ywall - y0, top, "vertical_balusters", spec,
+                        height=100)
+    # دربزين الدرج نفسه: درابزين مائل على الجهة الداخلية للشاحطين + عرض البسطة
+    if not cut:
+        stair_railing(S, project, st)
+
+
+def stair_railing(S, project, st, h=90, bal=12):
+    lev = project.level(st.get("from", 0))
+    top = project.level(st.get("from", 0) + 1) - lev
+    steps, landing, r, n = stair_geometry(project, st)
+    x0, y0, x1, y1 = st["rect"]
+    fw = st.get("flight_w", 90)
+    first_east = st.get("first", "east") == "east"
+    xa = x1 - fw if first_east else x0 + fw          # الحد الداخلي للشاحط الأول
+    xb = x0 + fw if first_east else x1 - fw          # الحد الداخلي للشاحط الثاني
+    ly0, lz = landing[1], landing[4]
+
+    def tread_z(x, y):
+        for sx0, sy0, sx1, sy1, zt in steps + [landing]:
+            if sx0 - 1 <= x <= sx1 + 1 and sy0 - 0.01 <= y <= sy1 + 0.01:
+                return zt
+        return 0.0 if y < ly0 and abs(x - xa) < abs(x - xb) else top
+
+    S.zoff = lev
+
+    def run(x, ya, za, yb, zb, inset):
+        xr = x + inset
+        k = (zb - za) / (yb - ya)
+        rail = lambda y: za + k * (y - ya) + h
+        S.hexa("stair", [(xr - 3, ya, rail(ya)), (xr + 3, ya, rail(ya)), (xr + 3, yb, rail(yb)), (xr - 3, yb, rail(yb)),
+                         (xr - 3, ya, rail(ya) + 5), (xr + 3, ya, rail(ya) + 5), (xr + 3, yb, rail(yb) + 5),
+                         (xr - 3, yb, rail(yb) + 5)])
+        m = max(1, round(abs(yb - ya) / bal))
+        for i in range(1, m):
+            y = ya + (yb - ya) * i / m
+            S.box("stair", xr - 1.8, y - 1.8, tread_z(x + 2 * inset, y), xr + 1.8, y + 1.8, rail(y))
+        for y in (ya, yb):     # قوائم رئيسية
+            S.box("stair", xr - 4.5, y - 4.5 if y > min(ya, yb) else y, tread_z(x + 2 * inset, y),
+                  xr + 4.5, y + 4.5 if y == min(ya, yb) else y, rail(y) + 12)
+
+    sgn = -1 if first_east else 1        # الدربزين فوق الدرجة من جهتها الداخلية
+    run(xa, y0, r, ly0, lz, -sgn * 5)
+    run(xb, ly0, lz + r, y0 + 27, top, sgn * 5)
+    # حافة البسطة المطلة على الفراغ بين الشاحطين
+    xl, xh = sorted((xa, xb))
+    S.box("stair", xl, ly0 + 1, lz + h, xh, ly0 + 7, lz + h + 5)
+    m = max(1, round((xh - xl) / bal))
+    for i in range(1, m):
+        xx = xl + (xh - xl) * i / m
+        S.box("stair", xx - 1.8, ly0 + 2.2, lz, xx + 1.8, ly0 + 5.8, lz + h)
+    S.zoff = 0
 
 
 def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):

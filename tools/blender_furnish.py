@@ -306,7 +306,7 @@ BUILD = {"bed": p_bed, "wardrobe": p_wardrobe, "kitchen": p_kitchen, "fridge": p
          "dining_chair": p_dchair, "nightstand": p_night, "side_table": p_side,
          "shower": p_shower, "wc": p_wc, "basin": p_basin}
 
-for it in cfg["furnish"]:
+for it in cfg.get("furnish", []):
     fn = BUILD.get(it["kind"])
     if fn:
         fn(it)
@@ -330,3 +330,56 @@ for i, a in enumerate(cfg.get("area_lights", [])):
     o.visible_camera = False
     o.visible_glossy = False
     scene.collection.objects.link(o)
+
+
+# ---------------------------------------------------------------- المحيط الخارجي (نسخ مرتبطة خفيفة)
+_COLL = {}
+
+
+def coll(mid):
+    if mid in _COLL:
+        return _COLL[mid]
+    f = glob.glob(f"{MODELS}/{mid}/{mid}.gltf")
+    if not f:
+        _COLL[mid] = None
+        return None
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=f[0])
+    new = [o for o in bpy.data.objects if o not in before]
+    bpy.context.view_layer.update()
+    pts = [o.matrix_world @ Vector(c) for o in new if o.type == "MESH" for c in o.bound_box]
+    lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+    hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+    c = bpy.data.collections.new("C_" + mid)
+    for o in new:
+        for uc in list(o.users_collection):
+            uc.objects.unlink(o)
+        c.objects.link(o)
+    c.instance_offset = ((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z)
+    _COLL[mid] = (c, hi - lo)
+    return _COLL[mid]
+
+
+def inst(mid, at, H=None, W=None, rot=0.0):
+    got = coll(mid)
+    if not got:
+        return None
+    c, d = got
+    s = H / d.z if H else W / max(d.x, d.y)
+    e = bpy.data.objects.new(mid, None)
+    e.instance_type = "COLLECTION"
+    e.instance_collection = c
+    e.scale = (s, s, s)
+    e.location = at
+    e.rotation_euler = (0, 0, rot)
+    scene.collection.objects.link(e)
+    return e
+
+
+for it in cfg.get("landscape", []):
+    if it.get("kind") == "paver":
+        x, y, z = it["at"]
+        w, d = it["size"]
+        fbox(None, FM["stone"], x - w / 2, y - d / 2, z, x + w / 2, y + d / 2, z + 0.04, 0.01)
+        continue
+    inst(it["model"], it["at"], it.get("H"), it.get("W"), math.radians(it.get("rot", 0)))

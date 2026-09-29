@@ -105,7 +105,7 @@ def flat_material(name, color, rough=0.5, metal=0.0, transmission=0.0, ior=1.45)
 
 C = cfg["colors"]
 MATS = {
-    "wood": tex_material("W_wood", "WoodSiding008", 2.4, C["wood"], 0.7),
+    "wood": tex_material("W_wood", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_mix", 0.7)),
     "wood_in": tex_material("W_wood_in", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_in_mix", 0.7)),
     "trim": tex_material("W_trim", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
     "rafters": tex_material("W_raft", "WoodFloor043", 1.6, C["trim"], 0.9, bump=0.1),
@@ -126,6 +126,12 @@ MATS = {
     "frame": flat_material("W_frame", C["frame"], rough=0.35, metal=0.7),
     "glass": flat_material("W_glass", "#8FA3B0", rough=0.02, transmission=1.0, ior=1.5),
 }
+MATS["joist"] = MATS["ceiling"]
+if cfg.get("furnish") or cfg.get("landscape"):
+    # الداخل مثل كبائن المصنع: الجدران وتطبيق السقف والمدادات بنفس خشب الأرضية (صنوبر طبيعي)
+    pine = tex_material("W_pine", "WoodFloor043", 0.8, None, bump=0.08)
+    beam = tex_material("W_beam", "WoodFloor043", 0.9, "#E2B27C", 0.2, bump=0.05)
+    MATS.update({"wood_in": pine, "ceiling": pine, "sheathing": pine, "joist": beam, "rafters": beam})
 for ob in list(scene.objects):
     if ob.type != "MESH":
         continue
@@ -149,7 +155,7 @@ size = (hi - lo).length
 # الأرض: عشب
 bpy.ops.mesh.primitive_plane_add(size=120, location=(center.x, center.y, cfg["ground_z"] - 0.005))
 ground = bpy.context.active_object
-ground.data.materials.append(tex_material("W_grass", "Grass004", 2.5, None, bump=0.4))
+ground.data.materials.append(tex_material("W_grass", "Grass004", cfg.get("grass_tile", 2.5), cfg.get("grass_tint"), 0.35, rough=1.0, bump=0.6))
 
 # السماء + الشمس
 world = bpy.data.worlds.new("sky")
@@ -166,7 +172,7 @@ sun.color = (1.0, 0.95, 0.88)
 sun.angle = math.radians(1.5)
 sun_ob = bpy.data.objects.new("sun", sun)
 scene.collection.objects.link(sun_ob)
-sun_ob.rotation_euler = (math.radians(50), 0, math.radians(cfg.get("sun_azim", 35)))
+sun_ob.rotation_euler = (math.radians(90 - cfg.get("sun_elev", 40)), 0, math.radians(cfg.get("sun_azim", 35)))
 
 # إضاءة داخلية دافئة (مثل صور المساء)
 for i, (x, y, z) in enumerate(cfg.get("lights", [])):
@@ -180,7 +186,7 @@ for i, (x, y, z) in enumerate(cfg.get("lights", [])):
     scene.collection.objects.link(o)
 
 # فرش حقيقي للقطات الداخلية
-if cfg.get("furnish"):
+if cfg.get("furnish") or cfg.get("landscape"):
     import os as _os
     exec(open(cfg["furnish_py"], encoding="utf-8").read())
 
