@@ -127,6 +127,8 @@ MATS = {
     "glass": flat_material("W_glass", "#A7B6BE", rough=0.02, transmission=0.93, ior=1.52),
 }
 MATS["joist"] = MATS["ceiling"]
+MATS["metal_roof"] = flat_material("W_metal_roof", "#2E3235", rough=0.38, metal=0.7)
+MATS["green_roof"] = tex_material("W_green_roof", "Grass004", 0.9, None, rough=1.0, bump=0.9)
 # زجاج معماري: انعكاس سماء خفيف (طبقة لامعة) عشان يبان زجاج مركّب مو فتحة فاضية
 MATS["glass"].node_tree.nodes["Principled BSDF"].inputs["Coat Weight"].default_value = 0.7
 if cfg.get("furnish") or cfg.get("landscape"):
