@@ -28,8 +28,9 @@ def pack(lengths, stock, kerf, bins=None):
     return bins
 
 
-def floor_joists(project, rules, spacing=40):
-    """جسور أرضية الأدوار العلوية 5×15 — تمتد بين جدران الدور تحته (TO_CONFIRM: التباعد والمقطع)."""
+def floor_joists(project, rules, spacing=None):
+    """مدادات أرضية الأدوار العلوية 5×15 كل 60 سم (قاعدة المصنع) — تمتد بين جدران الدور تحته."""
+    spacing = spacing or rules["members"].get("floor_joist", {}).get("spacing", 60)
     out = []
     for f in range(1, len(project.floor_list)):
         below = [w for w in project.walls if w.floor == f - 1 and abs(w.u[0]) < 1e-6]

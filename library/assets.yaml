@@ -1,0 +1,55 @@
+# مكتبة الرندر الواقعي لمصنع وتد — كل الخامات والموديلات المعتمدة (رخصة CC0 مجانية للاستخدام التجاري)
+# التنزيل بأمر واحد:  python tools/setup_library.py      (≈ 300 م.ب، مرة واحدة لكل جهاز/جلسة)
+# المسارات: BLENDER=/opt/blender/blender-4.2.3-linux-x64/blender  BLENDER_TEX=/opt/blender/tex  BLENDER_MODELS=/opt/blender/models
+
+blender:
+  version: 4.2.3
+  url: https://download.blender.org/release/Blender4.2/blender-4.2.3-linux-x64.tar.xz
+
+hdri:        # السماء (Poly Haven) → tex/sky.hdr
+  sky: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr
+
+textures:    # ambientCG 2K-JPG → tex/<id>/
+  WoodSiding008:   تلبيس خارجي (احتياطي للستايلات الملونة)
+  WoodFloor043:    صنوبر طبيعي — الأرضية والجدران الداخلية والخارج الفاتح والمدادات
+  Planks037A:      ألواح بديلة
+  RoofingTiles006: قرميد السقف
+  Grass004:        العشب
+  Concrete034:     القاعدة الخرسانية
+
+models:      # Poly Haven glTF 1k → models/<id>/
+  furniture:
+    sofa_02: احتياطي (الكنبة الافتراضية إجرائية حديثة)
+    ArmChair_01: كرسي كلاسيكي
+    mid_century_lounge_chair: كرسي الصالة والماستر
+    modern_coffee_table_01: طاولة قهوة بديلة
+    wooden_table_02: طاولة الطعام (تُمد لمقاس المسقط)
+    dining_chair_02: كراسي الطعام
+    modern_wooden_cabinet: وحدة تلفزيون بديلة
+    painted_wooden_nightstand: كومودينو
+    side_table_01: طاولة جانبية
+  decor:
+    modern_ceiling_lamp_01: إضاءة معلقة فوق الطاولة
+    throw_pillows_01: مخدات
+    ceramic_vase_01: مزهرية
+    hanging_picture_frame_01: لوحة
+    book_encyclopedia_set_01: كتب
+    wooden_bowl_01: صحن خشب
+    potted_plant_01: نبتة كبيرة
+    potted_plant_02: نبتة وسط
+    potted_plant_04: نبتة صغيرة
+  outdoor:
+    tree_small_02: أشجار المحيط
+    shrub_01: غطاء أرضي
+    shrub_02: شجيرات حول الكوخ
+    shrub_04: نبات صغير
+    outdoor_table_chair_set_01: جلسة التراس
+    planter_box_01: حوض زرع البلكونة
+
+procedural:  # قطع يبنيها tools/blender_furnish.py بمقاس المسقط بالضبط (بدون تنزيل)
+  - سرير (قاعدة خشب + مرتبة + لحاف + مخدات + لوح رأس + بطانية)
+  - دولاب ملابس بأبواب ومقابض
+  - مطبخ (دواليب سفلية وعلوية + رخام + مغسلة + مسطح طبخ)
+  - ثلاجة، وحدة تلفزيون وشاشة، كنبة حديثة، طاولة قهوة خشب، سجادة
+  - حمام: دش بزجاج، كرسي، مغسلة بمراية
+  - درج خشب بقوائم وقفلات وجانبين + درابزين (من watad/model3d.py)

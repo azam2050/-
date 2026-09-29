@@ -24,7 +24,7 @@ def open_questions(rules, multi=False):
         "مكان الوصلة في القاعدة والعلوي إذا الجدار أطول من الطبلية؟",
     ]
     if multi:
-        qs.append("جسور أرضية الدور العلوي: المقطع 5×15 والتباعد 40 سم مفترض — ما المعتمد عندكم؟")
+        pass    # مدادات الأرضية العلوية: 5×15 كل 60 سم (قاعدة ثابتة من المصنع)
     return qs
 
 
@@ -77,15 +77,10 @@ def build(project_path, out_dir, rules_path=None, real=False):
                        strip=rules["cladding"]["effective_cover"])
         nm = "المقطع العلوي بالفرش" + (f" — {fl_['name']}" if len(project.floor_list) > 1 else "")
         renders.append((pth, nm, True))
-    real_shots = []
-    prev = sorted((out / "realistic").glob("v*.jpg")) if (out / "realistic").exists() else []
-    if prev and not real:     # إعادة استخدام الصور الواقعية السابقة إذا ما تغيّر الشكل (مثل تعديل السعر)
-        from .realistic import VIEWS
-        real_shots = [(p_, VIEWS[i][0].replace("واقعي-", "").replace("-", " ")) for i, p_ in enumerate(prev[:len(VIEWS)])]
-    if real:
-        from .realistic import available, render_real
-        if available():
-            real_shots = render_real(project, rules, style, heights, out)
+    from .realistic import available, load_shots, render_real
+    real_shots = load_shots(out)       # إعادة استخدام الصور الواقعية السابقة إذا ما تغيّر الشكل (مثل تعديل السعر)
+    if real and available():
+        real_shots = render_real(project, rules, style, heights, out)
     ctx = {"project": project, "rules": rules, "heights": heights, "members": members, "q": q,
            "height": hi, "issues": issues, "questions": qs, "style": style,
            "preview": files["preview"], "railings": railings, "renders": renders,

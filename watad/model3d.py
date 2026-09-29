@@ -204,9 +204,10 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 if hx1 < a1:
                     nxt.append((hx1, max(b0, hy0), a1, min(b1, hy1)))
             pieces = nxt
-        # الأرضية العلوية مكشوفة من تحت مثل الواقع: تطبيق خشب (نفس خشب الأرضية) فوق مدادات 5×15 @40
-        # تمتد بين الجدران الحاملة، وحزام (رِم) فوق كل جدار من الدور اللي تحته
-        deck_t, jd, jw, sp = 2.5, 15, 5, 40
+        # الأرضية العلوية مكشوفة من تحت مثل الواقع: تطبيق خشب (نفس خشب الأرضية) فوق مدادات 5×15 كل 60 سم
+        # (قاعدة المصنع) تمتد بين الجدران الحاملة، وحزام (رِم) فوق كل جدار من الدور اللي تحته
+        fj = rules["members"].get("floor_joist", {"w": 15, "t": 5, "spacing": 60})
+        deck_t, jd, jw, sp = 2.5, fj["w"], fj["t"], fj["spacing"]
         for a0, b0, a1, b1 in pieces:
             S.box("ceiling", a0, b0, lev - deck_t, a1, b1, lev)
             yy = b0 + half + jw
@@ -559,6 +560,15 @@ def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):
     for t in posts:
         S.wbox("wood", w, t - post / 2, t + post / 2, -half, half, H + border, zin(t) + 1)
     S.wprism("glass", w, inner, -1, 1)
+    # إطار ألمنيوم أسود حول كل لوح زجاج (مثل الأبواب والشبابيك) — عشان الزجاج يبان مركّب مو فتحة فاضية
+    fw_, fd = 5, 4
+    zb = H + border
+    S.wbox("frame", w, tl, L - tl, -fd, fd, zb, zb + fw_)
+    S.wdiag("frame", w, tl, zb, L / 2, H + rise - bv, fw_ * 2, -fd, fd)
+    S.wdiag("frame", w, L / 2, H + rise - bv, L - tl, zb, fw_ * 2, -fd, fd)
+    for t in posts:
+        for a in (t - post / 2 - fw_, t + post / 2):
+            S.wbox("frame", w, a, a + fw_, -fd, fd, zb, zin(a + fw_ / 2))
     # كنار خارجي حول الزجاج (خط التركيب)
     S.wbox("trim", w, tl, L - tl, -half - 2.5, -half, H + border - 5, H + border)
 

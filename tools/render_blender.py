@@ -124,14 +124,20 @@ MATS = {
     "white": flat_material("W_white", "#F4F4F2", rough=0.2),
     "dark": flat_material("W_dark", "#2B2B2B", rough=0.3),
     "frame": flat_material("W_frame", C["frame"], rough=0.35, metal=0.7),
-    "glass": flat_material("W_glass", "#8FA3B0", rough=0.02, transmission=1.0, ior=1.5),
+    "glass": flat_material("W_glass", "#A7B6BE", rough=0.02, transmission=0.93, ior=1.52),
 }
 MATS["joist"] = MATS["ceiling"]
+# زجاج معماري: انعكاس سماء خفيف (طبقة لامعة) عشان يبان زجاج مركّب مو فتحة فاضية
+MATS["glass"].node_tree.nodes["Principled BSDF"].inputs["Coat Weight"].default_value = 0.7
 if cfg.get("furnish") or cfg.get("landscape"):
     # الداخل مثل كبائن المصنع: الجدران وتطبيق السقف والمدادات بنفس خشب الأرضية (صنوبر طبيعي)
     pine = tex_material("W_pine", "WoodFloor043", 0.8, None, bump=0.08)
     beam = tex_material("W_beam", "WoodFloor043", 0.9, "#E2B27C", 0.2, bump=0.05)
     MATS.update({"wood_in": pine, "ceiling": pine, "sheathing": pine, "joist": beam, "rafters": beam})
+    if cfg.get("exterior_pine"):
+        # الخارج خشب طبيعي فاتح مثل كبائن المصنع الحقيقية (بدل الصبغة الغامقة)
+        ext = tex_material("W_ext", "WoodFloor043", 0.8, "#D8A868", 0.18, bump=0.12)
+        MATS.update({"wood": ext, "trim": beam, "stair": beam, "door": beam})
 for ob in list(scene.objects):
     if ob.type != "MESH":
         continue
@@ -220,6 +226,7 @@ tr.up_axis = "UP_Y"
 for name, cpos, tpos, lens, *rest in cfg.get("shots", []):
     cam_data.lens = lens
     cam_data.shift_y = rest[0] if rest else 0.0
+    scene.view_settings.exposure = rest[1] if len(rest) > 1 else cfg.get("exposure", 0.0)
     cam.location = Vector(cpos)
     target.location = Vector(tpos)
     scene.render.filepath = f"{cfg['out_dir']}/{name}.jpg"

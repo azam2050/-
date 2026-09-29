@@ -49,6 +49,7 @@ FM = {
     "rug": pmat("F_rug", "#C9BFAE", 1.0, bump=0.8, bump_scale=120),
     "cabinet": pmat("F_cab", "#ECE7DF", 0.55),
     "stone": pmat("F_stone", "#DEDAD3", 0.22, bump=0.05, bump_scale=40),
+    "paver": pmat("F_paver", "#A9A398", 0.85, bump=0.4, bump_scale=25),
     "steel": pmat("F_steel", "#C8CACC", 0.28, metal=1.0),
     "black": pmat("F_black", "#0B0B0C", 0.08, coat=1.0),
     "shade": shade_mat(),
@@ -329,6 +330,7 @@ for i, a in enumerate(cfg.get("area_lights", [])):
     o.location = a["at"]
     o.visible_camera = False
     o.visible_glossy = False
+    o.visible_transmission = False          # ما تبان كلوح أبيض من ورا الزجاج
     scene.collection.objects.link(o)
 
 
@@ -380,6 +382,6 @@ for it in cfg.get("landscape", []):
     if it.get("kind") == "paver":
         x, y, z = it["at"]
         w, d = it["size"]
-        fbox(None, FM["stone"], x - w / 2, y - d / 2, z, x + w / 2, y + d / 2, z + 0.04, 0.01)
+        fbox(None, FM["paver"], x - w / 2, y - d / 2, z, x + w / 2, y + d / 2, z + 0.04, 0.01)
         continue
     inst(it["model"], it["at"], it.get("H"), it.get("W"), math.radians(it.get("rot", 0)))

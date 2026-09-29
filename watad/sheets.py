@@ -857,26 +857,53 @@ def areas_sheet(ctx):
 
 
 # ---------------------------------------------------------------- لقطات 3D
-def real_sheets(ctx):
-    """صور واقعية (Blender): صورة رئيسية كبيرة + ثلاث صغيرة."""
-    shots = ctx.get("real_shots") or []
-    if not shots:
-        return []
+def _grid_page(title, shots, note=None):
     fig = new_page()
-    fig.text(0.5, 0.945, "الصور الواقعية", ha="center", fontsize=18, weight="bold", color=BRAND)
-    main, rest = shots[0], shots[1:4]
-    ax = fig.add_axes([0.3, 0.3, 0.68, 0.6])
-    ax.imshow(plt.imread(main[0]))
-    ax.axis("off")
-    ax.set_title(main[1], fontsize=12, color=BRAND, loc="right")
-    for q, (pth, name) in enumerate(rest):
-        a2 = fig.add_axes([0.02, 0.64 - q * 0.29, 0.26, 0.25])
-        a2.imshow(plt.imread(pth))
-        a2.axis("off")
-        a2.set_title(name, fontsize=10, color=BRAND, loc="right")
-    fig.text(0.98, 0.25, "رندر واقعي بخامات حقيقية وإضاءة طبيعية — الألوان النهائية حسب عينات المورد",
-             ha="right", fontsize=9, color="#555")
-    return [(fig, "الصور الواقعية")]
+    fig.text(0.5, 0.945, title, ha="center", fontsize=18, weight="bold", color=BRAND)
+    n = len(shots)
+    cols = 2 if n <= 4 else 3
+    rows = math.ceil(n / cols)
+    w, h = 0.94 / cols, 0.80 / rows
+    for q, (pth, name) in enumerate(shots):
+        r, c = divmod(q, cols)
+        ax = fig.add_axes([0.97 - (c + 1) * w + 0.006, 0.9 - (r + 1) * h + 0.01, w - 0.012, h - 0.045])
+        ax.imshow(plt.imread(pth))
+        ax.axis("off")
+        ax.set_title(name, fontsize=11, color=BRAND, loc="right")
+    if note:
+        fig.text(0.98, 0.085, note, ha="right", fontsize=9, color="#555")
+    return fig
+
+
+def real_sheets(ctx):
+    """الصور الواقعية (Blender Cycles): الخارج نهاراً، وقت الغروب، ثم الداخل بالأثاث."""
+    shots = ctx.get("real_shots") or {}
+    if isinstance(shots, list):          # توافق مع الصيغة القديمة
+        shots = {"exterior": shots}
+    pages = []
+    ext = shots.get("exterior") or []
+    if ext:
+        fig = new_page()
+        fig.text(0.5, 0.945, "الصور الواقعية — الخارج", ha="center", fontsize=18, weight="bold", color=BRAND)
+        main, rest = ext[0], ext[1:4]
+        ax = fig.add_axes([0.3, 0.3, 0.68, 0.6])
+        ax.imshow(plt.imread(main[0]))
+        ax.axis("off")
+        ax.set_title(main[1], fontsize=12, color=BRAND, loc="right")
+        for q, (pth, name) in enumerate(rest):
+            a2 = fig.add_axes([0.02, 0.64 - q * 0.29, 0.26, 0.25])
+            a2.imshow(plt.imread(pth))
+            a2.axis("off")
+            a2.set_title(name, fontsize=10, color=BRAND, loc="right")
+        fig.text(0.98, 0.25, "رندر واقعي بخامات حقيقية وإضاءة طبيعية — الألوان النهائية حسب عينات المورد",
+                 ha="right", fontsize=9, color="#555")
+        pages.append((fig, "الصور الواقعية — الخارج"))
+    if shots.get("dusk"):
+        pages.append((_grid_page("الصور الواقعية — وقت الغروب", shots["dusk"]), "الصور الواقعية — الغروب"))
+    if shots.get("interior"):
+        pages.append((_grid_page("الصور الواقعية — الداخل", shots["interior"],
+                                 "الأثاث للتوضيح فقط — مواقع القطع ومقاساتها حسب المسقط"), "الصور الواقعية — الداخل"))
+    return pages
 
 
 def renders_sheets(ctx):
@@ -1030,8 +1057,9 @@ def bom_rows(ctx):
                      f"{p['method2_long_pallets']['count']} طبلية × {p['method2_long_pallets']['length']} سم"])
     fj = p.get("floor_joists") or {}
     if fj.get("count"):
-        rows.append(["جسور أرضية الدور العلوي 5×15 كل 40 سم",
-                     f"{fj['count']} جسر — " + "، ".join(f"{L}سم×{n}" for L, n in fj["lengths"])
+        mj = ctx["rules"]["members"].get("floor_joist", {"w": 15, "t": 5, "spacing": 60})
+        rows.append([f"مدادات أرضية الدور العلوي {mj['t']}×{mj['w']} كل {mj['spacing']} سم",
+                     f"{fj['count']} مداد — " + "، ".join(f"{L}سم×{n}" for L, n in fj["lengths"])
                      + f" (طبلية {fj['stock']} بالطريقة الأولى)"])
     rows += [["إجمالي الطبليات 5×22.5", str(p["total_pallets"])],
              ["إجمالي قطع 7×5", str(p["stud_pieces_total"])],

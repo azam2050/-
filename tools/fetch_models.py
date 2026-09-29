@@ -25,6 +25,8 @@ def get(url, path):
 
 
 def fetch(mid):
+    if list((DEST / mid).glob("*.gltf")):
+        return
     info = json.load(_open(f"https://api.polyhaven.com/files/{mid}"))
     g = info["gltf"]["1k"]["gltf"]
     d = DEST / mid
