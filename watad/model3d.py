@@ -160,7 +160,9 @@ def build_scene(project, rules, style, heights):
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
         ux, uy = w.u
         gable_end = w.exterior and ((abs(uy) < 1e-6) == ridge_y)
-        if gable_end:
+        if gable_end and w.gable_glass:
+            _glass_gable(S, w, L, H, rise, half, math.tan(p))
+        elif gable_end:
             S.wprism("wood", w, [(-half, H), (L + half, H), (L / 2, H + rise)], -half, half)
         if w.exterior:   # ألواح الزوايا
             cb = tr["corner_boards"]
@@ -284,6 +286,21 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
     if getattr(o, "transom", 0):
         zt = o.transom
         S.wbox("frame", w, a, b, out - 2, half, zt - 3, zt + 3)
+
+
+def _glass_gable(S, w, L, H, rise, half, tp, fw=10, spacing=110):
+    """مثلث جملون زجاج: إطار على الأضلاع + قوائم رأسية بين الزجاج."""
+    zt = lambda t: H + (min(t, L - t) / (L / 2)) * rise  # noqa: E731
+    S.wprism("glass", w, [(fw, H + fw), (L - fw, H + fw), (L / 2, H + rise - fw * 1.4)], -1, 1)
+    S.wbox("frame", w, -half, L + half, -half, half, H, H + fw)
+    for (t0, t1) in ((-half, L / 2), (L + half, L / 2)):
+        S.wdiag("frame", w, t0, H, t1, H + rise, fw * 1.5, -half, half)
+    n = max(1, round(L / spacing))
+    for k in range(1, n):
+        t = L * k / n
+        if abs(t - L / 2) < 6:
+            t = L / 2
+        S.wbox("frame", w, t - 3, t + 3, -3, 3, H + fw, zt(t) - 4)
 
 
 # ---------------------------------------------------------------- الدكة والدربزين

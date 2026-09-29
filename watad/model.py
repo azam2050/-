@@ -37,6 +37,7 @@ class Wall:
     openings: list = field(default_factory=list)
     height: float = None
     title: str = ""      # اسم الواجهة (للخارجي)
+    gable_glass: bool = False   # مثلث الجملون فوق هذا الجدار زجاج بدل خشب
 
     @property
     def length(self):

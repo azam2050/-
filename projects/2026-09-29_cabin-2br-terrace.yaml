@@ -29,12 +29,13 @@ walls:
   # ---------- الخارجية ----------
   - name: جنوب
     title: الواجهة الأمامية (التراس)
+    gable_glass: true          # مثلث الجملون فوق الباب زجاج (طلب العميل)
     start: [0, 0]
     end: [768, 0]
     openings:
-      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 60, width: 140, height: 225, sill: 40, style: fixed, transom: 215}
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 60, width: 140, height: 210, sill: 30, style: fixed, transom: 215}
       - {kind: door, code: ب1, name: ب1 سحاب زجاج, offset: 234, width: 300, height: 265, style: sliding, leaves: 3, transom: 215}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 568, width: 140, height: 225, sill: 40, style: fixed, transom: 215}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 568, width: 140, height: 210, sill: 30, style: fixed, transom: 215}
   - name: شرق
     title: الواجهة الشرقية
     start: [768, 0]
