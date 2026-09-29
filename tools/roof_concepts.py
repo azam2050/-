@@ -59,7 +59,7 @@ def main():
         lo, hi = V.min(axis=0), V.max(axis=0)
         cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
         htop = hi[2]
-        R = max(hi[0] - lo[0], htop * 1.6, 7)
+        R = max(hi[0] - lo[0], htop * 1.3, 7)
         cam = (lo[0] - 0.42 * R, lo[1] - 0.82 * R, 1.6)
         dist = math.hypot(cx - cam[0], cy - cam[1])
         shift = max(0.0, min(0.25, (0.62 * htop - 1.6) / dist * 24 / 36))
@@ -67,7 +67,9 @@ def main():
                "colors": {k: style[k] for k in ("wood", "trim", "roof", "frame", "glass", "slab")},
                "views": [], "furnish_py": str(ROOT / "tools" / "blender_furnish.py"),
                "landscape": landscape(lo, hi, cam), **DAY,
-               "shots": [[code, list(cam), [cx + 0.4, cy, 1.6], 24, round(shift, 3), 0.0]],
+               "shots": [[code, list(cam), [cx + 0.4, cy, 1.6], 24, round(shift, 3), 0.0]]
+               + ([[code + "b", [hi[0] + (lo[0] - cam[0]), cam[1], 1.6], [cx - 0.4, cy, 1.6], 24, round(shift, 3), 0.0]]
+                  if "--both" in args else []),
                "samples": samples, "res": res, "ground_z": -0.2, "lights": [], "lens": 35}
         p = out / f"{code}.json"
         p.write_text(json.dumps(cfg, ensure_ascii=False))

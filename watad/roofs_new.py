@@ -549,6 +549,49 @@ def c3(M, C):
         C.roof(pts, (0, 0, CW, CD))
 
 
+@client_idea("C4", "جملون حاد بمثلثين بارزين على الجانبين (مثل صورة المصنع)",
+             "جملون 40° واجهته على التراس وفيه شباك دائري، ومن الجهتين الشرقية والغربية مثلث جملون بارز بشباك طولي — مثل الكوخ في الصورة")
+def c4(M, C):
+    _client_mass(M, C)
+    t = math.tan(math.radians(40))
+    xm = CW / 2
+    zr = gable_y(C, -TD, CD, 0, CW, H2, 40, 70, 60, walls=False, cover=(0, -TD, CW, CD))
+    for y, s in ((0, 1), (CD, -1)):                       # مثلث الواجهة الأمامية والخلفية
+        C.vwall("wood", [(0, y, H2), (xm, y, zr - 13), (CW, y, H2)], 12, (0, s))
+    # شباك دائري في مثلث الواجهة
+    rc, zc_ = 45, H2 + 190
+    ring = [(xm + rc * math.cos(a), -2, zc_ + rc * math.sin(a)) for a in [k * math.pi / 8 for k in range(16)]]
+    M.S.poly("glass", ring + [(x, 1, z) for x, _, z in ring],
+             [tuple(range(16)), tuple(range(16, 32))] + [(i, (i + 1) % 16, 16 + (i + 1) % 16, 16 + i) for i in range(16)])
+    for a in (0, math.pi / 2):
+        M.S.box("frame", xm - 3 if a else xm - rc, -4, zc_ - (rc if a else 3), xm + 3 if a else xm + rc, -1, zc_ + (rc if a else 3))
+    # جمالون خشب زخرفي عند طرف السقف فوق البلكونة (شداد + قائم)
+    yt = -TD + 5
+    zt = H2 + 130
+    half = (zt - H2) / t
+    M.S.box("trim", xm - (xm - half) - 0, yt - 6, zt - 8, xm + (xm - half), yt + 6, zt + 8)
+    M.S.box("trim", xm - 6, yt - 6, zt, xm + 6, yt + 6, zr - 20)
+    # المثلثين البارزين على الجانبين (جملون متقاطع — ميله 40° ويصرّف لبرا والوادي ينزل للرفرف)
+    yc, hw, O2 = CD / 2, 230, 70
+    t2 = math.tan(math.radians(45))
+    zr2 = H2 + hw * t2
+    reach = (zr2 - H2) / t                                  # لين يلاقي سطح السقف الرئيسي
+    for x0, sg in ((0, 1), (CW, -1)):
+        xo = x0 - sg * O2
+        xi = x0 + sg * reach
+        ze2 = H2 - O2 * t2
+        C.roof([(xo, yc + hw + O2, ze2), (xi, yc, zr2), (xo, yc, zr2)], (min(x0, xi), yc - hw, max(x0, xi), yc + hw))
+        C.roof([(xo, yc - hw - O2, ze2), (xo, yc, zr2), (xi, yc, zr2)], (min(x0, xi), yc - hw, max(x0, xi), yc + hw))
+        C.vwall("wood", [(x0, yc - hw, H2), (x0, yc, zr2 - 13), (x0, yc + hw, H2)], 12, (sg, 0))
+        # شباك طولي بقوس تقريبي داخل المثلث
+        face = ("x", x0, -sg)
+        M.window(face, yc - 55, yc + 55, H2 + 15, H2 + 150)
+        for y in (yc - hw + 40, yc + hw - 40):              # كوابيل تحت رفرف المثلث
+            C.brace(x0, y, H2 - 10, -sg, 0, 60)
+        for k in range(1, 4):                                # ألواح حافة زخرفية
+            pass
+
+
 def build_client(code, style):
     c = next(c for c in CLIENT if c["code"] == code)
     M = Maker(style)
