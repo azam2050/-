@@ -743,13 +743,16 @@ def areas_sheet(ctx):
     ax3 = fig.add_axes([0.58, 0.2, 0.38, 0.25])
     price = P.price_per_m2
     note = P.meta.get("price_note", "")
+    all_in = P.meta.get("price_scope") == "all" and terrace
+    area_p = gross + terrace if all_in else gross
+    area_lbl = "المساحة الكلية — الكوخ + التراس (م2)" if all_in else "المساحة المبنية (م2)"
     if price:
-        total = round(gross, 2) * price
-        prow = [["المساحة المبنية (م2)", f"{gross:.2f}"],
+        total = round(area_p, 2) * price
+        prow = [[area_lbl, f"{area_p:.2f}"],
                 ["سعر المتر المربع" + (f" — {note}" if note else ""), f"{price:,.0f} ريال"],
                 ["الإجمالي", f"{total:,.0f} ريال"]]
     else:
-        prow = [["المساحة المبنية (م2)", f"{gross:.2f}"], ["سعر المتر المربع", "يُحدد بعد الاعتماد"],
+        prow = [[area_lbl, f"{area_p:.2f}"], ["سعر المتر المربع", "يُحدد بعد الاعتماد"],
                 ["الإجمالي", "—"]]
     table(ax3, ["البند", "القيمة"], prow, [3.2, 2.3], fs=11, bold_last=1, row_h=1.15)
     ax3.set_title("التسعير", fontsize=14, weight="bold", color=BRAND, loc="right")
@@ -757,7 +760,8 @@ def areas_sheet(ctx):
         ax3.text(0.0, 1.035, f"  {note}  ", transform=ax3.transAxes, ha="left", va="bottom", fontsize=11,
                  weight="bold", color="white",
                  bbox=dict(boxstyle="round,pad=0.35", fc=OFFER, ec="none"))
-    terms = P.meta.get("terms") or ["السعر للمساحة المبنية حسب المخطط المعتمد.",
+    terms = P.meta.get("terms") or [("السعر لكامل المساحة (الكوخ + التراس المسقوف) حسب المخطط المعتمد."
+                                     if all_in else "السعر للمساحة المبنية حسب المخطط المعتمد."),
                                     "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."]
     fig.text(0.96, 0.175, "ملاحظات:", ha="right", fontsize=9.5, weight="bold", color=BRAND)
     for k, t in enumerate(terms):
