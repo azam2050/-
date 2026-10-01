@@ -12,7 +12,7 @@ def roof_geometry(project, rules):
     else:
         ridge_len, span = y1 - y0, x1 - x0
     pitch = math.radians(r.pitch_deg)
-    rise = (span / 2) * math.tan(pitch)
+    rise = (span if r.type == "shed" else span / 2) * math.tan(pitch)
     return {"bbox": (x0, y0, x1, y1), "ridge_len": ridge_len, "span": span, "rise": rise,
             "pitch": pitch}
 
@@ -23,7 +23,8 @@ def gable_rafters(project, rules):
     spacing = rules["roof"]["rafter_spacing"]
     roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1
-    length = (g["span"] / 2 + r.overhang) / math.cos(g["pitch"])
+    shed = r.type == "shed"
+    length = ((g["span"] + 2 * r.overhang) if shed else (g["span"] / 2 + r.overhang)) / math.cos(g["pitch"])
     stock = next((s for s in sorted(rules["roof"]["rafter_lengths"]) if s >= length), None)
     return {
         "ridge_length": round(g["ridge_len"], 1),
@@ -34,7 +35,7 @@ def gable_rafters(project, rules):
         "rise": round(g["rise"], 1),
         "ridge_level": round(project.roof_base + g["rise"], 1),
         "rafters_per_side": per_side,
-        "rafter_count": per_side * 2,
+        "rafter_count": per_side * (1 if shed else 2),
         "rafter_length": round(length, 1),
         "stock_length": stock,
         "warning": None if stock else f"طول المداد {length:.0f} سم أطول من كل الأطوال المتوفرة — يحتاج قرار",
@@ -111,3 +112,16 @@ def cross_planes(g):
     P = lambda a, b, z: (a, b, z) if g["axis"] == "y" else (b, a, z)  # noqa: E731
     return [[P(xo, c + hw + ov, g["ze"]), P(xi, c, g["zr"]), P(xo, c, g["zr"])],
             [P(xo, c - hw - ov, g["ze"]), P(xo, c, g["zr"]), P(xi, c, g["zr"])]]
+
+
+def shed_z(project, rules, x, y):
+    """منسوب أسفل المداد في السقف المائل عند نقطة (x, y): يرتفع من الحافة الواطية للعالية."""
+    x0, y0, x1, y1 = outer_bbox(project, rules)
+    r = project.roof
+    t = math.tan(math.radians(r.pitch_deg))
+    H = project.roof_base
+    if r.ridge_axis == "x":
+        d = (y1 - y) if r.high_side == "S" else (y - y0)
+    else:
+        d = (x1 - x) if r.high_side == "W" else (x - x0)
+    return H + d * t

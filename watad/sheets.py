@@ -473,55 +473,93 @@ def elevation(ax, ctx, w):
 
     ax.plot([-170 - ext_l, L + 170 + ext_r], [-sh, -sh], color="k", lw=1)
     ax.add_patch(Rectangle((-10, -sh), L + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
-    ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
-    y = cover
-    while y < H - 1:
-        ax.plot([0, L], [y, y], color="#999", lw=0.4)
-        y += cover
-    top = H + rise
-    gglass = any(w2.gable_glass for w2, _l in stack)
-    if gable_end and gglass:
-        from .model3d import gable_glass_geometry
-        inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
-        ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
-        ax.add_patch(Polygon(inner, closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
-        for t in posts:
-            ax.add_patch(Rectangle((t - 5, inner[0][1]), 10, zin(t) - inner[0][1], fc="#e9d9c4", ec="k", lw=0.5))
-        from .model3d import gable_transom
-        zh = gable_transom(H, rise, 20, bv)
-        ta = (zh - H + bv) / math.tan(p)
-        if L - 2 * ta > 60:
-            ax.add_patch(Rectangle((ta, zh - 5), L - 2 * ta, 10, fc="#e9d9c4", ec="k", lw=0.5))
-        ax.text(L / 2, H + 32, "زجاج مقسّم بإطار خشب 20 سم + قوائم وعارضة 10 سم", ha="center", fontsize=7, color=C_WIN)
-    if gable_end:
-        if not gglass:
-            ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
-        y = H + cover if not gglass else top
-        while y < top - 5:
-            dxg = (top - y) / math.tan(p)
-            ax.plot([L / 2 - dxg, L / 2 + dxg], [y, y], color="#999", lw=0.4)
+    shed = P.roof.type == "shed"
+    if shed:                       # سقف مائل باتجاه واحد: الجدار يتبع الميل
+        from .roof import shed_z
+        zt = lambda t_: shed_z(P, rules, *w.point(t_ - half, 0))  # noqa: E731
+        za, zb_ = max(H, zt(0)), max(H, zt(L))
+        ax.add_patch(Polygon([(0, 0), (L, 0), (L, zb_), (0, za)], closed=True, fc="white", ec="k", lw=1))
+        y = cover
+        while y < max(za, zb_) - 1:
+            if y <= min(za, zb_):
+                ax.plot([0, L], [y, y], color="#999", lw=0.4)
+            else:
+                tc = (y - za) / (zb_ - za) * L if abs(zb_ - za) > 1e-6 else L
+                ax.plot([tc, L] if zb_ > za else [0, tc], [y, y], color="#999", lw=0.4)
             y += cover
-        e = ov * math.tan(p)
-        lower = [(-ov, H - e), (L / 2, top), (L + ov, H - e)]
-        upper = [(x, yy + depth) for x, yy in lower]
-        ax.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=0.9))
-        roof_top = top + depth
+        top = max(za, zb_)
+        if gable_end:              # الجدار الجانبي: لوح السقف المائل بالرفرف
+            lower = [(-ov, zt(-ov)), (L + ov, zt(L + ov))]
+            ax.add_patch(Polygon(lower + [(x, z + depth) for x, z in lower][::-1], closed=True, fc="#fff3e0",
+                                 ec=C_ROOF, lw=0.9))
+            roof_top = max(z for _, z in lower) + depth
+        else:
+            d_out = ov                    # الرفرف خارج هذا الجدار
+            nx_, ny_ = w.n
+            z_e = shed_z(P, rules, w.start[0] - nx_ * (half + d_out), w.start[1] - ny_ * (half + d_out))
+            x_l, x_r = -ov - ext_l, L + ov + ext_r
+            hg = roof_geometry(P, rules)["rise"]
+            if z_e > H + hg / 2:          # الجهة العالية: يبان لوح الواجهة بس
+                ax.add_patch(Rectangle((x_l, z_e), x_r - x_l, depth, fc="#fff3e0", ec=C_ROOF, lw=0.9))
+                roof_top = z_e + depth
+            else:                         # الجهة الواطية: يبان سطح السقف كامل
+                z_hi = H + hg + ov * math.tan(p)
+                ax.add_patch(Rectangle((x_l, z_e), x_r - x_l, z_hi + depth - z_e, fc="#fff3e0", ec=C_ROOF, lw=0.9))
+                yy = z_e + 12
+                while yy < z_hi + depth - 5:
+                    ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
+                    yy += 12
+                roof_top = z_hi + depth
     else:
-        e = ov * math.tan(p)
-        x_l, x_r = -ov - ext_l, L + ov + ext_r
-        ax.add_patch(Rectangle((x_l, H - e), x_r - x_l, rise + e + depth, fc="#fff3e0", ec=C_ROOF,
-                               lw=0.9))
-        yy = H - e + 12
-        while yy < top + depth - 5:
-            ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
-            yy += 12
-        ax.plot([x_l, x_r], [H - e + depth, H - e + depth], color=C_ROOF, lw=0.7)
-        for pt in P.posts:   # أعمدة التراس الظاهرة في هذي الواجهة
-            px, py = pt["at"]
-            tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
-            if tpos < -5 or tpos > L + 5:
-                ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
-        roof_top = top + depth
+        ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
+        y = cover
+        while y < H - 1:
+            ax.plot([0, L], [y, y], color="#999", lw=0.4)
+            y += cover
+        top = H + rise
+        gglass = any(w2.gable_glass for w2, _l in stack)
+        if gable_end and gglass:
+            from .model3d import gable_glass_geometry
+            inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
+            ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
+            ax.add_patch(Polygon(inner, closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
+            for t in posts:
+                ax.add_patch(Rectangle((t - 5, inner[0][1]), 10, zin(t) - inner[0][1], fc="#e9d9c4", ec="k", lw=0.5))
+            from .model3d import gable_transom
+            zh = gable_transom(H, rise, 20, bv)
+            ta = (zh - H + bv) / math.tan(p)
+            if L - 2 * ta > 60:
+                ax.add_patch(Rectangle((ta, zh - 5), L - 2 * ta, 10, fc="#e9d9c4", ec="k", lw=0.5))
+            ax.text(L / 2, H + 32, "زجاج مقسّم بإطار خشب 20 سم + قوائم وعارضة 10 سم", ha="center", fontsize=7, color=C_WIN)
+        if gable_end:
+            if not gglass:
+                ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
+            y = H + cover if not gglass else top
+            while y < top - 5:
+                dxg = (top - y) / math.tan(p)
+                ax.plot([L / 2 - dxg, L / 2 + dxg], [y, y], color="#999", lw=0.4)
+                y += cover
+            e = ov * math.tan(p)
+            lower = [(-ov, H - e), (L / 2, top), (L + ov, H - e)]
+            upper = [(x, yy + depth) for x, yy in lower]
+            ax.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=0.9))
+            roof_top = top + depth
+        else:
+            e = ov * math.tan(p)
+            x_l, x_r = -ov - ext_l, L + ov + ext_r
+            ax.add_patch(Rectangle((x_l, H - e), x_r - x_l, rise + e + depth, fc="#fff3e0", ec=C_ROOF,
+                                   lw=0.9))
+            yy = H - e + 12
+            while yy < top + depth - 5:
+                ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
+                yy += 12
+            ax.plot([x_l, x_r], [H - e + depth, H - e + depth], color=C_ROOF, lw=0.7)
+            for pt in P.posts:   # أعمدة التراس الظاهرة في هذي الواجهة
+                px, py = pt["at"]
+                tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
+                if tpos < -5 or tpos > L + 5:
+                    ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
+            roof_top = top + depth
     # المثلثات البارزة (جملون متقاطع)
     from .roof import cross_gables
     for g in cross_gables(P, rules):
@@ -642,8 +680,12 @@ def elevation(ax, ctx, w):
     for f_ in range(1, len(P.floor_list)):
         lv = P.level(f_)
         level(ax, lx - ext_l, lv, lv / 100, "أرضية " + P.floor_list[f_]["name"])
-    level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
-    level(ax, lx - ext_l, top, top / 100, "قمة الجملون")
+    shed_flat = P.roof.type == "shed" and not gable_end
+    if not (shed_flat and top > H + 5):
+        level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
+    if not (shed_flat and top <= H + 5):
+        level(ax, lx - ext_l, top, top / 100, "أعلى الجدار والزجاج" if shed_flat else
+              ("أعلى السقف" if P.roof.type == "shed" else "قمة الجملون"))
     # الأبعاد
     ts = [0] + sorted(t + half for o in w.openings for t in (o.offset, o.offset + o.width)) + [L]
     chain(ax, [(t, -sh) for t in ts], -35)
@@ -684,7 +726,8 @@ def roof_sheet(ctx):
     ov = P.roof.overhang
     fig = new_page()
     ax = drawing_ax(fig, [0.05, 0.1, 0.42, 0.8])
-    title(ax, "مسقط السقف (جملون)", f"رفرف {ov:.0f} سم من كل جهة  |  مقياس 1:50")
+    title(ax, "مسقط السقف (" + ("مائل باتجاه واحد" if P.roof.type == "shed" else "جملون") + ")",
+          f"رفرف {ov:.0f} سم من كل جهة  |  مقياس 1:50")
     es, ee = P.roof.ext_start, P.roof.ext_end
     if P.roof.ridge_axis == "y":
         rx0, ry0, rx1, ry1 = x0 - ov, y0 - ov - es, x1 + ov, y1 + ov + ee
@@ -699,7 +742,20 @@ def roof_sheet(ctx):
         else:
             ax.plot([pos, pos], [y0 - ov, y1 + ov], color="#777", lw=0.5)
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    if ridge_y:
+    if P.roof.type == "shed":            # مائل باتجاه واحد: سهم من العالي للواطي
+        hiS = P.roof.high_side in ("S", "W")
+        if ridge_y:
+            a0_, a1_ = (x0 + 40, x1 - 40) if hiS else (x1 - 40, x0 + 40)
+            ax.annotate("", (a1_, cy), (a0_, cy), arrowprops=dict(arrowstyle="->", color="red", lw=1.4))
+            ax.text(cx, cy + 15, f"ميل واحد {P.roof.pitch_deg}° — المويه تنزل للخلف", ha="center", fontsize=9, color="red")
+        else:
+            a0_, a1_ = (y0 + 40, y1 - 40) if hiS else (y1 - 40, y0 + 40)
+            ax.annotate("", (cx, a1_), (cx, a0_), arrowprops=dict(arrowstyle="->", color="red", lw=1.4))
+            ax.text(cx + 12, cy, f"ميل واحد {P.roof.pitch_deg}°\nالمويه تنزل للخلف", ha="left", fontsize=9, color="red")
+        ax.text(cx, (y0 if not hiS else y1) + (25 if not hiS else -25), "الحافة الواطية", ha="center", fontsize=7, color=C_ROOF)
+        ax.text(cx, (y1 if not hiS else y0) + (-25 if not hiS else 25), "الحافة العالية (الواجهة الزجاج)", ha="center",
+                fontsize=7, color=C_ROOF)
+    elif ridge_y:
         ax.plot([cx, cx], [y0 - ov - 20, y1 + ov + 20], color=C_ROOF, lw=1.2)
         ax.text(cx + 8, y1 - 40, "خط الحرف (رأس الجملون)", ha="left", fontsize=8, color=C_ROOF,
                 rotation=90, va="top")
@@ -770,6 +826,10 @@ def roof_sheet(ctx):
         level(ax2, -80, lv, lv / 100, "أرضية " + P.floor_list[f_]["name"])
     e = ov * math.tan(p)
     lower = [(-ov, H - e), (S / 2, H + rise), (S + ov, H - e)]
+    if P.roof.type == "shed":
+        hiS = P.roof.high_side in ("S", "W")
+        zz = lambda x: H + ((S - x) if hiS else x) * math.tan(p)  # noqa: E731
+        lower = [(-ov, zz(-ov)), (S + ov, zz(S + ov))]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     for gc in cross_gables(P, rules):               # المثلث البارز إذا القطاع يمر فيه
@@ -787,7 +847,7 @@ def roof_sheet(ctx):
     ax2.text(S / 2, P.floor_list[0]["height"] / 2, "قوائم 7×5 + تلبيس 2.5 من الجهتين", ha="center", fontsize=8)
     level(ax2, -80, 0, 0.0001, "وجه الصبة")
     level(ax2, -80, H, H / 100, "أعلى الجدار")
-    level(ax2, -80, H + rise, (H + rise) / 100, "قمة الجملون")
+    level(ax2, -80, H + rise, (H + rise) / 100, "أعلى السقف" if P.roof.type == "shed" else "قمة الجملون")
     dim(ax2, (0, -sh), (S, -sh), -35)
     dim(ax2, (-ov, -sh), (S + ov, -sh), -75, fs=6)
     dim(ax2, (S + ov, 0), (S + ov, H), -40)
@@ -883,7 +943,7 @@ def areas_sheet(ctx):
     info = [["المشروع", P.title], ["العميل", P.client], ["الموقع", m.get("location", "")],
             ["الاستخدام", m.get("usage", "")], ["التاريخ", str(m.get("date", ""))],
             ["نظام البناء", "هيكل خشب 7×5 + تلبيس 2.5 سم من الجهتين"],
-            ["السقف", f"جملون {P.roof.pitch_deg}° — قرميد معدني"
+            ["السقف", ("مائل باتجاه واحد" if P.roof.type == "shed" else "جملون") + f" {P.roof.pitch_deg}° — قرميد معدني"
              + (f" + {len(P.roof.cross_gables)} مثلث بارز" if P.roof.cross_gables else "")]]
     ax2 = fig.add_axes([0.58, 0.52, 0.38, 0.36])
     table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=10)

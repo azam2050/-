@@ -43,7 +43,9 @@ def exterior_shots(project):
     x0, y0, x1, y1, yf = _bbox(project)
     W = x1 - x0
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    htop = (project.roof_base + math.tan(math.radians(project.roof.pitch_deg)) * W / 2 * 100) / 100
+    from .roof import roof_geometry
+    from .rules import load_rules
+    htop = (project.roof_base + roof_geometry(project, load_rules(None))["rise"]) / 100
     R = max(W, htop * 1.1, 6.0)
     out = []
     for key, name, cam, lens in [

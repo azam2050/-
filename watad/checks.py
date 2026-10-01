@@ -193,7 +193,8 @@ def review(project, rules, heights, height_info, rafters):
     inside = [p for p in rafter_positions(project, rules)
               if (y0 if ax == "y" else x0) < p < (y1 if ax == "y" else x1)]
     for p in inside:
-        for side, (e, r_) in (("أ", (lo_edge, ridge_c)), ("ب", (hi_edge, ridge_c))):
+        for side, (e, r_) in ((("أ", (lo_edge, hi_edge)),) if project.roof.type == "shed" else
+                              (("أ", (lo_edge, ridge_c)), ("ب", (hi_edge, ridge_c)))):
             lo, hi = sorted((e, r_))
             pts = sorted([e, r_] + [c for c, a, b, _ in supports if a <= p <= b and lo < c < hi])
             span = max(bb - aa for aa, bb in zip(pts, pts[1:]))

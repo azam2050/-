@@ -36,6 +36,18 @@ def build(project_path, out_dir, rules_path=None, real=False):
     fl = project.floor_list
     heights = {w.name: (w.height or (fl[w.floor]["height"] if project.floors else hi["suggested"]))
                for w in project.walls}
+    if project.roof.type == "shed":      # الجدار العالي في السقف المائل يرتفع بمقدار ميل البحر كامل
+        from .roof import roof_geometry
+        rise = roof_geometry(project, rules)["rise"]
+        for w in project.walls:
+            if not w.exterior or w.floor != project.top_floor or w.height:
+                continue
+            along = abs(w.u[1]) < 1e-6 if project.roof.ridge_axis == "x" else abs(w.u[0]) < 1e-6
+            c = w.start[1] if project.roof.ridge_axis == "x" else w.start[0]
+            others = [(v.start[1] if project.roof.ridge_axis == "x" else v.start[0]) for v in project.walls if v.exterior]
+            high = (c == min(others)) if project.roof.high_side in ("S", "W") else (c == max(others))
+            if along and high:
+                heights[w.name] = round(heights[w.name] + rise)
     members, q = build_quantities(project, rules, heights)
     issues = review(project, rules, heights, hi, q["pallets"]["roof"])
     qs = open_questions(rules, multi=len(project.floor_list) > 1)

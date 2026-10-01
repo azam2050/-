@@ -1,0 +1,54 @@
+# غرفة 4 × 4 م — سقف مائل باتجاه واحد، واجهة أمامية زجاج كاملة، بدون أي قواطع داخلية
+# السقف يرتفع للواجهة الزجاج (20° — الحد الأدنى للتصريف) والمويه تنزل للخلف.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة الزجاج جنوب.
+name: room-4x4-shed-glass
+title: غرفة 4×4 بسقف مائل وواجهة زجاج
+client: "عميل — غرفة مستقلة"
+meta:
+  location: "—"
+  usage: غرفة / استراحة
+  date: 2026-10-01
+  price_note: عرض اليوم الوطني
+  price_scope: building
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
+wall_height: 280
+slab_height: 45
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 20, overhang: 40}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (زجاج كامل)
+    start: [0, 0]
+    end: [388, 0]
+    openings:   # الجدار يرتفع لـ 4.26 م مع الميل — زجاج من الأرض للسقف بعارضة على 2.40
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 14, width: 86, height: 395, sill: 10, style: fixed, transom: 240}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج, offset: 114, width: 160, height: 405, style: sliding, leaves: 2, transom: 240}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 288, width: 86, height: 395, sill: 10, style: fixed, transom: 240}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [388, 0]
+    end: [388, 388]
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [388, 388]
+    end: [0, 388]
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 388]
+    end: [0, 0]
+
+rooms:
+  - {name: الغرفة, rect: [6, 6, 382, 382]}
+
+decks:
+  - name: عتبة الدخول
+    rect: [-6, -126, 394, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 0, width: 400}
+
+furniture: []

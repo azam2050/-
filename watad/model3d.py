@@ -173,6 +173,13 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y)
         if cut:
             pass
+        elif gable_end and project.roof.type == "shed":       # حشوة الجدار الجانبي تحت الميل
+            from .roof import shed_z
+            za, zb_ = (shed_z(project, rules, *w.point(t, 0)) - lev for t in (-half, L + half))
+            poly = [(-half, H), (L + half, H)] + ([(L + half, zb_)] if zb_ > H + 1 else []) + \
+                   ([(-half, za)] if za > H + 1 else [])
+            if len(poly) >= 3:
+                S.wprism("wood", w, poly, -half, half)
         elif gable_end and w.gable_glass:
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
         elif gable_end:
@@ -240,6 +247,33 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         B0, B1 = b_lo - ov - project.roof.ext_start, b_hi + ov + project.roof.ext_end
         zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
         kv = 1 / math.cos(p)
+        shed = project.roof.type == "shed"
+        gable_sides = [] if shed else [(-1, a_lo - ov), (1, a_hi + ov)]
+        if shed:            # سقف مائل باتجاه واحد: لوح واحد من الحافة العالية للواطية
+            hi_lo = project.roof.high_side in ("S", "W")
+            a_low = a_hi if hi_lo else a_lo
+            zsh = lambda a: H + ((a_low - a) if hi_lo else (a - a_low)) * tp  # noqa: E731
+            e_lo, e_hi = a_lo - ov, a_hi + ov
+
+            def sh_hexa(mat, bb0, bb1, z_off0, z_off1, aa=e_lo, ab=e_hi):
+                pts = []
+                for zo in (z_off0, z_off1):
+                    for a, b in ((aa, bb0), (ab, bb0), (ab, bb1), (aa, bb1)):
+                        pts.append((*to_xy(a, b), zsh(a) + zo * kv))
+                S.hexa(mat, pts)
+            sh_hexa("sheathing", B0, B1, rafter_d, rafter_d + 2.5)
+            sh_hexa("roof_tiles", B0, B1, rafter_d + 2.5, rafter_d + 6.5)
+            for pos in rafter_positions(project, rules):
+                sh_hexa("rafters", max(pos - rafter_t / 2, B0), min(pos + rafter_t / 2, B1), 0, rafter_d)
+            for eave in (e_lo, e_hi):                    # لوح واجهة المداد على الحافتين
+                fa, fb = sorted((eave, eave + (-1 if eave == e_lo else 1) * tr["fascia"]["t"]))
+                ztop = zsh(eave) + (rafter_d + 6.5) * kv
+                c0, c1 = to_xy(fa, B0), to_xy(fb, B1)
+                S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), ztop - tr["fascia"]["h"] - 6.5,
+                      max(c0[0], c1[0]), max(c0[1], c1[1]), ztop)
+            bb = tr["barge_board"]
+            for bpos in (B0 - bb["t"], B1):
+                sh_hexa("trim", bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
         def slope_hexa(mat, side, aa, ab, bb0, bb1, z_off0, z_off1):
             pts = []
@@ -248,7 +282,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                     pts.append((*to_xy(a, b), zb(a, side) + zo * kv))
             S.hexa(mat, pts)
 
-        for side, eave in ((-1, a_lo - ov), (1, a_hi + ov)):
+        for side, eave in gable_sides:
             aa, ab = (eave, ac) if side < 0 else (ac, eave)
             slope_hexa("sheathing", side, aa, ab, B0, B1, rafter_d, rafter_d + 2.5)     # تطبيق
             slope_hexa("roof_tiles", side, aa, ab, B0, B1, rafter_d + 2.5, rafter_d + 6.5)
@@ -266,7 +300,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         # ألواح حافة الجملون (barge boards)
         bb = tr["barge_board"]
         for bpos in (B0 - bb["t"], B1):
-            for side, eave in ((-1, a_lo - ov), (1, a_hi + ov)):
+            for side, eave in gable_sides:
                 aa, ab = (eave, ac) if side < 0 else (ac, eave)
                 slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
@@ -284,7 +318,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             ztop = cut
         else:
             a = px if ridge_y else py
-            ztop = zb(a, -1 if a <= ac else 1)
+            ztop = zsh(a) if project.roof.type == "shed" else zb(a, -1 if a <= ac else 1)
         ps = pt.get("size", 15)
         S.box("trim", px - ps / 2, py - ps / 2, pt.get("base", 0), px + ps / 2, py + ps / 2, ztop)
         pz.append((px, py, ztop))
