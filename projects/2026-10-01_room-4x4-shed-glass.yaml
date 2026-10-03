@@ -8,9 +8,9 @@ meta:
   location: "—"
   usage: غرفة / استراحة
   date: 2026-10-01
-  price_note: عرض اليوم الوطني
+  price_note: ""            # سعر خاص لهذا العميل
   price_scope: building
-price_per_m2: 1096
+price_per_m2: 1146
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
 wall_height: 280
 slab_height: 45
@@ -44,11 +44,6 @@ walls:
 rooms:
   - {name: الغرفة, rect: [6, 6, 382, 382]}
 
-decks:
-  - name: عتبة الدخول
-    rect: [-6, -126, 394, -6]
-    height: 45
-    railing: []
-    stairs: {side: S, offset: 0, width: 400}
+decks: []                   # طلب العميل: بدون درج/عتبة قدام الغرفة
 
 furniture: []
