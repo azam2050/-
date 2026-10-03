@@ -684,7 +684,7 @@ def elevation(ax, ctx, w):
     if not (shed_flat and top > H + 5):
         level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
     if not (shed_flat and top <= H + 5):
-        level(ax, lx - ext_l, top, top / 100, "أعلى الجدار والزجاج" if shed_flat else
+        level(ax, lx - ext_l, top, top / 100, "أعلى الجدار" if shed_flat else
               ("أعلى السقف" if P.roof.type == "shed" else "قمة الجملون"))
     # الأبعاد
     ts = [0] + sorted(t + half for o in w.openings for t in (o.offset, o.offset + o.width)) + [L]

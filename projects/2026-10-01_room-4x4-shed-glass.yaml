@@ -1,8 +1,8 @@
-# غرفة 4 × 4 م — سقف مائل باتجاه واحد، واجهة أمامية زجاج كاملة، بدون أي قواطع داخلية
+# غرفة 4 × 4 م — سقف مائل باتجاه واحد، واجهة أمامية: باب بالمنتصف + شباكين، بدون أي قواطع داخلية
 # السقف يرتفع للواجهة الزجاج (20° — الحد الأدنى للتصريف) والمويه تنزل للخلف.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة الزجاج جنوب.
 name: room-4x4-shed-glass
-title: غرفة 4×4 بسقف مائل وواجهة زجاج
+title: غرفة 4×4 بسقف مائل
 client: "عميل — غرفة مستقلة"
 meta:
   location: "—"
@@ -21,13 +21,13 @@ pallet_length: 320
 
 walls:
   - name: جنوب
-    title: الواجهة الأمامية (زجاج كامل)
+    title: الواجهة الأمامية
     start: [0, 0]
     end: [388, 0]
-    openings:   # الجدار يرتفع لـ 4.26 م مع الميل — زجاج من الأرض للسقف بعارضة على 2.40
-      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 14, width: 86, height: 395, sill: 10, style: fixed, transom: 240}
-      - {kind: door, code: ب1, name: ب1 سحاب زجاج, offset: 114, width: 160, height: 405, style: sliding, leaves: 2, transom: 240}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 288, width: 86, height: 395, sill: 10, style: fixed, transom: 240}
+    openings:   # تعديل العميل: باب بالمنتصف + شباكين على الجنبين
+      - {kind: window, code: ش1, name: ش1 شباك يسار, offset: 24, width: 90, height: 120, sill: 90}
+      - {kind: door, code: ب1, name: ب1 باب الدخول, offset: 144, width: 100, height: 220, leaves: 1}
+      - {kind: window, code: ش1, name: ش1 شباك يمين, offset: 274, width: 90, height: 120, sill: 90}
   - name: شرق
     title: الواجهة الشرقية
     start: [388, 0]
