@@ -10,7 +10,7 @@ meta:
   date: 2026-10-01
   price_note: ""            # سعر خاص لهذا العميل
   price_scope: building
-price_per_m2: 1146
+price_per_m2: 1196
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
 wall_height: 280
 slab_height: 45
