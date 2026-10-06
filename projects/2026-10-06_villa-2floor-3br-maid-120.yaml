@@ -1,0 +1,146 @@
+# عميل جديد: دورين 120 م² (أرض 10 × 15)
+# الأرضي: صالة كبيرة + مطبخ + دورة مياه ضيوف + غرفة خادمة بدورة مياه (+ مخزن/غسيل)
+# الأول : 3 غرف نوم (ماستر بدورة مياه) + دورة مياه تخدم الغرفتين
+# الفكرة: مسقط 7.80 × 7.70 لكل دور (60.06 × 2 = 120.1 م²)
+#  - كل دورات المياه الأربع في عمود واحد على الجدار الغربي (فوق بعض) → خط صرف خارجي واحد (قاعدة المصنع)
+#  - الدرج U في الركن الشمالي الشرقي، بدايته ونهايته على الممر
+#  - شبابيك دورات المياه على الجدار الغربي (ممنوع الواجهة الأمامية)
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: villa-2floor-3br-maid-120
+title: دورين 3 غرف نوم + غرفة خادمة — 120 م²
+client: "عميل جديد"
+meta:
+  location: "—"
+  usage: سكن
+  date: 2026-10-06
+  price_note: ""
+  price_scope: building
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 25, overhang: 40}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ================= الدور الأرضي =================
+  - {name: أ-جنوب, title: الواجهة الأمامية, start: [0, 0], end: [768, 0], openings: [
+      {kind: window, code: ش1, name: ش1 صالة, offset: 60, width: 160, height: 120, sill: 90},
+      {kind: door, code: ب1, name: ب1 المدخل, offset: 290, width: 100, height: 220, leaves: 1},
+      {kind: window, code: ش2, name: ش2 مطبخ, offset: 580, width: 120, height: 100, sill: 110}]}
+  - {name: أ-شرق, title: الواجهة الشرقية, start: [768, 0], end: [768, 758], openings: [
+      {kind: window, code: ش2, name: ش2 مطبخ جانبي, offset: 110, width: 100, height: 100, sill: 110},
+      {kind: window, code: ش1, name: ش1 الدرج, offset: 560, width: 100, height: 110, sill: 100}]}
+  - {name: أ-شمال, title: الواجهة الخلفية, start: [768, 758], end: [0, 758], openings: [
+      {kind: window, code: ش3, name: ش3 مخزن, offset: 300, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش1, name: ش1 غرفة الخادمة, offset: 470, width: 100, height: 110, sill: 100}]}
+  - {name: أ-غرب, title: الواجهة الغربية, start: [0, 758], end: [0, 0], openings: [
+      {kind: window, code: ش3, name: ش3 حمام الخادمة, offset: 80, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش3, name: ش3 حمام الضيوف, offset: 300, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش1, name: ش1 صالة جانبي, offset: 540, width: 140, height: 120, sill: 90}]}
+  - {name: أ-جدار الحمامات, exterior: false, start: [162, 330], end: [162, 758], openings: [
+      {kind: door, code: ب3, name: ب3 حمام الضيوف, offset: 16, width: 70, height: 210},
+      {kind: door, code: ب3, name: ب3 حمام الخادمة, offset: 280, width: 70, height: 210, swing: right}]}
+  - {name: أ-فاصل الحمامين, exterior: false, start: [0, 528], end: [162, 528]}
+  - {name: أ-حمام الضيوف جنوب, exterior: false, start: [0, 330], end: [162, 330]}
+  - {name: أ-مطبخ شمال, exterior: false, start: [510, 330], end: [768, 330], openings: [
+      {kind: door, code: ف1, name: ف1 فتحة المطبخ, offset: 40, width: 100, height: 210, leaves: 0}]}
+  - {name: أ-مطبخ غرب, exterior: false, start: [510, 0], end: [510, 330]}
+  - {name: أ-جدار الخادمة, exterior: false, start: [162, 432], end: [510, 432], openings: [
+      {kind: door, code: ب2, name: ب2 غرفة الخادمة, offset: 50, width: 80, height: 210},
+      {kind: door, code: ب2, name: ب2 مخزن, offset: 250, width: 70, height: 210}]}
+  - {name: أ-فاصل المخزن, exterior: false, start: [390, 432], end: [390, 758]}
+  - {name: أ-جدار الدرج, exterior: false, start: [510, 432], end: [510, 758]}
+
+  # ================= الدور الأول =================
+  - {name: ب-جنوب, floor: 1, title: الواجهة الأمامية, start: [0, 0], end: [768, 0], openings: [
+      {kind: window, code: ش1, name: ش1 غرفة 2, offset: 120, width: 120, height: 110, sill: 100},
+      {kind: window, code: ش1, name: ش1 غرفة 3, offset: 528, width: 120, height: 110, sill: 100}]}
+  - {name: ب-شرق, floor: 1, title: الواجهة الشرقية, start: [768, 0], end: [768, 758], openings: [
+      {kind: window, code: ش1, name: ش1 غرفة 3 جانبي, offset: 100, width: 100, height: 110, sill: 100},
+      {kind: window, code: ش1, name: ش1 الدرج, offset: 560, width: 100, height: 110, sill: 100}]}
+  - {name: ب-شمال, floor: 1, title: الواجهة الخلفية, start: [768, 758], end: [0, 758], openings: [
+      {kind: window, code: ش1, name: ش1 ماستر, offset: 360, width: 120, height: 110, sill: 100}]}
+  - {name: ب-غرب, floor: 1, title: الواجهة الغربية, start: [0, 758], end: [0, 0], openings: [
+      {kind: window, code: ش3, name: ش3 حمام الماستر, offset: 80, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش3, name: ش3 حمام مشترك, offset: 300, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش1, name: ش1 غرفة 2 جانبي, offset: 560, width: 100, height: 110, sill: 100}]}
+  - {name: ب-فاصل الغرف, floor: 1, exterior: false, start: [0, 330], end: [768, 330], openings: [
+      {kind: door, code: ب2, name: ب2 غرفة 2, offset: 200, width: 80, height: 210},
+      {kind: door, code: ب2, name: ب2 غرفة 3, offset: 420, width: 80, height: 210, swing: right}]}
+  - {name: ب-غرفة 2 شرق, floor: 1, exterior: false, start: [384, 0], end: [384, 330]}
+  - {name: ب-جدار الحمامات, floor: 1, exterior: false, start: [162, 330], end: [162, 758], openings: [
+      {kind: door, code: ب3, name: ب3 حمام مشترك, offset: 16, width: 70, height: 210},
+      {kind: door, code: ب3, name: ب3 حمام الماستر, offset: 280, width: 70, height: 210, swing: right}]}
+  - {name: ب-فاصل الحمامين, floor: 1, exterior: false, start: [0, 528], end: [162, 528]}
+  - {name: ب-جدار الماستر, floor: 1, exterior: false, start: [162, 432], end: [510, 432], openings: [
+      {kind: door, code: ب2, name: ب2 ماستر, offset: 230, width: 80, height: 210}]}
+  - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [510, 432], end: [510, 758]}
+
+stairs:
+  - {from: 0, rect: [516, 438, 762, 752], flight_w: 90, first: east, tread: 27, landing: 90}
+
+rooms:
+  # الأرضي
+  - {name: الصالة, rect: [6, 6, 504, 324]}
+  - {name: الموزع, rect: [168, 336, 762, 426], kind: corridor, label: [330, 380]}
+  - {name: المطبخ, rect: [516, 6, 762, 324]}
+  - {name: دورة مياه ضيوف, rect: [6, 336, 156, 522], wet: true}
+  - {name: دورة مياه الخادمة, rect: [6, 534, 156, 752], wet: true}
+  - {name: غرفة الخادمة, rect: [168, 438, 384, 752]}
+  - {name: مخزن / غسيل, rect: [396, 438, 504, 752]}
+  - {name: الدرج, rect: [516, 438, 762, 752], kind: stair}
+  # الأول
+  - {name: غرفة نوم 2, floor: 1, rect: [6, 6, 378, 324]}
+  - {name: غرفة نوم 3, floor: 1, rect: [390, 6, 762, 324]}
+  - {name: الممر, floor: 1, rect: [168, 336, 762, 426], kind: corridor, label: [330, 380]}
+  - {name: دورة مياه مشتركة, floor: 1, rect: [6, 336, 156, 522], wet: true}
+  - {name: دورة مياه الماستر, floor: 1, rect: [6, 534, 156, 752], wet: true}
+  - {name: غرفة الماستر, floor: 1, rect: [168, 438, 504, 752]}
+  - {name: فتحة الدرج, floor: 1, rect: [516, 438, 762, 752], kind: stair}
+
+decks:
+  - name: عتبة المدخل
+    rect: [250, -126, 430, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 0, width: 180}
+
+furniture:
+  # الأرضي
+  - {name: كنبة 3 مقاعد, rect: [30, 230, 270, 320]}
+  - {name: كرسي, rect: [330, 200, 410, 280]}
+  - {name: طاولة, rect: [120, 130, 240, 190]}
+  - {name: تلفزيون, rect: [8, 40, 40, 200]}
+  - {name: كاونتر, rect: [702, 40, 762, 300]}
+  - {name: ثلاجة, rect: [522, 20, 587, 85]}
+  - {name: سرير 90×190, rect: [294, 562, 384, 752]}
+  - {name: دولاب, rect: [324, 444, 384, 544]}
+  - {name: دش, rect: [6, 432, 96, 522], shape: shower}
+  - {name: "", rect: [110, 345, 150, 395], shape: wc}
+  - {name: "", rect: [10, 345, 56, 395], shape: basin}
+  - {name: دش, rect: [6, 662, 96, 752], shape: shower}
+  - {name: "", rect: [110, 545, 150, 595], shape: wc}
+  - {name: "", rect: [10, 545, 56, 595], shape: basin}
+  # الأول
+  - {name: سرير 160×200, floor: 1, rect: [100, 6, 260, 206]}
+  - {name: "", floor: 1, rect: [52, 6, 94, 48]}
+  - {name: دولاب, floor: 1, rect: [300, 140, 378, 300]}
+  - {name: سرير 160×200, floor: 1, rect: [500, 6, 660, 206]}
+  - {name: "", floor: 1, rect: [666, 6, 708, 48]}
+  - {name: دولاب, floor: 1, rect: [390, 90, 450, 240]}
+  - {name: سرير 180×200, floor: 1, rect: [240, 552, 420, 752]}
+  - {name: "", floor: 1, rect: [194, 706, 236, 748]}
+  - {name: "", floor: 1, rect: [424, 706, 466, 748]}
+  - {name: دولاب, floor: 1, rect: [168, 444, 228, 604]}
+  - {name: دش, floor: 1, rect: [6, 432, 96, 522], shape: shower}
+  - {name: "", floor: 1, rect: [110, 345, 150, 395], shape: wc}
+  - {name: "", floor: 1, rect: [10, 345, 56, 395], shape: basin}
+  - {name: دش, floor: 1, rect: [6, 662, 96, 752], shape: shower}
+  - {name: "", floor: 1, rect: [110, 545, 150, 595], shape: wc}
+  - {name: "", floor: 1, rect: [10, 545, 56, 595], shape: basin}
