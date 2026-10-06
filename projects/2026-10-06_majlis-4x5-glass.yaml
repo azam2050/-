@@ -1,0 +1,63 @@
+# مجلس 4 × 5 م (مثل صورة العميل): دور واحد، واجهة زجاج عريضة على الضلع الطويل، سقف ممتد، تراس خشب بدرج بعرض المجلس
+# السقف مائل باتجاه واحد 20° (الحد الأدنى للتصريف — ممنوع المسطح) يرتفع للواجهة الزجاج والمويه تنزل للخلف.
+# الرفرف 40 سم: أقصى رفرف يخلي المداد من طبلية 520 (511 سم).
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: majlis-4x5-glass
+title: مجلس 4×5 بواجهة زجاج
+client: "عميل — مجلس"
+meta:
+  location: "—"
+  usage: مجلس
+  date: 2026-10-06
+  price_note: ""
+  price_scope: building
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
+wall_height: 280
+slab_height: 45
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 20, overhang: 40}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (زجاج)
+    start: [0, 0]
+    end: [488, 0]
+    openings:   # زجاج من الأرض للسقف: سحاب 3 ضلف بالوسط + ثابت على الجنبين، عارضة على 2.40
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 14, width: 96, height: 395, sill: 10, style: fixed, transom: 240}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج 3 ضلف, offset: 124, width: 240, height: 405, style: sliding, leaves: 3, transom: 240}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 378, width: 96, height: 395, sill: 10, style: fixed, transom: 240}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [488, 0]
+    end: [488, 388]
+    openings:
+      - {kind: window, code: ش1, name: ش1 جانبي, offset: 140, width: 100, height: 110, sill: 100}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [488, 388]
+    end: [0, 388]
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 388]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 جانبي, offset: 148, width: 100, height: 110, sill: 100}
+
+rooms:
+  - {name: المجلس, rect: [6, 6, 482, 382]}
+
+decks:
+  - name: التراس
+    rect: [-6, -186, 494, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 0, width: 500}     # درج بعرض التراس كامل (مثل الصورة)
+
+furniture:   # جلسة مجلس عربي على الجدران الثلاثة + طاولة بالوسط
+  - {name: كنبة, rect: [40, 300, 448, 382]}
+  - {name: كنبة, rect: [6, 70, 86, 290]}
+  - {name: كنبة, rect: [402, 70, 482, 290]}
+  - {name: طاولة, rect: [184, 100, 304, 160]}
