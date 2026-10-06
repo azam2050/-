@@ -231,7 +231,11 @@ def review(project, rules, heights, height_info, rafters):
         add(ERROR, "طول المداد", rafters["warning"])
     # تصريف مويه السقف (قاعدة المصنع): كل سطح ميله ≥ الحد الأدنى، والمثلثات البارزة واديها ينزل للرفرف
     min_p = rules.get("design", {}).get("roof_min_pitch", 20)
-    if project.roof.pitch_deg < min_p:
+    if project.roof.pitch_deg < min_p and project.roof.low_pitch_approved:
+        add(WARN, "ميل سقف خفيف (بموافقة المصنع)", f"ميل {project.roof.pitch_deg}° أقل من {min_p}° — يصرّف باتجاه واحد "
+            "بس يحتاج تغطية صاج معدني (مو قرميد) وعزل مائي تحت الصاج ووصلات مختومة.",
+            "صاج معدني بطول واحد من الحافة العالية للواطية بدون وصلات عرضية.")
+    elif project.roof.pitch_deg < min_p:
         add(ERROR, "ميل السقف", f"ميل {project.roof.pitch_deg}° أقل من {min_p}° — المويه تتجمع وقت الأمطار.",
             f"ارفع الميل إلى {min_p}° أو أكثر.")
     from .roof import cross_gables, cross_rafters

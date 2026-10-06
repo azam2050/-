@@ -1,6 +1,6 @@
 # مجلس 4 × 5 م (مثل صورة العميل): دور واحد، واجهة زجاج عريضة على الضلع الطويل، سقف ممتد، تراس خشب بدرج بعرض المجلس
-# السقف مائل باتجاه واحد 20° (الحد الأدنى للتصريف — ممنوع المسطح) يرتفع للواجهة الزجاج والمويه تنزل للخلف.
-# الرفرف 40 سم: أقصى رفرف يخلي المداد من طبلية 520 (511 سم).
+# السقف مائل باتجاه واحد بميل خفيف 10° مثل الصورة (بموافقة المصنع) — يرتفع للواجهة الزجاج والمويه تنزل للخلف،
+# التغطية صاج معدني (القرميد يحتاج 20°). الرفرف 55 سم: المداد 518 سم من طبلية 520.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: majlis-4x5-glass
 title: مجلس 4×5 بواجهة زجاج
@@ -15,7 +15,7 @@ price_per_m2: 1096
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
 wall_height: 280
 slab_height: 45
-roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 20, overhang: 40}
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 10, overhang: 55, low_pitch_approved: true}   # ميل خفيف مثل الصورة (طلب المصنع) — صاج معدني
 insulation: false
 cladding_board_length: 400
 pallet_length: 320
@@ -26,9 +26,9 @@ walls:
     start: [0, 0]
     end: [488, 0]
     openings:   # زجاج من الأرض للسقف: سحاب 3 ضلف بالوسط + ثابت على الجنبين، عارضة على 2.40
-      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 14, width: 96, height: 395, sill: 10, style: fixed, transom: 240}
-      - {kind: door, code: ب1, name: ب1 سحاب زجاج 3 ضلف, offset: 124, width: 240, height: 405, style: sliding, leaves: 3, transom: 240}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 378, width: 96, height: 395, sill: 10, style: fixed, transom: 240}
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 14, width: 96, height: 320, sill: 10, style: fixed, transom: 240}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج 3 ضلف, offset: 124, width: 240, height: 330, style: sliding, leaves: 3, transom: 240}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 378, width: 96, height: 320, sill: 10, style: fixed, transom: 240}
   - name: شرق
     title: الواجهة الشرقية
     start: [488, 0]

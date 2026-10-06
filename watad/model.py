@@ -117,6 +117,7 @@ class Roof:
     ridge_axis: str = "x"     # اتجاه خط الجملون (x أو y) — للمائل: اتجاه الحافة العالية
     type: str = "gable"       # gable جملون | shed مائل باتجاه واحد
     high_side: str = "S"      # للمائل: الجهة العالية (S/N إذا الحافة على x، W/E إذا على y)
+    low_pitch_approved: bool = False   # ميل أقل من الحد الأدنى بموافقة المصنع (صاج معدني + عزل مائي)
     pitch_deg: float = 25
     overhang: float = 0       # بروز المداد خارج الجدار (أفقي)
     ext_start: float = 0      # امتداد إضافي للسقف عند بداية محور الجملون (جلسة/تراس مسقوف)
