@@ -1,0 +1,15 @@
+# برجولة خشب 6 × 6 م (مثل صورة العميل): جملون بجمالونات مكشوفة (شداد + قائم + ذراعين)، أعمدة نازلة للأرض
+# السقف طبقتين فقط: تطبيق خشب داخلي 2.5 سم + قرميد معدني — على مدادات 5×15 كل 60 سم
+kind: pavilion
+name: pergola-6x6
+title: برجولة خشب 6×6 بجمالونات مكشوفة
+client: "عميل — برجولة"
+meta: {date: 2026-10-07}
+style: {preset: walnut_black, wood: natural_pine}
+size: [600, 600]
+post: 15
+post_height: 280
+bays_y: 2
+pitch_deg: 30
+overhang: 50
+gable_overhang: 40
