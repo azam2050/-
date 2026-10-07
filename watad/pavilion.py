@@ -36,6 +36,10 @@ def geometry(d, rules):
     W, D = d.get("size", [600, 600])
     ps = d.get("post", 15)
     Hp = d.get("post_height", 280)
+    if d.get("ridge_height"):          # قمة الجملون من الأرض (أعلى القرميد) — يُحسب منه ارتفاع العمود
+        p_ = math.radians(d.get("pitch_deg", 30))
+        Hp = d["ridge_height"] - rules["pallet"]["width"] - W / 2 * math.tan(p_) \
+            - (rules["members"]["rafter"]["w"] + 6) / math.cos(p_)
     bays = d.get("bays_y", 2)
     pitch = math.radians(d.get("pitch_deg", 30))
     t = math.tan(pitch)
@@ -134,7 +138,9 @@ def _bar(a, b, w, h):
 
 # ------------------------------------------------------------ الكميات
 def quantities(d, rules, g):
-    plies_post = 3
+    ps = g["ps"]
+    plies_post = round(ps / 5)                 # طبقات 5 سم
+    post_sec = "5×15" if ps <= 15 else "5×22.5"  # 20×20 = 4 طبقات من 5×22.5 تُقص لعرض 20
     n_posts = len(g["xs"]) * len(g["ys"])
     n_tr = len(g["ys"])
     D, W = g["D"], g["W"]
@@ -142,7 +148,8 @@ def quantities(d, rules, g):
     kp = g["z_ridge"] - g["beam_d"] - g["z_plate"] - g["tie_d"]
     strut = math.hypot(W * 0.25, zr(g, W / 2 - W * 0.25) - (g["z_plate"] + g["tie_d"] + 25))
     rows = [
-        ("أعمدة 15×15 (3 طبقات 5×15 مسمّرة ومبرغية)", f"{n_posts} عمود × {g['Hp']:.0f} سم", n_posts * plies_post, g["Hp"] + 10, "5×15"),
+        (f"أعمدة {ps:.0f}×{ps:.0f} ({plies_post} طبقات {'5×15' if ps <= 15 else f'5×{ps:.0f} مقصوصة من 5×22.5'} مبرغية)",
+         f"{n_posts} عمود × {g['Hp']:.0f} سم", n_posts * plies_post, g["Hp"] + 10, post_sec),
         ("جسور طرفية (طبقتين 5×22.5) — وصلة فوق العمود الأوسط", f"2 خط × {D + 2 * g['gov']:.0f} سم", 2 * 2 * 2, beam_len, "5×22.5"),
         ("جسر القمة (طبقتين 5×22.5)", f"{D + 2 * g['gov']:.0f} سم", 2 * 2, beam_len, "5×22.5"),
         ("شداد الجمالون (طبقتين 5×15) — نصين", f"{n_tr} جمالون", n_tr * 2 * 2, W / 2 + g["ov"] * 0.4, "5×15"),
@@ -206,7 +213,7 @@ def _plan(fig, g, d):
     for a, b in zip([0] + ys[1:-1], ys[1:-1] + [D]):
         dim(ax, (W + ov, b), (W + ov, a), 40, fs=6)
     dim(ax, (W + ov, D), (W + ov, 0), 75)
-    ax.text(-ov, -gov - 75, "▪ عمود 15×15 على قاعدة حديد ومسمار تثبيت في قاعدة خرسانة 50×50 (المتقطع)  "
+    ax.text(-ov, -gov - 75, f"▪ عمود {ps:.0f}×{ps:.0f} على قاعدة حديد ومسمار تثبيت في قاعدة خرسانة 50×50 (المتقطع)  "
             "▪ الرفرف المتقطع = حدود السقف", fontsize=7.5, color="#444")
     ax.set_xlim(-ov - 60, W + ov + 140)
     ax.set_ylim(-gov - 110, D + gov + 140)
@@ -292,6 +299,7 @@ def _side_view(ax, g, d):
 
 
 def _details(fig, g):
+    ps = g["ps"]
     ax = drawing_ax(fig, [0.06, 0.12, 0.4, 0.36])
     title(ax, "تفصيلة السقف — طبقتين فقط", "مقياس 1:5")
     t = g["t"]
@@ -320,13 +328,14 @@ def _details(fig, g):
     ax2 = drawing_ax(fig, [0.52, 0.12, 0.42, 0.36])
     title(ax2, "تفصيلة قاعدة العمود", "مقياس 1:10")
     ax2.add_patch(Rectangle((-25, -60), 50, 60, fc="#ddd", ec="k", hatch="..", lw=0.8))
-    ax2.add_patch(Rectangle((-9, 0), 18, 1.5, fc="#333", ec="k"))
-    ax2.add_patch(Rectangle((-9, 0), 2, 20, fc="#333", ec="k"))
-    ax2.add_patch(Rectangle((7, 0), 2, 20, fc="#333", ec="k"))
-    ax2.add_patch(Rectangle((-7.5, 3), 15, 70, fc="#c9a27c", ec="k"))
+    h2 = ps / 2
+    ax2.add_patch(Rectangle((-h2 - 1.5, 0), ps + 3, 1.5, fc="#333", ec="k"))
+    ax2.add_patch(Rectangle((-h2 - 1.5, 0), 2, 20, fc="#333", ec="k"))
+    ax2.add_patch(Rectangle((h2 - 0.5, 0), 2, 20, fc="#333", ec="k"))
+    ax2.add_patch(Rectangle((-h2, 3), ps, 70, fc="#c9a27c", ec="k"))
     for x in (-5, 5):
         ax2.plot([x, x], [-15, 0], color="k", lw=1.5)
-    ax2.text(30, 40, "عمود 15×15 (3 طبقات 5×15)", fontsize=8)
+    ax2.text(30, 40, f"عمود {ps:.0f}×{ps:.0f} ({round(ps / 5)} طبقات 5 سم مبرغية)", fontsize=8)
     ax2.text(30, 12, "قاعدة حديد U مجلفنة + برغيين M12\nترفع الخشب 3 سم عن الأرض (ما يلمس المويه)", fontsize=8)
     ax2.text(30, -30, "قاعدة خرسانة 50×50×60 + مسامير تثبيت", fontsize=8)
     ax2.set_xlim(-40, 140)
@@ -388,7 +397,7 @@ def build(project_path, out_dir):
     m = d.get("meta", {})
     info = [["المشروع", d["title"]], ["العميل", d.get("client", "")], ["التاريخ", str(m.get("date", ""))],
             ["المقاس", f"{g['W'] / 100:.2f} × {g['D'] / 100:.2f} م = {q['area']:.1f} م²"],
-            ["الأعمدة", f"{q['n_posts']} أعمدة 15×15 نازلة للأرض على قواعد حديد"],
+            ["الأعمدة", f"{q['n_posts']} أعمدة {g['ps']:.0f}×{g['ps']:.0f} نازلة للأرض على قواعد حديد"],
             ["السقف", f"جملون {d.get('pitch_deg', 30)}° — طبقتين: تطبيق خشب + قرميد معدني"],
             ["الجمالونات", f"{len(g['ys'])} جمالون مكشوف (شداد + قائم + ذراعين)"]]
     ax = fig.add_axes([0.65, 0.5, 0.32, 0.38])
