@@ -100,9 +100,9 @@ def build_scene(d, rules, style):
             for dy in (-1, 1):
                 if (y + dy * 60) < 0 or (y + dy * 60) > D:
                     continue
-                S.poly("trim", *_bar((x, y + dy * 6, Hp - 70), (x, y + dy * 66, Hp - 2), 7, 7))
+                S.poly("trim", *_bar((x, y + dy * ps / 2, Hp - 80), (x, y + dy * (ps / 2 + 70), Hp - 2), 10, 15))
             dx = 1 if x < W / 2 else -1
-            S.poly("trim", *_bar((x + dx * 6, y, Hp - 70), (x + dx * 66, y, g["z_plate"] - 2), 7, 7))
+            S.poly("trim", *_bar((x + dx * ps / 2, y, Hp - 80), (x + dx * (ps / 2 + 70), y, g["z_plate"] - 2), 10, 15))
 
     def slope(mat, xa, xb, ya, yb, z0, z1):
         pts = []
@@ -156,8 +156,8 @@ def quantities(d, rules, g):
         ("قائم الجمالون (طبقتين 5×15)", f"{n_tr} جمالون", n_tr * 2, kp, "5×15"),
         ("أذرع الجمالون المائلة 5×15", f"{n_tr} × 2", n_tr * 2, strut, "5×15"),
         ("مدادات 5×15 كل 60 سم", f"{len(g['rpos'])} × 2 جهة", len(g["rpos"]) * 2, g["rafter_len"], "5×15"),
-        ("كوابيل الأعمدة 7×5", "", sum(1 + sum(1 for dy in (-1, 1) if 0 <= y + dy * 60 <= D)
-                                     for _x in g["xs"] for y in g["ys"]), 95, "7×5"),
+        ("كوابيل الأعمدة (طبقتين 5×15)", "", 2 * sum(1 + sum(1 for dy in (-1, 1) if 0 <= y + dy * 60 <= D)
+                                                    for _x in g["xs"] for y in g["ys"]), 110, "5×15"),
     ]
     slope_len = g["rafter_len"]
     area_roof = 2 * slope_len * (D + 2 * g["gov"]) / 1e4
@@ -419,6 +419,18 @@ def build(project_path, out_dir):
     ax.imshow(plt.imread(views))
     ax.axis("off")
     pages.append((fig, "المنظور", "—"))
+    real = sorted((out / "realistic").glob("p*.jpg"))       # صور واقعية (tools: رندر Blender) إن وجدت
+    if real:
+        fig = new_page(A3L)
+        fig.text(0.5, 0.94, "الصور الواقعية", ha="center", fontsize=18, weight="bold", color=BRAND)
+        ax = fig.add_axes([0.03, 0.12, 0.6, 0.78])
+        ax.imshow(plt.imread(real[0]))
+        ax.axis("off")
+        for k, pth in enumerate(real[1:3]):
+            a2 = fig.add_axes([0.65, 0.52 - k * 0.4, 0.32, 0.38])
+            a2.imshow(plt.imread(pth))
+            a2.axis("off")
+        pages.append((fig, "الصور الواقعية", "—"))
     pdf = out / f"{stem}_client.pdf"
     with PdfPages(pdf) as P:
         for i, (fig, sheet, scale) in enumerate(pages, 1):

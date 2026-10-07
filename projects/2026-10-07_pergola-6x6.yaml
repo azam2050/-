@@ -13,4 +13,4 @@ ridge_height: 500         # طلب العميل: قمة الجملون 5.00 م �
 bays_y: 2
 pitch_deg: 30
 overhang: 50
-gable_overhang: 40
+gable_overhang: 50        # طلب العميل: بروز السقف 50 من كل الجهات
