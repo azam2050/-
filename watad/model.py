@@ -38,6 +38,7 @@ class Wall:
     height: float = None
     title: str = ""      # اسم الواجهة (للخارجي)
     gable_glass: bool = False   # مثلث الجملون فوق هذا الجدار زجاج بدل خشب
+    glass_front: bool = False   # الواجهة كاملة (الجدار + المثلث) زجاج بشبكة قوائم خشب وباب بالوسط (A-frame)
     floor: int = 0              # رقم الدور (0 أرضي، 1 أول)
 
     @property
@@ -147,6 +148,7 @@ class Project:
     decks: list = field(default_factory=list)
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
+    height_exact: bool = False      # ارتفاع الجدار بطلب العميل بالضبط (بدون تقريب لصف تلبيس كامل)
 
     @property
     def exterior_walls(self):
@@ -204,6 +206,7 @@ def load_project(path, rules):
         decks=[Deck(**k) for k in d.get("decks", [])],
         meta=d.get("meta", {}),
         notes=d.get("notes", []),
+        height_exact=d.get("height_exact", False),
     )
 
 

@@ -157,7 +157,11 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         t_lo, t_hi = (-half, L + half) if w.exterior else (0, L)
         wm = "wood" if w.exterior else "wood_in"
         shown = [o for o in w.openings if not (cut and (o.sill if o.kind == "window" else 0) >= cut - lev)]
-        cuts = [(o.offset, o.offset + o.width) for o in shown]
+        if w.glass_front and not cut and w.exterior and w.floor == top:
+            shown = []
+            cuts = [(t_lo, t_hi)]
+        else:
+            cuts = [(o.offset, o.offset + o.width) for o in shown]
         for a, b in _segments(t_lo, t_hi, cuts):
             S.wbox(wm, w, a, b, -half, half, 0, Hc)
         for o in shown:
@@ -180,6 +184,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                    ([(-half, za)] if za > H + 1 else [])
             if len(poly) >= 3:
                 S.wprism("wood", w, poly, -half, half)
+        elif gable_end and w.glass_front:
+            _glass_front(S, w, L, H, rise, half)
         elif gable_end and w.gable_glass:
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
         elif gable_end:
@@ -619,6 +625,74 @@ def stair_railing(S, project, st, h=90, bal=12):
         xx = xl + (xh - xl) * i / m
         S.box("stair", xx - 1.8, ly0 + 2.2, lz, xx + 1.8, ly0 + 5.8, lz + h)
     S.zoff = 0
+
+
+def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8, panel=70):
+    """واجهة A-frame زجاج كاملة (إحداثيات الواجهة الخارجية 0..Lo): إطار خشب + قوائم + عوارض + باب بالوسط.
+    door = (بداية، نهاية، ارتفاع) بإحداثيات الواجهة. يرجع dict للرسم (2D) والمجسم (3D)."""
+    k = rise / (Lo / 2)
+    bv = border * math.sqrt(1 + k * k)
+    zin = lambda t: H + min(t, Lo - t) * k - bv      # noqa: E731
+    tl, tr = side, Lo - side
+    apex = H + rise - bv
+    inner = [(tl, sill), (tr, sill), (tr, zin(tr)), (Lo / 2, apex), (tl, zin(tl))]
+    da, db, dh = door
+    mulls = [da - mull / 2, db + mull / 2]           # قوائم جنب الباب
+    for a, b in ((tl, da - mull), (db + mull, tr)):  # تقسيم الجنبين لألواح ≤ 70 سم
+        n = max(1, math.ceil((b - a) / panel))
+        mulls += [a + (b - a) * j / n for j in range(1, n)]
+    mulls.sort()
+    zt1 = dh + mull / 2                              # عارضة فوق الباب على كامل العرض
+    zt2 = zt1 + (apex - zt1) * 0.5                   # عارضة ثانية بالمثلث
+    trans = []
+    for z in (zt1, zt2):
+        ta = max(tl, (z - H + bv) / k)
+        if Lo - 2 * ta > 40:
+            trans.append((ta, Lo - ta, z))
+    return {"outer": [(0, 0), (Lo, 0), (Lo, H), (Lo / 2, H + rise), (0, H)], "inner": inner, "zin": zin,
+            "mulls": [(t, zin(t)) for t in mulls], "trans": trans, "door": door, "mull": mull, "apex": apex,
+            "border": border, "bv": bv, "sill": sill, "tl": tl}
+
+
+def _glass_front(S, w, L, H, rise, half):
+    """واجهة زجاج كاملة من الأرض لقمة الجملون (مثل الـ A-frame): إطار خشب + شبكة قوائم + باب زجاج بالوسط."""
+    Lo = L + 2 * half
+    d = next((o for o in w.openings if o.kind == "door"), None)
+    door = (d.offset + half, d.offset + d.width + half, d.height) if d else (Lo / 2 - 45, Lo / 2 + 45, 210)
+    G = glass_front_geometry(Lo, H, rise, door)
+    m, fw_, fd = G["mull"], 4, 4
+    sh = lambda t: t - half                          # noqa: E731  (إحداثي الواجهة → إحداثي الجدار)
+    zin, tl, bv = G["zin"], G["tl"], G["bv"]
+    # الإطار: عتبة سفلية + قائمين جانبيين + الحافة المائلة
+    S.wbox("wood", w, sh(0), sh(Lo), -half, half, 0, G["sill"])
+    for a, b in ((0, tl), (Lo - tl, Lo)):
+        S.wbox("wood", w, sh(a), sh(b), -half, half, G["sill"], H)
+    S.wprism("wood", w, [(sh(0), H), (sh(Lo / 2), H + rise), (sh(Lo / 2), G["apex"]), (sh(tl), zin(tl)),
+                         (sh(tl), H)], -half, half)
+    S.wprism("wood", w, [(sh(Lo), H), (sh(Lo - tl), H), (sh(Lo - tl), zin(Lo - tl)), (sh(Lo / 2), G["apex"]),
+                         (sh(Lo / 2), H + rise)], -half, half)
+    S.wprism("glass", w, [(sh(t), z) for t, z in G["inner"]], -1, 1)
+    zb = G["sill"]
+    for t, ztop in G["mulls"]:
+        S.wbox("wood", w, sh(t - m / 2), sh(t + m / 2), -half, half, zb, ztop + 1)
+        for a in (t - m / 2 - fw_, t + m / 2):
+            S.wbox("frame", w, sh(a), sh(a + fw_), -fd, fd, zb, zin(a + fw_ / 2))
+    for ta, tb, z in G["trans"]:
+        S.wbox("wood", w, sh(ta), sh(tb), -half, half, z - m / 2, z + m / 2)
+        S.wbox("frame", w, sh(ta), sh(tb), -fd, fd, z - m / 2 - fw_, z + m / 2 + fw_)
+    # إطار أسود حول الزجاج (خط التركيب)
+    S.wbox("frame", w, sh(tl), sh(Lo - tl), -fd, fd, zb, zb + fw_)
+    for a in (tl, Lo - tl - fw_):
+        S.wbox("frame", w, sh(a), sh(a + fw_), -fd, fd, zb, zin(a + fw_ / 2))
+    S.wdiag("frame", w, sh(tl), zin(tl), sh(Lo / 2), G["apex"], fw_ * 2, -fd, fd)
+    S.wdiag("frame", w, sh(Lo / 2), G["apex"], sh(Lo - tl), zin(Lo - tl), fw_ * 2, -fd, fd)
+    # ضلفة الباب: إطار خشب داخل فتحته + مقبض
+    da, db, dh = door
+    st = 7
+    S.wbox("wood", w, sh(da), sh(da + st), -3, 3, zb, dh - m / 2)
+    S.wbox("wood", w, sh(db - st), sh(db), -3, 3, zb, dh - m / 2)
+    S.wbox("wood", w, sh(da), sh(db), -3, 3, zb, zb + 14)
+    S.wbox("frame", w, sh(db - st - 4), sh(db - st - 2), -half - 3, -half, 95, 125)
 
 
 def gable_transom(H, rise, border, bv):

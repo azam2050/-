@@ -511,14 +511,33 @@ def elevation(ax, ctx, w):
                     yy += 12
                 roof_top = z_hi + depth
     else:
-        ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
-        y = cover
-        while y < H - 1:
-            ax.plot([0, L], [y, y], color="#999", lw=0.4)
-            y += cover
+        gfront = gable_end and any(w2.glass_front for w2, _l in stack)
+        if not gfront:
+            ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
+            y = cover
+            while y < H - 1:
+                ax.plot([0, L], [y, y], color="#999", lw=0.4)
+                y += cover
         top = H + rise
-        gglass = any(w2.gable_glass for w2, _l in stack)
-        if gable_end and gglass:
+        gglass = any(w2.gable_glass or w2.glass_front for w2, _l in stack)
+        if gfront:                 # واجهة A-frame زجاج كاملة بشبكة قوائم خشب
+            from .model3d import glass_front_geometry
+            d_ = next((o for o in w.openings if o.kind == "door"), None)
+            door = (d_.offset + half, d_.offset + d_.width + half, d_.height) if d_ else (L / 2 - 45, L / 2 + 45, 210)
+            G = glass_front_geometry(L, H, rise, door)
+            ax.add_patch(Polygon(G["outer"], closed=True, fc="#e9d9c4", ec="k", lw=1))
+            ax.add_patch(Polygon(G["inner"], closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
+            m = G["mull"]
+            for t, zt_ in G["mulls"]:
+                ax.add_patch(Rectangle((t - m / 2, G["sill"]), m, zt_ - G["sill"], fc="#e9d9c4", ec="k", lw=0.5))
+            for ta, tb, z in G["trans"]:
+                ax.add_patch(Rectangle((ta, z - m / 2), tb - ta, m, fc="#e9d9c4", ec="k", lw=0.5))
+            da, db, dh = door
+            ax.add_patch(Rectangle((da, G["sill"]), db - da, dh - m / 2 - G["sill"], fill=False, ec=C_DOOR, lw=1.2))
+            ax.add_patch(Rectangle((da + 7, G["sill"] + 14), db - da - 14, dh - m / 2 - G["sill"] - 21, fill=False,
+                                   ec=C_DOOR, lw=0.5))
+            ax.add_patch(Rectangle((db - 15, 95), 3, 30, fc=C_DOOR, ec="none"))
+        elif gable_end and gglass:
             from .model3d import gable_glass_geometry
             inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
             ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
@@ -641,6 +660,10 @@ def elevation(ax, ctx, w):
     for w2, lev in stack:
         for o in w2.openings:
             ex = o.offset + half
+            if w2.glass_front and gable_end:
+                ax.text(ex + o.width / 2, (o.height if o.kind == "door" else 25) + 8, o.code, ha="center",
+                        va="bottom", fontsize=8, color=C_DOOR if o.kind == "door" else C_WIN)
+                continue
             b = lev + (o.sill if o.kind == "window" else 0)
             col = C_WIN if o.kind == "window" else C_DOOR
             ax.add_patch(Rectangle((ex, b), o.width, o.height, fc="white", ec=col, lw=1))

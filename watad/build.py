@@ -32,6 +32,8 @@ def build(project_path, out_dir, rules_path=None, real=False):
     rules = load_rules(rules_path)
     project = load_project(project_path, rules)
     hi = suggest_height(project.wall_height, rules)
+    if project.height_exact:            # طلب العميل بالضبط: آخر صف تلبيس يُقص
+        hi = {**hi, "suggested": project.wall_height, "changed": False}
     project.wall_height = hi["suggested"]
     fl = project.floor_list
     heights = {w.name: (w.height or (fl[w.floor]["height"] if project.floors else hi["suggested"]))

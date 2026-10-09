@@ -89,6 +89,8 @@ def review(project, rules, heights, height_info, rafters):
 
     # 2) الفتحات: داخل الجدار وبعيدة عن التقاء الجدران (لازم مكان لجنب الإطار 7×5)
     for w in project.walls:
+        if w.glass_front:              # واجهة زجاج كاملة: الشبكة الخشب هي الإطار (مو جدار بفتحات)
+            continue
         js = junctions(project, w)
         edge = half + t
         for o in w.openings:

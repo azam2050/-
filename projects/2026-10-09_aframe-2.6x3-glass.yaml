@@ -1,0 +1,59 @@
+# كوخ A-frame صغير مثل صورة العميل: واجهة 2.60 × عمق 3.00 م، جدران جانبية 1.50 م، بروز السقف 20 سم
+# الواجهة الأمامية كاملة زجاج من الأرض لقمة الجملون بشبكة قوائم خشب + باب زجاج بالوسط.
+# الميل 60° (شكل الـ A-frame + يخلّي الباب 2.10 يدخل تحت الميل رغم إن الجدار 1.50) — المداد 300 سم من طبلية 320.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: aframe-2.6x3-glass
+title: كوخ A-frame بواجهة زجاج 2.60×3.00
+client: "عميل — كوخ A-frame"
+meta:
+  location: "—"
+  usage: كوخ / استراحة
+  date: 2026-10-09
+  price_note: ""
+  price_scope: building
+price_per_m2: 1196
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
+wall_height: 150
+height_exact: true          # طلب العميل: الجدار الجانبي 1.50 بالضبط
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 60, overhang: 20}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    glass_front: true
+    start: [0, 0]
+    end: [248, 0]
+    openings:   # زجاج ثابت على الجنبين حتى قمة الجملون + باب زجاج بالوسط (الشبكة في الواجهة)
+      - {kind: window, code: ز1, name: زجاج ثابت يسار (حتى القمة), offset: 6, width: 65, height: 140, sill: 10, style: fixed}
+      - {kind: door, code: ب1, name: ب1 باب زجاج بإطار خشب, offset: 79, width: 90, height: 210, leaves: 1}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين (حتى القمة), offset: 177, width: 65, height: 140, sill: 10, style: fixed}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [248, 0]
+    end: [248, 288]
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [248, 288]
+    end: [0, 288]
+    openings:
+      - {kind: window, code: ش1, name: ش1 شباك تهوية, offset: 94, width: 60, height: 60, sill: 70}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 288]
+    end: [0, 0]
+
+rooms:
+  - {name: الكوخ, rect: [6, 6, 242, 282]}
+
+decks:
+  - name: عتبة المدخل
+    rect: [-6, -126, 254, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 60, width: 140}
+
+furniture: []
