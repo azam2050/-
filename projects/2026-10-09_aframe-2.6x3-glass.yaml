@@ -40,8 +40,6 @@ walls:
     title: الواجهة الخلفية
     start: [248, 288]
     end: [0, 288]
-    openings:
-      - {kind: window, code: ش1, name: ش1 شباك تهوية, offset: 94, width: 60, height: 60, sill: 70}
   - name: غرب
     title: الواجهة الغربية
     start: [0, 288]
@@ -50,11 +48,6 @@ walls:
 rooms:
   - {name: الكوخ, rect: [6, 6, 242, 282]}
 
-decks:
-  - name: عتبة المدخل
-    rect: [-6, -126, 254, -6]
-    height: 45
-    railing: []
-    stairs: {side: S, offset: 60, width: 140}
+decks: []                   # طلب العميل: بدون عتبة/درج قدام الباب (وبدون شباك خلفي)
 
 furniture: []
