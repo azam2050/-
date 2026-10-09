@@ -25,6 +25,14 @@ def gable_rafters(project, rules):
     per_side = math.floor(roof_len / spacing) + 1
     shed = r.type == "shed"
     length = ((g["span"] + 2 * r.overhang) if shed else (g["span"] / 2 + r.overhang)) / math.cos(g["pitch"])
+    pieces = 1
+    if shed and r.splice is not None:     # المداد قطعتين تتراكب 60 سم فوق الجدار الداخلي الحامل
+        x0, y0, x1, y1 = g["bbox"]
+        lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+        lap = 60
+        parts = [r.splice - lo + r.overhang + lap / 2, hi - r.splice + r.overhang + lap / 2]
+        length = max(parts) / math.cos(g["pitch"])
+        pieces = 2
     stock = next((s for s in sorted(rules["roof"]["rafter_lengths"]) if s >= length), None)
     return {
         "ridge_length": round(g["ridge_len"], 1),
@@ -35,10 +43,12 @@ def gable_rafters(project, rules):
         "rise": round(g["rise"], 1),
         "ridge_level": round(project.roof_base + g["rise"], 1),
         "rafters_per_side": per_side,
-        "rafter_count": per_side * (1 if shed else 2),
+        "rafter_count": per_side * (pieces if shed else 2),
+        "pieces": pieces,
         "rafter_length": round(length, 1),
         "stock_length": stock,
-        "warning": None if stock else f"طول المداد {length:.0f} سم أطول من كل الأطوال المتوفرة — يحتاج قرار",
+        "warning": None if stock else (f"طول المداد {length:.0f} سم أطول من كل الأطوال المتوفرة — "
+                                       "يحتاج قرار (للمائل: roof.splice على جدار داخلي حامل)"),
     }
 
 

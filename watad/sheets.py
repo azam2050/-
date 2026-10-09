@@ -1201,9 +1201,12 @@ def bom_rows(ctx):
     q, hi = ctx["q"], ctx["height"]
     p, c, roof = q["pallets"], q["cladding"], q["pallets"]["roof"]
     rows = [["الارتفاع المطلوب / المعتمد", f"{hi['requested']:.0f} / {hi['suggested']:.0f} سم"],
-            ["السقف", f"جملون {roof['pitch_deg']}° — قمة {roof['ridge_level']:.0f} سم من وجه الصبة"],
-            ["المدادات 5×15", f"{roof['rafter_count']} مداد ({roof['rafters_per_side']} لكل جهة) × "
-                              f"{roof['rafter_length']:.0f} سم — من طبلية {roof['stock_length']}"],
+            ["السقف", ("مائل باتجاه واحد" if ctx["project"].roof.type == "shed" else "جملون")
+             + f" {roof['pitch_deg']}° — أعلى نقطة {roof['ridge_level']:.0f} سم من وجه الصبة"],
+            ["المدادات 5×15", f"{roof['rafter_count']} مداد ("
+             + (f"{roof['rafters_per_side']} خط × قطعتين موصولة فوق الجدار الداخلي بتراكب 60 سم"
+                if roof.get("pieces", 1) == 2 else f"{roof['rafters_per_side']} لكل جهة")
+             + f") × حتى {roof['rafter_length']:.0f} سم — من طبلية {roof['stock_length']}"],
             ["طبليات الطريقة الأولى (مداد + عمود)",
              f"{p['method1_pallets']['count']} طبلية × {p['method1_pallets']['length']} سم"],
             ["طبليات الطريقة الثانية (3 أعمدة)",
