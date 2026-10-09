@@ -1,5 +1,5 @@
 # كوخ A-frame صغير مثل صورة العميل: واجهة 2.60 × عمق 3.00 م، جدران جانبية 1.50 م، بروز السقف 20 سم
-# الواجهة الأمامية كاملة زجاج من الأرض لقمة الجملون بشبكة قوائم خشب + باب زجاج بالوسط.
+# الواجهة الأمامية كاملة زجاج: مثلث زجاج كامل (لوح واحد) فوق عارضة الباب، وتحتها لوحين زجاج والباب بالوسط.
 # الميل 60° (شكل الـ A-frame + يخلّي الباب 2.10 يدخل تحت الميل رغم إن الجدار 1.50) — المداد 300 سم من طبلية 320.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: aframe-2.6x3-glass
@@ -11,6 +11,7 @@ meta:
   date: 2026-10-09
   price_note: ""
   price_scope: building
+  hide_pricing: true          # طلب المصنع: بدون مربع التسعير في هذا المخطط
 price_per_m2: 1196
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
 wall_height: 150
@@ -28,9 +29,9 @@ walls:
     start: [0, 0]
     end: [248, 0]
     openings:   # زجاج ثابت على الجنبين حتى قمة الجملون + باب زجاج بالوسط (الشبكة في الواجهة)
-      - {kind: window, code: ز1, name: زجاج ثابت يسار (حتى القمة), offset: 6, width: 65, height: 140, sill: 10, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 65, height: 140, sill: 10, style: fixed}
       - {kind: door, code: ب1, name: ب1 باب زجاج بإطار خشب, offset: 79, width: 90, height: 210, leaves: 1}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين (حتى القمة), offset: 177, width: 65, height: 140, sill: 10, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 177, width: 65, height: 140, sill: 10, style: fixed}
   - name: شرق
     title: الواجهة الشرقية
     start: [248, 0]

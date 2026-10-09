@@ -627,7 +627,7 @@ def stair_railing(S, project, st, h=90, bal=12):
     S.zoff = 0
 
 
-def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8, panel=70):
+def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8):
     """واجهة A-frame زجاج كاملة (إحداثيات الواجهة الخارجية 0..Lo): إطار خشب + قوائم + عوارض + باب بالوسط.
     door = (بداية، نهاية، ارتفاع) بإحداثيات الواجهة. يرجع dict للرسم (2D) والمجسم (3D)."""
     k = rise / (Lo / 2)
@@ -637,20 +637,14 @@ def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8,
     apex = H + rise - bv
     inner = [(tl, sill), (tr, sill), (tr, zin(tr)), (Lo / 2, apex), (tl, zin(tl))]
     da, db, dh = door
-    mulls = [da - mull / 2, db + mull / 2]           # قوائم جنب الباب
-    for a, b in ((tl, da - mull), (db + mull, tr)):  # تقسيم الجنبين لألواح ≤ 70 سم
-        n = max(1, math.ceil((b - a) / panel))
-        mulls += [a + (b - a) * j / n for j in range(1, n)]
-    mulls.sort()
-    zt1 = dh + mull / 2                              # عارضة فوق الباب على كامل العرض
-    zt2 = zt1 + (apex - zt1) * 0.5                   # عارضة ثانية بالمثلث
-    trans = []
-    for z in (zt1, zt2):
-        ta = max(tl, (z - H + bv) / k)
-        if Lo - 2 * ta > 40:
-            trans.append((ta, Lo - ta, z))
+    # تبسيط التركيب (طلب المصنع): عارضة وحدة فوق الباب — فوقها مثلث زجاج كامل لوح واحد،
+    # وتحتها لوحين زجاج (يمين ويسار) والباب بينهم. القوائم تقف عند العارضة.
+    zt1 = dh + mull / 2
+    mulls = [da - mull / 2, db + mull / 2]
+    ta = max(tl, (zt1 - H + bv) / k)
+    trans = [(ta, Lo - ta, zt1)]
     return {"outer": [(0, 0), (Lo, 0), (Lo, H), (Lo / 2, H + rise), (0, H)], "inner": inner, "zin": zin,
-            "mulls": [(t, zin(t)) for t in mulls], "trans": trans, "door": door, "mull": mull, "apex": apex,
+            "mulls": [(t, min(zin(t), zt1 - mull / 2)) for t in mulls], "trans": trans, "door": door, "mull": mull, "apex": apex,
             "border": border, "bv": bv, "sill": sill, "tl": tl}
 
 
@@ -676,7 +670,7 @@ def _glass_front(S, w, L, H, rise, half):
     for t, ztop in G["mulls"]:
         S.wbox("wood", w, sh(t - m / 2), sh(t + m / 2), -half, half, zb, ztop + 1)
         for a in (t - m / 2 - fw_, t + m / 2):
-            S.wbox("frame", w, sh(a), sh(a + fw_), -fd, fd, zb, zin(a + fw_ / 2))
+            S.wbox("frame", w, sh(a), sh(a + fw_), -fd, fd, zb, ztop)
     for ta, tb, z in G["trans"]:
         S.wbox("wood", w, sh(ta), sh(tb), -half, half, z - m / 2, z + m / 2)
         S.wbox("frame", w, sh(ta), sh(tb), -fd, fd, z - m / 2 - fw_, z + m / 2 + fw_)

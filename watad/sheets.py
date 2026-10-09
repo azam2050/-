@@ -661,7 +661,7 @@ def elevation(ax, ctx, w):
         for o in w2.openings:
             ex = o.offset + half
             if w2.glass_front and gable_end:
-                ax.text(ex + o.width / 2, (o.height if o.kind == "door" else 25) + 8, o.code, ha="center",
+                ax.text(ex + o.width / 2, (o.height - 30 if o.kind == "door" else 25) + 8, o.code, ha="center",
                         va="bottom", fontsize=8, color=C_DOOR if o.kind == "door" else C_WIN)
                 continue
             b = lev + (o.sill if o.kind == "window" else 0)
@@ -952,8 +952,9 @@ def areas_sheet(ctx):
              f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
     if terrace:
-        rows.append(["", "التراس المسقوف" + (" + تراس الدور الأول" if len(P.decks) > 1 else "")
-                     + (" (مجاناً)" if P.meta.get("price_scope") == "building" else ""),
+        lbl = P.decks[0].name if len(P.decks) == 1 and "تراس" not in P.decks[0].name else "التراس المسقوف"
+        rows.append(["", lbl + (" + تراس الدور الأول" if len(P.decks) > 1 else "")
+                     + (" (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price else ""),
                      " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1] for k in (0, 1))
                      + (f" × {len(P.decks)}" if len(P.decks) > 1 else ""), f"{terrace:.2f}"])
     rows.append(["", "المساحة الإجمالية المبنية",
