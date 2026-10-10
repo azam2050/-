@@ -153,8 +153,9 @@ def make_blank(out):
             w.rect = pymupdf.Rect(r.x1 - width, cy - 6.5, r.x1 + 1, cy + 6.5)
             w.text_font = "Helv"
             w.text_fontsize = 0
-            w.border_width = 0
-            w.fill_color = (0.96, 0.95, 0.92)
+            w.border_width = 0              # الخانة مخفية: بدون إطار ولا لون — تبان فاضية وتنكتب عند الضغط
+            w.border_color = None
+            w.fill_color = None
             page.add_redact_annot(r)
             page.apply_redactions(images=0, graphics=0)
             ann = page.add_widget(w)

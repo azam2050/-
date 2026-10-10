@@ -40,7 +40,7 @@ b { font-weight: 700; }
 /* حقول التعبئة: في النسخة الفاضية تطلع مربعات قابلة للكتابة */
 .f { display: inline-block; vertical-align: baseline; }
 .blank p { text-align: right; }
-.blank .f { border-bottom: 0.6pt dotted #888; height: 9pt; text-align: right; color: #fff; font-size: 4pt; line-height: 9pt; }
+.blank .f { height: 9pt; text-align: right; color: #fff; font-size: 4pt; line-height: 9pt; }
 .blank .pay td { padding: 2.6pt 0; }
 </style>
 </head>
@@ -54,7 +54,7 @@ b { font-weight: 700; }
 <p>إنه في يوم {{ fld('day', 60) }} الموافق {{ fld('date', 70) }}م، تم الاتفاق بين كل من:</p>
 
 <div class="box">
-<p><b>الطرف الأول – العميل:</b> الاسم: {{ fld('client_name', 82) }} | رقم الهوية: {{ fld('client_id', 54) }} | رقم الجوال: {{ fld('client_phone', 54) }} | العنوان: {{ fld('client_address', 44) }}</p>
+<p><b>الطرف الأول – العميل:</b> الاسم: {{ fld('client_name', 70) }} | رقم الهوية: {{ fld('client_id', 50) }} | رقم الجوال: {{ fld('client_phone', 50) }} | العنوان: {{ fld('client_address', 40) }}</p>
 <p><b>الطرف الثاني – المنفذ:</b> مؤسسة وتد الأخشاب للصناعة | السجل التجاري: 7055256700 | يمثلها: أحمد تركي | رقم الجوال: 0502190921 | العنوان: حي شهار – الطائف</p>
 </div>
 
