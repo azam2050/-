@@ -2,3 +2,7 @@ ezdxf>=1.4
 matplotlib>=3.11
 pyyaml>=6
 pytest>=8
+# عقد المصنع (tools/contract.py)
+weasyprint>=60
+jinja2>=3
+pymupdf>=1.23
