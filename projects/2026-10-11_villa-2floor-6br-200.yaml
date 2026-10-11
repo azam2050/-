@@ -94,10 +94,9 @@ walls:
       {kind: door, code: ب6, name: ب6 باب فرنسي لبلكونة غرفة 3, offset: 552, width: 140, height: 230, leaves: 2, grid: [4, 5]}]}
   - {name: ب-فاصل غرفة 3, floor: 1, exterior: false, start: [400, 0], end: [400, 400]}
   - {name: ب-فاصل غرفة 6, floor: 1, exterior: false, start: [800, 0], end: [800, 400]}
-  - {name: ب-فاصل أمامي, floor: 1, exterior: false, start: [0, 400], end: [1188, 400], openings: [
+  - {name: ب-فاصل أمامي, floor: 1, exterior: false, start: [0, 400], end: [800, 400], openings: [   # الماستر بدون جدار (طلب العميل)
       {kind: door, code: ب2, name: ب2 غرفة 3, offset: 250, width: 80, height: 210},
-      {kind: door, code: ب2, name: ب2 غرفة 5, offset: 420, width: 80, height: 210, swing: right},
-      {kind: door, code: ب2, name: ب2 غرفة الماستر (داخل الجناح), offset: 820, width: 80, height: 210, swing: right}]}
+      {kind: door, code: ب2, name: ب2 غرفة 5, offset: 420, width: 80, height: 210, swing: right}]}
   - {name: ب-فاصل غرفة 6, floor: 1, exterior: false, start: [0, 512], end: [400, 512], openings: [
       {kind: door, code: ب2, name: ب2 غرفة 6, offset: 250, width: 80, height: 210, swing: right}]}
   - {name: ب-غرفة 6 شرق, floor: 1, exterior: false, start: [400, 512], end: [400, 822]}
@@ -128,9 +127,8 @@ rooms:
   # الأول
   - {name: غرفة نوم 3, floor: 1, rect: [6, 6, 394, 394]}
   - {name: غرفة نوم 5, floor: 1, rect: [406, 6, 794, 394]}
-  - {name: غرفة الماستر, floor: 1, rect: [806, 6, 1182, 394]}
+  - {name: غرفة الماستر, floor: 1, rect: [806, 6, 1182, 506], label: [1000, 110]}
   - {name: الممر, floor: 1, rect: [6, 406, 794, 506], kind: corridor, label: [560, 456]}
-  - {name: موزع الماستر, floor: 1, rect: [806, 406, 1182, 506], kind: corridor, label: [1000, 456]}
   - {name: غرفة نوم 6, floor: 1, rect: [6, 518, 394, 816]}
   - {name: فتحة الدرج, floor: 1, rect: [406, 518, 640, 816], kind: stair}
   - {name: حمام 3, floor: 1, rect: [652, 518, 810, 816], wet: true}

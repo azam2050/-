@@ -465,6 +465,51 @@ FURN_H = [("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 8
           ("ثلاجة", 180, "white")]
 
 
+def _bath_fixture(S, project, f):
+    """قطع الحمام بشكلها الحقيقي: دش بقاعدة وزجاج، كرسي حمام بخزان، مغسلة على خزانة ومرآة."""
+    x0, y0, x1, y1 = f.rect
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    room = next((r.rect for r in project.rooms if r.floor == f.floor
+                 and r.rect[0] - 1 <= cx <= r.rect[2] + 1 and r.rect[1] - 1 <= cy <= r.rect[3] + 1), None)
+    rx0, ry0, rx1, ry1 = room or (x0, y0, x1, y1)
+    touch = {"W": abs(x0 - rx0) < 8, "E": abs(x1 - rx1) < 8, "S": abs(y0 - ry0) < 8, "N": abs(y1 - ry1) < 8}
+    d = {"W": x0 - rx0, "E": rx1 - x1, "S": y0 - ry0, "N": ry1 - y1}
+    back = min(d, key=d.get)                       # الجدار اللي وراء القطعة
+    if f.shape == "shower":
+        S.box("white", x0, y0, 1.2, x1, y1, 9)
+        for side, open_ in touch.items():          # زجاج على الجهات المفتوحة على الحمام
+            if open_:
+                continue
+            if side in ("W", "E"):
+                xx = x0 if side == "W" else x1 - 1
+                S.box("glass", xx, y0, 9, xx + 1, y1, 200)
+                S.box("frame", xx - 0.5, y0, 198, xx + 1.5, y1, 201)
+            else:
+                yy = y0 if side == "S" else y1 - 1
+                S.box("glass", x0, yy, 9, x1, yy + 1, 200)
+                S.box("frame", x0, yy - 0.5, 198, x1, yy + 1.5, 201)
+        bx, by = {"W": (x0 + 2, cy), "E": (x1 - 6, cy), "S": (cx, y0 + 2), "N": (cx, y1 - 6)}[back]
+        S.box("frame", bx - 6 if back in "SN" else bx, by - 6 if back in "WE" else by, 185,
+              bx + 6 if back in "SN" else bx + 4, by + 6 if back in "WE" else by + 4, 200)
+        return
+    if f.shape == "wc":
+        tk = 17
+        bowl = {"W": (x0 + tk, y0 + 6, x1, y1 - 6), "E": (x0, y0 + 6, x1 - tk, y1 - 6),
+                "S": (x0 + 6, y0 + tk, x1 - 6, y1), "N": (x0 + 6, y0, x1 - 6, y1 - tk)}[back]
+        tank = {"W": (x0, y0, x0 + tk, y1), "E": (x1 - tk, y0, x1, y1),
+                "S": (x0, y0, x1, y0 + tk), "N": (x0, y1 - tk, x1, y1)}[back]
+        S.box("white", bowl[0], bowl[1], 1.2, bowl[2], bowl[3], 40)
+        S.box("dark", bowl[0] + 2, bowl[1] + 2, 40, bowl[2] - 2, bowl[3] - 2, 42)
+        S.box("white", tank[0], tank[1], 1.2, tank[2], tank[3], 80)
+        return
+    # مغسلة: خزانة خشب + سطح أبيض + مرآة على الجدار
+    S.box("furn", x0 + 2, y0 + 2, 1.2, x1 - 2, y1 - 2, 80)
+    S.box("white", x0, y0, 80, x1, y1, 88)
+    m = {"W": (x0 - 1, y0, x0, y1), "E": (x1, y0, x1 + 1, y1), "S": (x0, y0 - 1, x1, y0),
+         "N": (x0, y1, x1, y1 + 1)}[back]
+    S.box("glass", m[0], m[1], 105, m[2], m[3], 175)
+
+
 def add_interior(S, project, style, cut=None, pieces=True):
     """أرضيات + فرش مبسط (للمقطع العلوي والعرض الداخلي) — كل دور على منسوبه."""
     S.material("floor", "#B89066")
@@ -488,14 +533,8 @@ def add_interior(S, project, style, cut=None, pieces=True):
             continue
         S.zoff = project.level(f.floor)
         x0, y0, x1, y1 = f.rect
-        if f.shape == "shower":
-            S.box("white", x0, y0, 1.2, x1, y1, 6)
-            continue
-        if f.shape == "wc":
-            S.box("white", x0 + 4, y0 + 4, 1.2, x1 - 4, y1 - 4, 42)
-            continue
-        if f.shape == "basin":
-            S.box("white", x0, y0, 70, x1, y1, 86)
+        if f.shape in ("shower", "wc", "basin"):
+            _bath_fixture(S, project, f)
             continue
         h, m = 50, "furn"
         for key, hh, mm in FURN_H:
