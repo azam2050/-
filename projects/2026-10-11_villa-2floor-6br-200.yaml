@@ -4,7 +4,7 @@
 #   + بلكونة علوية فوق الشباك البارز بدربزين قوائم + برجولة خشب فوق باب البلكونة + شبابيك وأبواب بتقسيم خشب
 #   + بلكونة جانبية (غرب) تحت رفرف الجملون مع باب فرنسي وبرجولة (من لقطات الفيديو).
 #  الأرضي: صالة (بالشباك البارز) + غرفتين نوم + مطبخ + سيرفيس (مدخل خارجي) + حمامين + درج U
-#  الأول : 4 غرف نوم (الماستر على البلكونة) + حمامين + غرفة ملابس/مخزن
+#  الأول : 4 غرف نوم — جناح الماستر (باب من الممر + حمام خاص + غرفة ملابس + بلكونة طويلة) + حمام مشترك
 # المسقط 12.00 × 8.34 لكل دور = 100.08 × 2 = 200.2 م² (الشباك البارز والبلكونة والعتبة مجاناً).
 # الحمامات على الجدار الخلفي فوق بعض (سباكة خارجية — قاعدة المصنع)، وشبابيكها مو على الواجهة.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
@@ -81,30 +81,32 @@ walls:
       {kind: window, code: ش4, name: ش4 غرفة 3 (تحت الجملون), offset: 100, width: 200, height: 150, sill: 80, grid: [3, 3], transom: 195},
       {kind: window, code: ش5, name: ش5 الماستر, offset: 440, width: 110, height: 150, sill: 80, grid: [2, 3]},
       {kind: door, code: ب4, name: ب4 باب فرنسي للبلكونة, offset: 600, width: 160, height: 230, leaves: 2, grid: [4, 5]},
-      {kind: window, code: ش4, name: ش4 غرفة 6, offset: 900, width: 200, height: 150, sill: 80, grid: [3, 3], transom: 195}]}
+      {kind: door, code: ب7, name: ب7 باب فرنسي للبلكونة (الماستر), offset: 920, width: 160, height: 230, leaves: 2, grid: [4, 5]}]}
   - {name: ب-شرق, floor: 1, title: الواجهة الشرقية, start: [1188, 0], end: [1188, 822], openings: [
-      {kind: window, code: ش1, name: ش1 غرفة 6, offset: 150, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+      {kind: window, code: ش1, name: ش1 جناح الماستر, offset: 150, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
   - {name: ب-شمال, floor: 1, title: الواجهة الخلفية, start: [1188, 822], end: [0, 822], openings: [
       {kind: window, code: ش3, name: ش3 حمام 4, offset: 258, width: 60, height: 60, sill: 150},
       {kind: window, code: ش3, name: ش3 حمام 3, offset: 428, width: 60, height: 60, sill: 150},
       {kind: window, code: ش1, name: ش1 الدرج, offset: 608, width: 100, height: 110, sill: 100, grid: [2, 3]},
-      {kind: window, code: ش1, name: ش1 غرفة 4, offset: 928, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+      {kind: window, code: ش1, name: ش1 غرفة 6, offset: 928, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
   - {name: ب-غرب, floor: 1, title: الواجهة الغربية, start: [0, 822], end: [0, 0], openings: [
-      {kind: window, code: ش1, name: ش1 غرفة 4, offset: 142, width: 120, height: 120, sill: 90, grid: [2, 3]},
+      {kind: window, code: ش1, name: ش1 غرفة 6, offset: 142, width: 120, height: 120, sill: 90, grid: [2, 3]},
       {kind: door, code: ب6, name: ب6 باب فرنسي لبلكونة غرفة 3, offset: 552, width: 140, height: 230, leaves: 2, grid: [4, 5]}]}
   - {name: ب-فاصل غرفة 3, floor: 1, exterior: false, start: [400, 0], end: [400, 400]}
   - {name: ب-فاصل غرفة 6, floor: 1, exterior: false, start: [800, 0], end: [800, 400]}
   - {name: ب-فاصل أمامي, floor: 1, exterior: false, start: [0, 400], end: [1188, 400], openings: [
       {kind: door, code: ب2, name: ب2 غرفة 3, offset: 250, width: 80, height: 210},
-      {kind: door, code: ب2, name: ب2 الماستر, offset: 420, width: 80, height: 210, swing: right},
-      {kind: door, code: ب2, name: ب2 غرفة 6, offset: 820, width: 80, height: 210, swing: right}]}
-  - {name: ب-فاصل غرفة 4, floor: 1, exterior: false, start: [0, 512], end: [400, 512], openings: [
-      {kind: door, code: ب2, name: ب2 غرفة 4, offset: 250, width: 80, height: 210, swing: right}]}
-  - {name: ب-غرفة 4 شرق, floor: 1, exterior: false, start: [400, 512], end: [400, 822]}
+      {kind: door, code: ب2, name: ب2 غرفة 5, offset: 420, width: 80, height: 210, swing: right},
+      {kind: door, code: ب2, name: ب2 غرفة الماستر (داخل الجناح), offset: 820, width: 80, height: 210, swing: right}]}
+  - {name: ب-فاصل غرفة 6, floor: 1, exterior: false, start: [0, 512], end: [400, 512], openings: [
+      {kind: door, code: ب2, name: ب2 غرفة 6, offset: 250, width: 80, height: 210, swing: right}]}
+  - {name: ب-غرفة 6 شرق, floor: 1, exterior: false, start: [400, 512], end: [400, 822]}
+  - {name: ب-باب جناح الماستر, floor: 1, exterior: false, start: [800, 400], end: [800, 512], openings: [   # ملاحظة العميل: باب جناح الماستر من الممر
+      {kind: door, code: ب2, name: ب2 باب جناح الماستر, offset: 16, width: 80, height: 210}]}
   - {name: ب-جدار الحمامات, floor: 1, exterior: false, start: [646, 512], end: [1188, 512], openings: [
       {kind: door, code: ب3, name: ب3 حمام 3, offset: 34, width: 70, height: 210},
-      {kind: door, code: ب3, name: ب3 حمام 4, offset: 204, width: 70, height: 210},
-      {kind: door, code: ب3, name: ب3 غرفة الملابس, offset: 374, width: 80, height: 210}]}
+      {kind: door, code: ب3, name: ب3 حمام الماستر, offset: 204, width: 70, height: 210},
+      {kind: door, code: ب3, name: ب3 غرفة ملابس الماستر, offset: 374, width: 80, height: 210}]}
   - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [646, 512], end: [646, 822]}
   - {name: ب-فاصل الحمامين, floor: 1, exterior: false, start: [816, 512], end: [816, 822]}
   - {name: ب-فاصل المخزن, floor: 1, exterior: false, start: [986, 512], end: [986, 822]}
@@ -125,14 +127,15 @@ rooms:
   - {name: سيرفيس, rect: [992, 518, 1182, 816]}
   # الأول
   - {name: غرفة نوم 3, floor: 1, rect: [6, 6, 394, 394]}
-  - {name: غرفة الماستر, floor: 1, rect: [406, 6, 794, 394]}
-  - {name: غرفة نوم 6, floor: 1, rect: [806, 6, 1182, 394]}
-  - {name: الممر, floor: 1, rect: [6, 406, 1182, 506], kind: corridor, label: [800, 456]}
-  - {name: غرفة نوم 4, floor: 1, rect: [6, 518, 394, 816]}
+  - {name: غرفة نوم 5, floor: 1, rect: [406, 6, 794, 394]}
+  - {name: غرفة الماستر, floor: 1, rect: [806, 6, 1182, 394]}
+  - {name: الممر, floor: 1, rect: [6, 406, 794, 506], kind: corridor, label: [560, 456]}
+  - {name: موزع الماستر, floor: 1, rect: [806, 406, 1182, 506], kind: corridor, label: [1000, 456]}
+  - {name: غرفة نوم 6, floor: 1, rect: [6, 518, 394, 816]}
   - {name: فتحة الدرج, floor: 1, rect: [406, 518, 640, 816], kind: stair}
   - {name: حمام 3, floor: 1, rect: [652, 518, 810, 816], wet: true}
-  - {name: حمام 4, floor: 1, rect: [822, 518, 980, 816], wet: true}
-  - {name: غرفة ملابس, floor: 1, rect: [992, 518, 1182, 816]}
+  - {name: حمام الماستر, floor: 1, rect: [822, 518, 980, 816], wet: true}
+  - {name: ملابس الماستر, floor: 1, rect: [992, 518, 1182, 816]}
 
 bays:
   - {wall: أ-جنوب, offset: 530, width: 316, depth: 90, sill: 60, head: 250, top: 280, grid_rows: 5}
@@ -141,10 +144,11 @@ porches:
 pergolas:
   - {wall: ب-جنوب, offset: 580, width: 200, depth: 100, z: 245}
   - {wall: ب-غرب, offset: 532, width: 180, depth: 100, z: 245}      # فوق باب البلكونة الجانبية
+  - {wall: ب-جنوب, offset: 900, width: 200, depth: 100, z: 245}     # فوق باب الماستر
 
 decks:
   - {name: عتبة المدخل, rect: [370, -150, 546, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 176}}
-  - {name: البلكونة, rect: [528, -150, 900, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+  - {name: البلكونة, rect: [528, -150, 1194, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}   # ملاحظة العميل: بلكونة طويلة لين الركن
   - {name: البلكونة الجانبية, rect: [-126, 60, -6, 340], level: 305, railing: [S, W, N], railing_style: vertical_balusters}
 
 furniture:
@@ -170,9 +174,9 @@ furniture:
   # الأول
   - {name: سرير 160×200, floor: 1, rect: [100, 6, 260, 206]}
   - {name: دولاب, floor: 1, rect: [334, 160, 394, 360]}
-  - {name: سرير 180×200, floor: 1, rect: [510, 194, 690, 394]}
+  - {name: سرير 160×200, floor: 1, rect: [520, 194, 680, 394]}
   - {name: دولاب, floor: 1, rect: [734, 160, 794, 360]}
-  - {name: سرير 160×200, floor: 1, rect: [900, 194, 1060, 394]}
+  - {name: سرير 180×200, floor: 1, rect: [890, 194, 1070, 394]}
   - {name: دولاب, floor: 1, rect: [1122, 200, 1182, 394]}
   - {name: سرير 160×200, floor: 1, rect: [110, 656, 270, 816]}
   - {name: دولاب, floor: 1, rect: [334, 600, 394, 800]}
