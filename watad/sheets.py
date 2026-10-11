@@ -394,6 +394,8 @@ def plan_sheet(ctx, floor=0):
     draw_openings_plan(ax, P, rules)
     draw_furniture(ax, P)
     draw_stairs_plan(ax, P_full, floor)
+    from .features import draw_plan as _feat_plan
+    _feat_plan(ax, P_full, rules, floor)
     for r in P.rooms:
         cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
         big = r.area_m2 > 4 and r.kind != "stair"
@@ -600,10 +602,11 @@ def elevation(ax, ctx, w):
             lower = [(ta - g["ov"], H - e2), (tc, g["zr"]), (tb + g["ov"], H - e2)]
             ax.add_patch(Polygon(lower + [(x, z + kd) for x, z in lower][::-1], closed=True, fc="#fff3e0",
                                  ec=C_ROOF, lw=0.9, zorder=3))
-            cgd = next(x for x in P.roof.cross_gables if x.get("side", "W") == g["side"])
+            cgd = P.roof.cross_gables[g["i"]]
             ww = cgd.get("window_width", 110)
             wz1 = min(H + cgd.get("window_height", 140), g["zr"] - ww / 2 * g["t"] - 25)
-            ax.add_patch(Rectangle((tc - ww / 2, H + 15), ww, wz1 - H - 15, fc="white", ec=C_WIN, lw=1, zorder=3))
+            if ww > 0:
+                ax.add_patch(Rectangle((tc - ww / 2, H + 15), ww, wz1 - H - 15, fc="white", ec=C_WIN, lw=1, zorder=3))
             ax.text(tc, H + 18 + (wz1 - H) / 2, "مثلث بارز", ha="center", fontsize=6, color=C_WIN, zorder=4)
             level(ax, L + g["ov"] + 30 + ext_r, g["zr"], g["zr"] / 100, "قمة المثلث")
         elif (abs(uy) < 1e-6) == (g["axis"] == "y"):   # واجهة الجملون: بروز المثلث من الجنب
@@ -671,6 +674,12 @@ def elevation(ax, ctx, w):
                                    fill=False, ec=col, lw=0.6))
             if o.kind == "window" and o.width >= 90 and not o.style:
                 ax.plot([ex + o.width / 2] * 2, [b + 4, b + o.height - 4], color=col, lw=0.6)
+            if o.grid:                 # شبكة خشب
+                cols, rows = o.grid
+                for k in range(1, cols):
+                    ax.plot([ex + o.width * k / cols] * 2, [b + 4, b + o.height - 4], color=col, lw=0.5)
+                for k in range(1, rows):
+                    ax.plot([ex + 4, ex + o.width - 4], [b + o.height * k / rows] * 2, color=col, lw=0.5)
             if o.transom:
                 ax.plot([ex, ex + o.width], [lev + o.transom] * 2, color=col, lw=0.8)
             if o.kind == "door" and o.style in ("sliding", "fixed"):
@@ -690,6 +699,8 @@ def elevation(ax, ctx, w):
                     ax.add_patch(Ellipse((hx, lev + 105), 5, 5, fill=False, ec=col, lw=0.5))
             ax.text(ex + o.width / 2, b + o.height + 8, o.code, ha="center", va="bottom", fontsize=8,
                     color=col)
+    from .features import draw_elev as _feat_elev     # شباك بارز / مظلة / برجولة
+    _feat_elev(ax, P, rules, w, stack, gable_end)
     for t0, t1, top_d in late_rails:        # دربزين البلكونة فوق الفتحات
         ax.add_patch(Rectangle((t0, top_d), t1 - t0, 105, fc="#fbf6ef", ec="#8b5a2b", lw=0.9, alpha=0.85))
         for yy in range(12, 105, 13):

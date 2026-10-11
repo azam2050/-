@@ -23,6 +23,7 @@ class Opening:
     leaves: int = 1      # عدد الضلف (0 = فتحة بدون باب)
     style: str = ""      # sliding | fixed (للأبواب الزجاج)
     transom: float = 0   # ارتفاع قاطع أفقي (شباك علوي فوق الباب/الزجاج)
+    grid: list = None    # تقسيم خشب للزجاج [أعمدة، صفوف] (شبابيك/أبواب بشبكة مثل الكوخ الكلاسيكي)
 
     def __post_init__(self):
         self.name = self.name or self.code
@@ -147,6 +148,9 @@ class Project:
     slab_height: float = 20
     posts: list = field(default_factory=list)
     decks: list = field(default_factory=list)
+    bays: list = field(default_factory=list)      # شبابيك بارزة مضلعة (bay window) — watad/features.py
+    porches: list = field(default_factory=list)   # مظلة مدخل بجملون صغير على عمودين
+    pergolas: list = field(default_factory=list)  # برجولات خشب فوق الأبواب/الشبابيك
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
     height_exact: bool = False      # ارتفاع الجدار بطلب العميل بالضبط (بدون تقريب لصف تلبيس كامل)
@@ -205,6 +209,9 @@ def load_project(path, rules):
         slab_height=d.get("slab_height", rules["slab"]["height"]),
         posts=d.get("posts", []),
         decks=[Deck(**k) for k in d.get("decks", [])],
+        bays=d.get("bays", []),
+        porches=d.get("porches", []),
+        pergolas=d.get("pergolas", []),
         meta=d.get("meta", {}),
         notes=d.get("notes", []),
         height_exact=d.get("height_exact", False),

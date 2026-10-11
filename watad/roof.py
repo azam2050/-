@@ -89,7 +89,7 @@ def cross_gables(project, rules):
     H = project.roof_base
     tm = math.tan(math.radians(r.pitch_deg))
     out = []
-    for cg in r.cross_gables:
+    for i, cg in enumerate(r.cross_gables):
         side = cg.get("side", "W")
         pitch = cg.get("pitch", 45)
         t = math.tan(math.radians(pitch))
@@ -109,7 +109,7 @@ def cross_gables(project, rules):
         rafter_len = (hw + ov) / math.cos(math.radians(pitch))
         n_side = math.floor((reach + ov) / rules["roof"]["rafter_spacing"]) + 1
         valley = math.sqrt((reach + ov) ** 2 + (hw + ov) ** 2 + (rise + ov * t) ** 2)
-        out.append({"side": side, "axis": r.ridge_axis, "wall": wall, "sg": sg, "c": c, "hw": hw, "ov": ov,
+        out.append({"i": i, "side": side, "axis": r.ridge_axis, "wall": wall, "sg": sg, "c": c, "hw": hw, "ov": ov,
                     "pitch": pitch, "t": t, "rise": rise, "zr": zr, "ze": ze, "reach": reach, "H": H,
                     "rafter_length": round(rafter_len, 1), "rafters": 2 * n_side, "valley_length": round(valley, 1)})
     return out

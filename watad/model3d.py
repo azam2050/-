@@ -316,6 +316,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         if cut and d.level > 0 and d.level > cut:
             continue
         _deck(S, d, style, x0, y0, x1, y1, sh)
+    from .features import add_3d          # شباك بارز / مظلة مدخل / برجولات
+    add_3d(S, project, rules, style, cut)
     # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
     pz = []
     for pt in project.posts:
@@ -353,11 +355,11 @@ def _cross_gables(S, project, rules, half):
         tri = [P(wall, c - hw, H), P(wall, c, zr), P(wall, c + hw, H)]
         inner = [P(wall - sg * 2 * half, c - hw, H), P(wall - sg * 2 * half, c, zr), P(wall - sg * 2 * half, c + hw, H)]
         S.poly("wood", tri + inner, [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)])
-        cg = next(x for x in project.roof.cross_gables if x.get("side", "W") == g["side"])
+        cg = project.roof.cross_gables[g["i"]]
         ww = cg.get("window_width", 110)
         wz0 = H + 15
         wz1 = min(H + cg.get("window_height", 140), zr - (ww / 2) * g["t"] - 25)
-        if wz1 - wz0 > 40:
+        if wz1 - wz0 > 40 and ww > 0:
             S.box("frame", *(lambda a, b: (min(a[0], b[0]), min(a[1], b[1]), wz0 - 6, max(a[0], b[0]), max(a[1], b[1]), wz1 + 6))(
                 P(wall + sg * 1.5, c - ww / 2 - 6, 0), P(wall, c + ww / 2 + 6, 0)))
             S.box("glass", *(lambda a, b: (min(a[0], b[0]), min(a[1], b[1]), wz0, max(a[0], b[0]), max(a[1], b[1]), wz1))(
@@ -380,7 +382,15 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
         for (ta, tb, za, zb_) in ((a, a + fw, z0, z1), (b - fw, b, z0, z1), (a, b, z0, z0 + fw), (a, b, z1 - fw, z1)):
             S.wbox("frame", w, ta, tb, out - 2, half, za, zb_)
         grid = style["window_grid"]
-        if grid in ("mullion", "grid") and o.width >= 90:
+        if o.grid:                  # شبكة خشب بالعدد المطلوب (أعمدة × صفوف)
+            cols, rows = o.grid
+            for k in range(1, cols):
+                t = a + (b - a) * k / cols
+                S.wbox("frame", w, t - 2, t + 2, -3, 3, z0, z1)
+            for k in range(1, rows):
+                z = z0 + (z1 - z0) * k / rows
+                S.wbox("frame", w, a, b, -3, 3, z - 2, z + 2)
+        elif grid in ("mullion", "grid") and o.width >= 90:
             m = (a + b) / 2
             S.wbox("frame", w, m - 2.5, m + 2.5, -3, 3, z0, z1)
         if grid == "grid" and o.height >= 90:
@@ -413,8 +423,17 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
             lw = (o.width - 2 * fw) / n
             for k in range(n):
                 la, lb = a + fw + k * lw, a + fw + (k + 1) * lw
-                if style["door_style"] == "french" and exterior:
+                if (style["door_style"] == "french" or o.grid) and exterior:
                     S.wbox("glass", w, la + 8, lb - 8, -1, 1, 10, z1 - fw - 8)
+                    if o.grid:                # تقسيم خشب للضلفة الزجاج
+                        cols, rows = o.grid
+                        cols = max(1, round(cols / n))
+                        for kk in range(1, cols):
+                            t = la + 8 + (lb - la - 16) * kk / cols
+                            S.wbox("door", w, t - 2, t + 2, -2.5, 2.5, 10, z1 - fw - 8)
+                        for kk in range(1, rows):
+                            z = 10 + (z1 - fw - 18) * kk / rows
+                            S.wbox("door", w, la + 8, lb - 8, -2.5, 2.5, z - 2, z + 2)
                     for (ta, tb, za, zb_) in ((la, la + 8, 0, z1 - fw), (lb - 8, lb, 0, z1 - fw),
                                               (la, lb, 0, 10), (la, lb, z1 - fw - 8, z1 - fw)):
                         S.wbox("door", w, ta, tb, -2.5, 2.5, za, zb_)
