@@ -34,6 +34,9 @@ roof:
   cross_gables:             # جملونين على الواجهة جنب بعض (مثل الفيديو): يسار فوق غرفة 3، يمين فوق البلكونة
     - {side: S, center: 200, width: 420, pitch: 42, overhang: 40, window_width: 0}
     - {side: S, center: 700, width: 420, pitch: 42, overhang: 40, window_width: 0}
+    # خلفي: نفس المثلثين موزعين على السقف بالتساوي حول النص (طلب العميل)
+    - {side: N, center: 297, width: 420, pitch: 42, overhang: 40, window_width: 0}
+    - {side: N, center: 891, width: 420, pitch: 42, overhang: 40, window_width: 0}
 insulation: false
 cladding_board_length: 400
 pallet_length: 320
