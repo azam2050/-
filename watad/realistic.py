@@ -124,6 +124,61 @@ def interior_shots(project, max_shots=6):
     return out
 
 
+def ext_lights(project, rules, spacing=0.9):
+    """سبوت تحت رفرف السقف والمثلثات البارزة + مظلة المدخل + فوانيس جنب الأبواب الخارجية (بالمتر)."""
+    import math as _m
+    from .model import outer_bbox, wall_thickness
+    from .roof import cross_gables, roof_geometry
+    x0, y0, x1, y1 = (v / 100 for v in outer_bbox(project, rules))
+    r = project.roof
+    H = project.roof_base / 100
+    ov = r.overhang / 100
+    tp = _m.tan(_m.radians(r.pitch_deg))
+    rise = roof_geometry(project, rules)["rise"] / 100
+    pts = []
+    if r.type != "shed":
+        zs = H - 0.12
+        if r.ridge_axis == "x":
+            for yy in (y0 - ov * 0.55, y1 + ov * 0.55):
+                n = max(2, int((x1 - x0) / spacing))
+                pts += [[x0 + (x1 - x0) * (k + 0.5) / n, yy, zs, 6, "spot"] for k in range(n)]
+            for xx, sg in ((x0, -1), (x1, 1)):            # رفرف الجملون على الجنبين
+                for k in range(1, 9):
+                    f = k / 9
+                    yy = y0 + (y1 - y0) / 2 * f
+                    pts.append([xx + sg * ov * 0.55, yy, H + rise * f - 0.18, 6, "spot"])
+                    pts.append([xx + sg * ov * 0.55, y1 - (y1 - y0) / 2 * f, H + rise * f - 0.18, 6, "spot"])
+        else:
+            for xx in (x0 - ov * 0.55, x1 + ov * 0.55):
+                n = max(2, int((y1 - y0) / spacing))
+                pts += [[xx, y0 + (y1 - y0) * (k + 0.5) / n, zs, 6, "spot"] for k in range(n)]
+    for g in cross_gables(project, rules):                # تحت رفرف المثلثات البارزة (على المائل)
+        c, hw, wall, sg = g["c"] / 100, g["hw"] / 100, g["wall"] / 100, g["sg"]
+        zr, Hg = g["zr"] / 100, g["H"] / 100
+        for k in range(1, 7):
+            f = k / 7
+            for side in (-1, 1):
+                a = c + side * hw * (1 - f)
+                z = Hg + (zr - Hg) * f - 0.2
+                o = wall + sg * g["ov"] / 100 * 0.55
+                pts.append([a, o, z, 6, "spot"] if g["axis"] == "x" else [o, a, z, 6, "spot"])
+    half = wall_thickness(rules) / 2
+    for pc in project.porches:
+        w = next(w_ for w_ in project.walls if w_.name == pc["wall"])
+        x, y = w.point(pc["offset"] + pc["width"] / 2, -half - pc.get("depth", 120) / 2)
+        pts.append([x / 100, y / 100, (project.level(w.floor) + pc.get("eave", 240) - 8) / 100, 25, "spot"])
+    for w in project.walls:                              # فوانيس جنب الأبواب الخارجية
+        if not w.exterior:
+            continue
+        for o in w.openings:
+            if o.kind != "door" or o.leaves == 0:
+                continue
+            for t in (o.offset - 22, o.offset + o.width + 22):
+                x, y = w.point(t, -half - 0.12 * 100)
+                pts.append([x / 100, y / 100, (project.level(w.floor) + 205) / 100, 18, "lamp"])
+    return pts
+
+
 def _areas(project, per_m2):
     out = []
     for r in project.rooms:
@@ -163,6 +218,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "colors": {k: style[k] for k in ("wood", "trim", "roof", "frame", "glass", "slab")},
             "views": [], "furnish": items, "furnish_py": str(ROOT / "tools" / "blender_furnish.py"),
             "landscape": plan_landscape(project, keep_clear=[tuple(s[2][:2]) for s in ext]),
+            "wood_frames": style.get("frame_ar", "").startswith("إطار خشب"),
             "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35}
     day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
         ([[s[0], s[2], s[3], s[4], s[5], 0.6] for s in inn] if "interior" in parts else [])
@@ -170,7 +226,8 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
         _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
     if "dusk" in parts:
-        _run({**base, **DUSK, "tag": "dusk", "shots": dusk, "area_lights": _areas(project, 40)}, out)
+        _run({**base, **DUSK, "tag": "dusk", "shots": dusk, "area_lights": _areas(project, 40),
+              "ext_lights": ext_lights(project, rules)}, out)
     glb.unlink(missing_ok=True)
     meta = {"exterior": [[f"{s[0]}.jpg", s[1]] for s in ext],
             "dusk": [[f"d{s[0][1:]}.jpg", s[1] + " — وقت الغروب"] for s in ext[:2]],

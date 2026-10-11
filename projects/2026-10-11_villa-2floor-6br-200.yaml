@@ -1,7 +1,8 @@
 # عميل ذهبان (سكن خاص، أرض 460 م²): كوخ دورين 200 م² — عرض اليوم الوطني 1,096 ر.س/م²
 # الشكل مثل فيديو العميل (كوخ كلاسيكي):
 #   جملونين بارزين على الواجهة جنب بعض + مظلة مدخل بجملون صغير على عمودين + شباك بارز مضلع بزجاج مقسّم
-#   + بلكونة علوية فوق الشباك البارز بدربزين قوائم + برجولة خشب فوق باب البلكونة + شبابيك وأبواب بتقسيم خشب.
+#   + بلكونة علوية فوق الشباك البارز بدربزين قوائم + برجولة خشب فوق باب البلكونة + شبابيك وأبواب بتقسيم خشب
+#   + بلكونة جانبية (غرب) تحت رفرف الجملون مع باب فرنسي وبرجولة (من لقطات الفيديو).
 #  الأرضي: صالة (بالشباك البارز) + غرفتين نوم + مطبخ + سيرفيس (مدخل خارجي) + حمامين + درج U
 #  الأول : 4 غرف نوم (الماستر على البلكونة) + حمامين + غرفة ملابس/مخزن
 # المسقط 12.00 × 8.34 لكل دور = 100.08 × 2 = 200.2 م² (الشباك البارز والبلكونة والعتبة مجاناً).
@@ -20,7 +21,7 @@ meta:
     - "السعر للمساحة المبنية 200 م² (دورين) — الشباك البارز والبلكونة وعتبة المدخل مجاناً."
     - "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."
 price_per_m2: 1096
-style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french}
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}   # إطارات خشب مثل الفيديو
 wall_height: 280
 floors:
   - {name: الدور الأرضي, level: 0, height: 280}
@@ -55,7 +56,7 @@ walls:
       {kind: window, code: ش1, name: ش1 غرفة 1, offset: 928, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
   - {name: أ-غرب, title: الواجهة الغربية, start: [0, 822], end: [0, 0], openings: [
       {kind: window, code: ش1, name: ش1 غرفة 1, offset: 142, width: 120, height: 120, sill: 90, grid: [2, 3]},
-      {kind: window, code: ش1, name: ش1 غرفة 2, offset: 562, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+      {kind: window, code: ز1, name: ز1 شباك فرنسي غرفة 2, offset: 552, width: 140, height: 220, sill: 20, grid: [2, 5], transom: 190}]}
   - {name: أ-غرفة 2 شرق, exterior: false, start: [400, 0], end: [400, 400], openings: [
       {kind: door, code: ب2, name: ب2 غرفة 2, offset: 300, width: 80, height: 210, swing: right}]}
   - {name: أ-فاصل الغرفتين, exterior: false, start: [0, 400], end: [400, 400]}
@@ -87,7 +88,7 @@ walls:
       {kind: window, code: ش1, name: ش1 غرفة 4, offset: 928, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
   - {name: ب-غرب, floor: 1, title: الواجهة الغربية, start: [0, 822], end: [0, 0], openings: [
       {kind: window, code: ش1, name: ش1 غرفة 4, offset: 142, width: 120, height: 120, sill: 90, grid: [2, 3]},
-      {kind: window, code: ش1, name: ش1 غرفة 3, offset: 562, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+      {kind: door, code: ب6, name: ب6 باب فرنسي لبلكونة غرفة 3, offset: 552, width: 140, height: 230, leaves: 2, grid: [4, 5]}]}
   - {name: ب-فاصل غرفة 3, floor: 1, exterior: false, start: [400, 0], end: [400, 400]}
   - {name: ب-فاصل غرفة 6, floor: 1, exterior: false, start: [800, 0], end: [800, 400]}
   - {name: ب-فاصل أمامي, floor: 1, exterior: false, start: [0, 400], end: [1188, 400], openings: [
@@ -133,13 +134,15 @@ rooms:
 bays:
   - {wall: أ-جنوب, offset: 530, width: 316, depth: 90, sill: 60, head: 250, top: 280, grid_rows: 5}
 porches:
-  - {wall: أ-جنوب, offset: 390, width: 136, depth: 110, eave: 235, pitch: 40, overhang: 15}
+  - {wall: أ-جنوب, offset: 390, width: 136, depth: 140, eave: 235, pitch: 55, overhang: 18}   # مظلة عالية بميل حاد مثل الفيديو
 pergolas:
   - {wall: ب-جنوب, offset: 580, width: 200, depth: 100, z: 245}
+  - {wall: ب-غرب, offset: 532, width: 180, depth: 100, z: 245}      # فوق باب البلكونة الجانبية
 
 decks:
   - {name: عتبة المدخل, rect: [370, -150, 546, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 176}}
   - {name: البلكونة, rect: [528, -150, 900, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+  - {name: البلكونة الجانبية, rect: [-126, 60, -6, 340], level: 305, railing: [S, W, N], railing_style: vertical_balusters}
 
 furniture:
   # الأرضي

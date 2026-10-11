@@ -140,6 +140,9 @@ if cfg.get("furnish") or cfg.get("landscape"):
         # الخارج خشب طبيعي فاتح مثل كبائن المصنع الحقيقية (بدل الصبغة الغامقة)
         ext = tex_material("W_ext", "WoodFloor043", 0.8, "#D8A868", 0.18, bump=0.12)
         MATS.update({"wood": ext, "trim": beam, "stair": beam, "door": beam})
+MATS["frame_wood"] = MATS["trim"]      # تقسيم خشب الزجاج (الشبابيك البارزة/الأبواب الفرنسية)
+if cfg.get("wood_frames"):              # إطارات خشب (مثل الكوخ الكلاسيكي) بدل الألمنيوم
+    MATS["frame"] = MATS["trim"]
 for ob in list(scene.objects):
     if ob.type != "MESH":
         continue
@@ -192,6 +195,32 @@ for i, (x, y, z) in enumerate(cfg.get("lights", [])):
     o.location = (x, y, z)
     o.visible_camera = False
     scene.collection.objects.link(o)
+
+# إنارة خارجية (سبوت تحت الرفرف + فوانيس جدارية) — للقطات الليل مثل كبائن المصنع
+_spot_mat = bpy.data.materials.new("W_spot")
+_spot_mat.use_nodes = True
+_em = _spot_mat.node_tree.nodes.new("ShaderNodeEmission")
+_em.inputs["Color"].default_value = (1.0, 0.86, 0.62, 1)
+_em.inputs["Strength"].default_value = 60
+_spot_mat.node_tree.links.new(_em.outputs[0], _spot_mat.node_tree.nodes["Material Output"].inputs["Surface"])
+for i, (x, y, z, w, kind) in enumerate(cfg.get("ext_lights", [])):
+    if kind == "spot":                     # سبوت سقف موجّه للأسفل
+        L_ = bpy.data.lights.new(f"ex{i}", "SPOT")
+        L_.spot_size = math.radians(110)
+        L_.spot_blend = 0.8
+        L_.shadow_soft_size = 0.03
+    else:                                  # فانوس جداري
+        L_ = bpy.data.lights.new(f"ex{i}", "POINT")
+        L_.shadow_soft_size = 0.06
+    L_.energy = w
+    L_.color = (1.0, 0.8, 0.55)
+    o = bpy.data.objects.new(f"ex{i}", L_)
+    o.location = (x, y, z - (0.03 if kind == "spot" else 0))
+    o.visible_camera = False
+    scene.collection.objects.link(o)
+    r = 0.035 if kind == "spot" else 0.07
+    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=0.02 if kind == "spot" else 0.16, location=(x, y, z))
+    bpy.context.active_object.data.materials.append(_spot_mat)
 
 # فرش حقيقي للقطات الداخلية
 if cfg.get("furnish") or cfg.get("landscape"):
