@@ -60,7 +60,7 @@ def plan_furniture(project):
         if kind == "kitchen" or kind == "fridge" or kind == "wardrobe" or kind == "tv":
             facing = _back_to_wall(f.rect, room) if room else facing
         items.append({"kind": kind, "name": f.name, "rect": [x0 / 100, y0 / 100, x1 / 100, y1 / 100],
-                      "z": project.level(f.floor) / 100 + 0.012, "facing": list(facing),
+                      "z": f.level_in(project) / 100 + 0.012, "facing": list(facing),
                       "room": [v / 100 for v in room.rect] if room else None})
     return items
 

@@ -188,6 +188,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             _glass_front(S, w, L, H, rise, half)
         elif gable_end and w.gable_glass:
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
+        elif gable_end and w.gable_openings:
+            _gable_with_openings(S, w, L, H, rise, half, style)
         elif gable_end:
             S.wprism("wood", w, [(-half, H), (L + half, H), (L / 2, H + rise)], -half, half)
         if w.exterior:   # ألواح الزوايا
@@ -318,6 +320,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         _deck(S, d, style, x0, y0, x1, y1, sh)
     from .features import add_3d          # شباك بارز / مظلة مدخل / برجولات
     add_3d(S, project, rules, style, cut)
+    from .features import add_mezz_3d    # ميزانين + درج مستقيم
+    add_mezz_3d(S, project, rules, style, cut)
     # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
     pz = []
     for pt in project.posts:
@@ -531,9 +535,9 @@ def add_interior(S, project, style, cut=None, pieces=True):
         x0, y0, x1, y1 = r.rect
         S.box("tiles" if r.wet else "floor", x0, y0, 0, x1, y1, 1.2)
     for f in (project.furniture if pieces else []):
-        if cut and cut <= project.level(f.floor):
+        if cut and cut <= f.level_in(project):
             continue
-        S.zoff = project.level(f.floor)
+        S.zoff = f.level_in(project)
         x0, y0, x1, y1 = f.rect
         if f.shape in ("shower", "wc", "basin"):
             _bath_fixture(S, project, f)
@@ -685,6 +689,37 @@ def stair_railing(S, project, st, h=90, bal=12):
         xx = xl + (xh - xl) * i / m
         S.box("stair", xx - 1.8, ly0 + 2.2, lz, xx + 1.8, ly0 + 5.8, lz + h)
     S.zoff = 0
+
+
+def _gable_with_openings(S, w, L, H, rise, half, style):
+    """مثلث جملون خشب فيه فتحات (باب/شباك فوق منسوب الجدار) — يتقسم لقطع محدبة حول كل فتحة."""
+    from .model import Opening
+    k = rise / (L / 2 + half)
+    zr = lambda t: H + (min(t, L - t) + half) * k        # noqa: E731  حافة السقف على الجملون
+    ops = sorted(w.gable_openings, key=lambda o: o["offset"])
+    cuts = [-half]
+    for o in ops:
+        cuts += [o["offset"], o["offset"] + o["width"]]
+    cuts.append(L + half)
+    for i in range(0, len(cuts), 2):                      # الشرائح بين الفتحات (من H للسقف)
+        a, b = cuts[i], cuts[i + 1]
+        if b - a < 0.5:
+            continue
+        pts = [(a, H), (b, H), (b, zr(b))]
+        if a < L / 2 < b:
+            pts.append((L / 2, H + rise))
+        pts.append((a, zr(a)))
+        S.wprism("wood", w, pts, -half, half)
+    for o in ops:                                          # فوق وتحت كل فتحة
+        a, b = o["offset"], o["offset"] + o["width"]
+        z0, z1 = o.get("sill", 0), o.get("sill", 0) + o["height"]
+        if z0 > H + 0.5:
+            S.wbox("wood", w, a, b, -half, half, H, z0)
+        top = [(a, z1), (b, z1), (b, zr(b))] + ([(L / 2, H + rise)] if a < L / 2 < b else []) + [(a, zr(a))]
+        S.wprism("wood", w, top, -half, half)
+        op = Opening(kind="window", offset=a, width=o["width"], height=o["height"], sill=z0, code=o.get("code", ""),
+                     grid=o.get("grid"))
+        _opening(S, w, op, a, b, z0, z1, half, style, exterior=True)
 
 
 def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8):

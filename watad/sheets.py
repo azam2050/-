@@ -396,6 +396,9 @@ def plan_sheet(ctx, floor=0):
     draw_stairs_plan(ax, P_full, floor)
     from .features import draw_plan as _feat_plan
     _feat_plan(ax, P_full, rules, floor)
+    if floor == 0:
+        from .features import draw_mezz_on_ground
+        draw_mezz_on_ground(ax, P_full)
     for r in P.rooms:
         cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
         big = r.area_m2 > 4 and r.kind != "stair"
@@ -702,6 +705,20 @@ def elevation(ax, ctx, w):
                     ax.add_patch(Ellipse((hx, lev + 105), 5, 5, fill=False, ec=col, lw=0.5))
             ax.text(ex + o.width / 2, b + o.height + 8, o.code, ha="center", va="bottom", fontsize=8,
                     color=col)
+    if gable_end:                                     # فتحات داخل مثلث الجملون
+        for w2, lev in stack:
+            for go in w2.gable_openings:
+                ex, b_ = go["offset"] + half, lev + go.get("sill", 0)
+                ax.add_patch(Rectangle((ex, b_), go["width"], go["height"], fc="white", ec=C_DOOR, lw=1, zorder=4))
+                cols, rows = go.get("grid") or (1, 1)
+                for k in range(1, cols):
+                    ax.plot([ex + go["width"] * k / cols] * 2, [b_ + 4, b_ + go["height"] - 4], color=C_DOOR, lw=0.5,
+                            zorder=5)
+                for k in range(1, rows):
+                    ax.plot([ex + 4, ex + go["width"] - 4], [b_ + go["height"] * k / rows] * 2, color=C_DOOR, lw=0.5,
+                            zorder=5)
+                ax.text(ex + go["width"] / 2, b_ + go["height"] + 6, go.get("code", ""), ha="center", fontsize=8,
+                        color=C_DOOR, zorder=5)
     from .features import draw_elev as _feat_elev     # شباك بارز / مظلة / برجولة
     _feat_elev(ax, P, rules, w, stack, gable_end)
     for t0, t1, top_d in late_rails:        # دربزين البلكونة فوق الفتحات
@@ -921,8 +938,10 @@ def roof_sheet(ctx):
 def schedule_sheet(ctx):
     P = ctx["project"]
     groups = {}
+    from .model import Opening as _Op
     for w in P.walls:
-        for o in w.openings:
+        for o in w.openings + [_Op(kind="door", offset=g["offset"], width=g["width"], height=g["height"],
+                                   code=g.get("code", ""), name=g.get("name", "")) for g in w.gable_openings]:
             key = (o.code, o.kind, o.width, o.height, o.sill if o.kind == "window" else None, o.leaves)
             where = (w.title or w.name).replace("الواجهة ", "") if w.exterior else o.name.replace(o.code, "").strip()
             groups.setdefault(key, []).append(where)
@@ -1254,7 +1273,9 @@ def bom_rows(ctx):
 
 def build_client_pdf(ctx, path, with_perspective=True):
     """نسخة العميل بطابع مكتب هندسي: إطار عنوان بالشعار، مسقط، واجهات، سقف وقطاع، جداول، لقطات 3D."""
+    from .features import mezz_sheet
     pages = [(plan_sheet(ctx, f), "1:50") for f in range(len(ctx["project"].floor_list))] + \
+        ([(mezz_sheet(ctx), "1:50")] if ctx["project"].mezzanines else []) + \
         [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
     pages += [(r, "—") for r in real_sheets(ctx)]

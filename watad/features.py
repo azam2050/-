@@ -234,3 +234,186 @@ def draw_elev(ax, P, rules, w, stack, gable_end=False):
             ax.add_patch(Rectangle((xx, lev + z + 28), 5, 8, fc="#c9a27c", ec="k", lw=0.4, zorder=5))
         for t in (x0 + 10, x0 + L - 18):
             ax.plot([t, t + 4], [lev + z - 40, lev + z], color=LINE, lw=1.4, zorder=5)
+
+
+# ---------------------------------------------------------------- الميزانين (نص دور) + درج مستقيم
+def stair_steps(st):
+    """درج مستقيم: [(x0, y0, x1, y1, z_top)] — dir: E/W/N/S، يبدأ من start وينتهي بمنسوب rise."""
+    n = max(2, round(st["rise"] / st.get("riser", 18)))
+    r = st["rise"] / n
+    tr, w = st.get("tread", 25), st.get("width", 80)
+    sx, sy = st["start"]
+    d = st.get("dir", "E")
+    out = []
+    for i in range(n - 1):                      # آخر قائمة تطلع على أرضية الميزانين
+        a, b = i * tr, (i + 1) * tr
+        if d == "E":
+            out.append((sx + a, sy, sx + b, sy + w, (i + 1) * r))
+        elif d == "W":
+            out.append((sx - b, sy, sx - a, sy + w, (i + 1) * r))
+        elif d == "N":
+            out.append((sx, sy + a, sx + w, sy + b, (i + 1) * r))
+        else:
+            out.append((sx, sy - b, sx + w, sy - a, (i + 1) * r))
+    return out, n, r
+
+
+def _mezz_edges(m):
+    x0, y0, x1, y1 = m["rect"]
+    return {"S": ((x0, y0), (x1, y0)), "E": ((x1, y0), (x1, y1)), "N": ((x1, y1), (x0, y1)), "W": ((x0, y1), (x0, y0))}
+
+
+def add_mezz_3d(S, P, rules, style, cut=None):
+    import yaml
+    from .model3d import railing_run
+    from .style import PRESETS
+    lib = yaml.safe_load(open(PRESETS, encoding="utf-8"))["railings"]
+    S.material("stair", S.colors.get("trim", ("#8B5A2B", 1))[0])
+    for m in P.mezzanines:
+        lv = m["level"]
+        if cut and cut < lv:
+            continue
+        x0, y0, x1, y1 = m["rect"]
+        S.zoff = 0
+        S.box("wood_in", x0, y0, lv - 4, x1, y1, lv)                     # تطبيق الأرضية
+        k = x0 + 30
+        while k < x1 - 5:                                                 # مدادات 5×15 كل 60 (مكشوفة من تحت)
+            S.box("joist", k - 2.5, y0, lv - 19, k + 2.5, y1, lv - 4)
+            k += 60
+        S.box("joist", x0, y0, lv - 25, x1, y0 + 7, lv - 4)               # جسر الحافة
+        name = m.get("railing_style", "vertical_balusters")
+        spec = lib[name]
+        for side in m.get("railing", ["S"]):
+            p0, p1 = _mezz_edges(m)[side]
+            w = Wall("mz", p0, p1)
+            gaps = [(g0 - min(p0[0], p1[0]), g1 - min(p0[0], p1[0])) for g0, g1 in m.get("gaps", [])] \
+                if side in "SN" else []
+            if side == "N":
+                gaps = [(w.length - b, w.length - a) for a, b in gaps]
+            from .model3d import _segments
+            lo, hi = 0, w.length
+            if m.get("railing_span") and side in "SN":       # الدربزين بس تحت الجزء العالي من السقف المائل
+                x_a, x_b = m["railing_span"]
+                lo, hi = max(0, x_a - min(p0[0], p1[0])), min(w.length, x_b - min(p0[0], p1[0]))
+            for a, b in _segments(lo, hi, gaps):
+                railing_run(S, w, a, b, lv, name, spec, height=100)
+    for st in P.straight_stairs:
+        steps, n, r = stair_steps(st)
+        S.zoff = st.get("z0", 0)
+        for sx0, sy0, sx1, sy1, zt in steps:
+            if cut and zt > cut:
+                continue
+            S.box("stair", sx0, sy0, zt - 4, sx1, sy1, zt)               # الدرجة
+            S.box("stair", sx0, sy0, max(zt - r, 0), sx0 + 2, sy1, zt - 4) if st.get("dir", "E") == "E" else None
+        if not cut:                                                       # الشاحط (كمرة مائلة) + دربزين على الجهة المفتوحة
+            xs = [s_[0] for s_ in steps] + [s_[2] for s_ in steps]
+            ys = [s_[1] for s_ in steps] + [s_[3] for s_ in steps]
+            ax0, ax1, ay0, ay1 = min(xs), max(xs), min(ys), max(ys)
+            top = steps[-1][4] + r
+            for yy in ((ay0, ay0 + 5), (ay1 - 5, ay1)):
+                S.hexa("stair", [(ax0, yy[0], 0), (ax0 + 8, yy[0], 0), (ax1, yy[0], top - 30), (ax1, yy[0], top - 30),
+                                 (ax0, yy[0], 25), (ax0 + 8, yy[0], 25), (ax1, yy[0], top + 4), (ax1, yy[0], top + 4)]
+                       if False else
+                       [(ax0, yy[0], 0), (ax1, yy[0], top - 30), (ax1, yy[1], top - 30), (ax0, yy[1], 0),
+                        (ax0, yy[0], 28), (ax1, yy[0], top + 4), (ax1, yy[1], top + 4), (ax0, yy[1], 28)])
+            ry = ay0 if st.get("rail", "S") == "S" else ay1 - 5
+            for k in range(0, len(steps), 2):                             # قوائم الدربزين
+                s_ = steps[k]
+                S.box("stair", s_[0] + 9, ry + 1, s_[4], s_[0] + 13, ry + 4, s_[4] + 90)
+            S.hexa("stair", [(ax0, ry, 95), (ax1, ry, top + 95), (ax1, ry + 5, top + 95), (ax0, ry + 5, 95),
+                             (ax0, ry, 100), (ax1, ry, top + 100), (ax1, ry + 5, top + 100), (ax0, ry + 5, 100)])
+    S.zoff = 0
+
+
+def draw_mezz_on_ground(ax, P):
+    """في المسقط الأرضي: حدود الميزانين (متقطع) + الدرج المستقيم."""
+    for m in P.mezzanines:
+        x0, y0, x1, y1 = m["rect"]
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a", lw=0.8, ls=(0, (6, 4)), zorder=2))
+        ax.text((x0 + x1) / 2, y0 + 10, f"حد الميزانين فوق (منسوب +{m['level'] / 100:.2f})", ha="center", va="bottom",
+                fontsize=6.5, color="#6b4f3a", zorder=5)
+    for st in P.straight_stairs:
+        steps, n, r = stair_steps(st)
+        for sx0, sy0, sx1, sy1, zt in steps:
+            dashed = zt > 120
+            ax.add_patch(Rectangle((sx0, sy0), sx1 - sx0, sy1 - sy0, fill=False, ec="#6b4f3a",
+                                   lw=0.4 if dashed else 0.7, ls=(0, (4, 3)) if dashed else "-", zorder=3))
+        a, b = steps[0], steps[-1]
+        cy = (a[1] + a[3]) / 2
+        ax.annotate("", ((b[0] + b[2]) / 2, cy), ((a[0] + a[2]) / 2, cy),
+                    arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9), zorder=4)
+        ax.text((a[0] + b[2]) / 2, a[3] + 6, f"{st.get('name', 'درج الميزانين')} {n} قائمة × {r:.1f} سم", ha="center", va="bottom",
+                fontsize=6.5, color="#b04020", zorder=5)
+
+
+def mezz_sheet(ctx):
+    """مسقط الميزانين (نص الدور): البلاطة + الفراغ المزدوج + الدرج + الفرش + البلكونة."""
+    from .sheets import draw_furniture, drawing_ax, new_page, title, A3, dim, C_DOOR
+    from .model import outer_bbox
+    P, rules = ctx["project"], ctx["rules"]
+    half = wall_thickness(rules) / 2
+    x0, y0, x1, y1 = outer_bbox(P, rules)
+    fig = new_page(A3)
+    ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
+    lv = P.mezzanines[0]["level"] if P.mezzanines else 0
+    title(ax, "مسقط الميزانين (نص الدور) — غرفة النوم", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
+    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec="k", lw=1.6, zorder=1))
+    ax.add_patch(Rectangle((x0 + 2 * half, y0 + 2 * half), x1 - x0 - 4 * half, y1 - y0 - 4 * half, fc="white", ec="k",
+                           lw=0.8, zorder=1))
+    for m in P.mezzanines:
+        mx0, my0, mx1, my1 = m["rect"]
+        ax.add_patch(Rectangle((mx0, my0), mx1 - mx0, my1 - my0, fc="#f6ecdf", ec="#8b5a2b", lw=1, zorder=2))
+        yy = my0 + 14
+        while yy < my1:
+            ax.plot([mx0, mx1], [yy, yy], color="#e3cdb0", lw=0.4, zorder=2)
+            yy += 14
+        for side in m.get("railing", ["S"]):
+            p0, p1 = _mezz_edges(m)[side]
+            ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#8b5a2b", lw=2.4, zorder=4)
+        for g0, g1 in m.get("gaps", []):
+            ax.plot([g0, g1], [my0, my0], color="white", lw=3, zorder=5)
+        ax.text((mx0 + mx1) / 2, my1 - 20, f"{m.get('name', 'الميزانين')}  {(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
+                f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
+        vy0 = y0 + 2 * half
+        ax.add_patch(Rectangle((mx0, vy0), mx1 - mx0, my0 - vy0, fill=False, ec="#999", lw=0.6, hatch="..", zorder=1))
+        ax.text((mx0 + mx1) / 2, (vy0 + my0) / 2 + 40, "فراغ مزدوج الارتفاع (الصالة تحت)\nالواجهة زجاج كامل",
+                ha="center", va="center", fontsize=9, color="#777", zorder=6)
+        hb = m.get("headroom")
+        if hb:                                     # خط ارتفاع 1.90 م تحت السقف المائل
+            for xx in hb:
+                ax.plot([xx, xx], [my0, my1], color="#c56b1a", lw=0.8, ls="--", zorder=5)
+            ax.text((hb[0] + hb[1]) / 2, my0 + 12, "ارتفاع صافي ≥ 1.90 م بين الخطين", ha="center", fontsize=6.5,
+                    color="#c56b1a", zorder=6)
+        dim(ax, (mx0, my1), (mx1, my1), 40, fs=7)
+        dim(ax, (mx1, my0), (mx1, my1), -40, fs=7)
+    for st in P.straight_stairs:
+        steps, n, r = stair_steps(st)
+        for sx0, sy0, sx1, sy1, zt in steps:
+            ax.add_patch(Rectangle((sx0, sy0), sx1 - sx0, sy1 - sy0, fill=False, ec="#6b4f3a", lw=0.6, zorder=3))
+        a, b = steps[0], steps[-1]
+        cy = (a[1] + a[3]) / 2
+        ax.annotate("", ((b[0] + b[2]) / 2, cy), ((a[0] + a[2]) / 2, cy),
+                    arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9), zorder=4)
+        ax.text((a[0] + b[2]) / 2, a[1] - 6, "صعود", ha="center", va="top", fontsize=7, color="#b04020", zorder=5)
+    import dataclasses
+    PM = dataclasses.replace(P, furniture=[f for f in P.furniture if f.floor == -1])
+    draw_furniture(ax, dataclasses.replace(PM, furniture=[dataclasses.replace(f, floor=0) for f in PM.furniture]))
+    for w in P.walls:                              # فتحات الجملون (باب البلكونة)
+        for go in w.gable_openings:
+            p, q = w.point(go["offset"], -half), w.point(go["offset"] + go["width"], -half)
+            ax.plot([p[0], q[0]], [p[1], q[1]], color="white", lw=4, zorder=5)
+            ax.plot([p[0], q[0]], [p[1], q[1]], color=C_DOOR, lw=1.2, zorder=6)
+            m_ = w.point(go["offset"] + go["width"] / 2, half + 14)
+            ax.text(*m_, go.get("code", ""), ha="center", fontsize=8, color=C_DOOR, zorder=6)
+    for d in P.decks:
+        if d.level and P.mezzanines and abs(d.level - lv) < 1:
+            dx0, dy0, dx1, dy1 = d.rect
+            ax.add_patch(Rectangle((dx0, dy0), dx1 - dx0, dy1 - dy0, fc="#f6ecdf", ec="#8b5a2b", lw=0.9, zorder=2))
+            ax.text((dx0 + dx1) / 2, (dy0 + dy1) / 2, f"{d.name}  {(dx1 - dx0) / 100:.2f} × {(dy1 - dy0) / 100:.2f} م",
+                    ha="center", va="center", fontsize=9, color="#5a3a22", zorder=6)
+            x0, y0, x1, y1 = min(x0, dx0), min(y0, dy0), max(x1, dx1), max(y1, dy1)
+    ax.set_xlim(x0 - 120, x1 + 120)
+    ax.set_ylim(y0 - 120, y1 + 120)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    return fig, "مسقط الميزانين"

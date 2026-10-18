@@ -40,6 +40,7 @@ class Wall:
     title: str = ""      # اسم الواجهة (للخارجي)
     gable_glass: bool = False   # مثلث الجملون فوق هذا الجدار زجاج بدل خشب
     glass_front: bool = False   # الواجهة كاملة (الجدار + المثلث) زجاج بشبكة قوائم خشب وباب بالوسط (A-frame)
+    gable_openings: list = field(default_factory=list)   # فتحات داخل مثلث الجملون (باب بلكونة الميزانين…)
     floor: int = 0              # رقم الدور (0 أرضي، 1 أول)
 
     @property
@@ -100,6 +101,10 @@ class Furniture:
     rect: list
     shape: str = "rect"  # rect | circle | wc | basin | shower
     floor: int = 0
+    z: float = None      # منسوب القطعة (للميزانين: floor: -1 + z = منسوب أرضية الميزانين)
+
+    def level_in(self, project):
+        return self.z if self.z is not None else project.level(self.floor)
 
 
 @dataclass
@@ -151,6 +156,8 @@ class Project:
     bays: list = field(default_factory=list)      # شبابيك بارزة مضلعة (bay window) — watad/features.py
     porches: list = field(default_factory=list)   # مظلة مدخل بجملون صغير على عمودين
     pergolas: list = field(default_factory=list)  # برجولات خشب فوق الأبواب/الشبابيك
+    mezzanines: list = field(default_factory=list)  # نص دور (ميزانين) داخل المبنى — watad/features.py
+    straight_stairs: list = field(default_factory=list)  # درج مستقيم (للميزانين)
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
     height_exact: bool = False      # ارتفاع الجدار بطلب العميل بالضبط (بدون تقريب لصف تلبيس كامل)
@@ -212,6 +219,8 @@ def load_project(path, rules):
         bays=d.get("bays", []),
         porches=d.get("porches", []),
         pergolas=d.get("pergolas", []),
+        mezzanines=d.get("mezzanines", []),
+        straight_stairs=d.get("straight_stairs", []),
         meta=d.get("meta", {}),
         notes=d.get("notes", []),
         height_exact=d.get("height_exact", False),
