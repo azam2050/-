@@ -57,7 +57,6 @@ walls:
       {kind: window, code: ش3, name: ش3 حمام 2, offset: 258, width: 60, height: 60, sill: 150},
       {kind: window, code: ش3, name: ش3 حمام 1, offset: 428, width: 60, height: 60, sill: 150},
       {kind: window, code: ش1, name: ش1 الدرج, offset: 608, width: 100, height: 110, sill: 100, grid: [2, 3]},
-      {kind: window, code: ش1, name: ش1 غرفة الضيوف, offset: 928, width: 120, height: 120, sill: 90, grid: [2, 3]},
       {kind: door, code: ب5, name: ب5 باب سيرفيس خلفي صغير, offset: 68, width: 80, height: 210, leaves: 1}]}
   - {name: أ-غرب, title: الواجهة الغربية, start: [0, 822], end: [0, 0], openings: [
       {kind: window, code: ش1, name: ش1 غرفة الضيوف, offset: 142, width: 120, height: 120, sill: 90, grid: [2, 3]},
@@ -84,14 +83,14 @@ walls:
       {kind: window, code: ز3, name: ز3 شباك فرنسي المجلس, offset: 190, width: 120, height: 220, sill: 20, grid: [2, 5], transom: 190},
       {kind: window, code: ز3, name: ز3 شباك فرنسي المجلس, offset: 330, width: 130, height: 220, sill: 20, grid: [2, 5], transom: 190}]}
   - {name: أ-ملحق شرق, title: الواجهة الشرقية, start: [1688, 0], end: [1688, 822], openings: [
-      {kind: window, code: ز3, name: ز3 شباك فرنسي المجلس, offset: 60, width: 130, height: 220, sill: 20, grid: [2, 5], transom: 190},
-      {kind: door, code: ب10, name: ب10 مدخل ضيوف المجلس (الجهة الشرقية — تحت البرندة), offset: 250, width: 120, height: 225, leaves: 2, grid: [4, 5]},
+      {kind: door, code: ب10, name: ب10 مدخل ضيوف المجلس (ركن الجهة الشرقية — تحت البرندة), offset: 30, width: 120, height: 225, leaves: 2, grid: [4, 5]},
+      {kind: window, code: ز3, name: ز3 شباك فرنسي المجلس, offset: 220, width: 130, height: 220, sill: 20, grid: [2, 5], transom: 190},
       {kind: window, code: ز3, name: ز3 شباك فرنسي المجلس, offset: 420, width: 130, height: 220, sill: 20, grid: [2, 5], transom: 190},
       {kind: window, code: ش1, name: ش1 المغاسل, offset: 680, width: 100, height: 110, sill: 100, grid: [2, 3]}]}
   - {name: أ-ملحق شمال, title: الواجهة الخلفية, start: [1688, 822], end: [1188, 822], openings: [
       {kind: window, code: ش3, name: ش3 دورة مياه المجلس, offset: 338, width: 60, height: 60, sill: 150}]}
   - {name: أ-ملحق فاصل, exterior: false, start: [1188, 600], end: [1688, 600], openings: [
-      {kind: door, code: ف4, name: ف4 فتحة المغاسل, offset: 280, width: 160, height: 240, leaves: 0}]}
+      {kind: door, code: ف4, name: ف4 فتحة المغاسل, offset: 282, width: 120, height: 240, leaves: 0}]}
   - {name: أ-ملحق حمام, exterior: false, start: [1446, 600], end: [1446, 822], openings: [
       {kind: door, code: ب3, name: ب3 دورة مياه المجلس, offset: 60, width: 70, height: 210, swing: right}]}
 
@@ -140,7 +139,7 @@ walls:
       {kind: window, code: ش3, name: ش3 حمام الماستر, offset: 338, width: 60, height: 60, sill: 150}]}
   - {name: ب-ملحق فاصل, floor: 1, exterior: false, start: [1188, 600], end: [1688, 600], openings: [
       {kind: door, code: ب3, name: ب3 حمام الماستر, offset: 60, width: 70, height: 210},
-      {kind: door, code: ف5, name: ف5 فتحة غرفة الملابس, offset: 300, width: 120, height: 240, leaves: 0}]}
+      {kind: door, code: ف5, name: ف5 فتحة غرفة الملابس, offset: 352, width: 120, height: 240, leaves: 0}]}
   - {name: ب-ملحق حمام, floor: 1, exterior: false, start: [1446, 600], end: [1446, 822]}
 
 stairs:
@@ -187,7 +186,7 @@ pergolas:
 decks:
   - {name: عتبة المدخل, rect: [370, -150, 546, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 176}}
   - {name: عتبة باب السيرفيس, rect: [1030, 828, 1140, 918], height: 45, railing: [], stairs: {side: N, offset: 0, width: 110}}
-  - {name: عتبة مدخل المجلس, rect: [1694, 210, 1834, 410], height: 45, railing: [], stairs: {side: E, offset: 0, width: 200}}   # تحت البرندة الجانبية
+  - {name: عتبة مدخل المجلس, rect: [1694, 10, 1834, 190], height: 45, railing: [], stairs: {side: E, offset: 0, width: 200}}   # تحت البرندة الجانبية
   - {name: البرندة الجانبية, rect: [1694, 40, 1874, 600], level: 305, railing: [E, S, N], railing_style: vertical_balusters}
   - {name: البلكونة, rect: [528, -150, 1182, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}   # ملاحظة العميل: بلكونة طويلة لين الركن
   - {name: البلكونة الجانبية, rect: [-126, 60, -6, 340], level: 305, railing: [S, W, N], railing_style: vertical_balusters}
@@ -201,9 +200,8 @@ furniture:
   # المجلس (الملحق): جلسة عربية على الجدران
   - {name: كنبة, rect: [1194, 506, 1274, 594]}
   - {name: كنبة, rect: [1194, 6, 1274, 260]}
-  - {name: كنبة, rect: [1600, 6, 1682, 230]}
-  - {name: كنبة, rect: [1600, 400, 1682, 594]}
-  - {name: كنبة, rect: [1274, 514, 1600, 594]}
+  - {name: كنبة, rect: [1600, 170, 1682, 594]}
+  - {name: كنبة, rect: [1274, 514, 1460, 594]}
   - {name: طاولة, rect: [1380, 300, 1500, 380]}
   # دورة مياه المجلس + المغاسل
   - {name: '', rect: [1194, 760, 1240, 810], shape: basin}
@@ -211,12 +209,12 @@ furniture:
   - {name: '', rect: [1600, 700, 1682, 750], shape: basin}
   - {name: كرسي, rect: [700, 300, 780, 380]}
   - {name: تلفزيون, rect: [822, 120, 854, 300]}
-  - {name: كاونتر, rect: [1122, 40, 1182, 330]}
-  - {name: كاونتر, rect: [900, 6, 1110, 66]}
-  - {name: ثلاجة, rect: [1117, 330, 1182, 394]}
+  - {name: كاونتر, rect: [1122, 66, 1182, 250]}
+  - {name: كاونتر, rect: [940, 6, 1182, 66]}
+  - {name: ثلاجة, rect: [866, 6, 931, 71]}
   # غرفة نوم الضيوف
   - {name: سرير 160×200, rect: [110, 616, 270, 816]}
-  - {name: دولاب, rect: [6, 420, 66, 600]}
+  - {name: دولاب, rect: [334, 560, 394, 780]}
   - {name: "", rect: [1122, 740, 1182, 800]}
   - {name: دش, rect: [652, 726, 742, 816], shape: shower}
   - {name: "", rect: [760, 600, 800, 650], shape: wc}
@@ -231,13 +229,13 @@ furniture:
   - {name: دولاب, floor: 1, rect: [734, 160, 794, 360]}
   - {name: سرير 160×200, floor: 1, rect: [900, 194, 1060, 394]}
   # غرفة النوم الكبيرة فوق الملحق
-  - {name: سرير 180×200, floor: 1, rect: [1300, 394, 1480, 594]}
+  - {name: سرير 180×200, floor: 1, rect: [1330, 394, 1510, 594]}
   - {name: كنبة, floor: 1, rect: [1220, 40, 1420, 120]}
   - {name: طاولة, floor: 1, rect: [1270, 150, 1370, 210]}
-  - {name: دولاب, floor: 1, rect: [1452, 740, 1682, 816]}
+  - {name: دولاب, floor: 1, rect: [1452, 756, 1620, 816]}
   - {name: دش, floor: 1, rect: [1194, 726, 1284, 816], shape: shower}
   - {name: '', floor: 1, rect: [1360, 766, 1400, 816], shape: wc}
-  - {name: '', floor: 1, rect: [1300, 610, 1346, 660], shape: basin}
+  - {name: '', floor: 1, rect: [1380, 610, 1426, 660], shape: basin}
   - {name: دولاب, floor: 1, rect: [1122, 200, 1182, 394]}
   - {name: سرير 160×200, floor: 1, rect: [110, 656, 270, 816]}
   - {name: دولاب, floor: 1, rect: [334, 600, 394, 800]}

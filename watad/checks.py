@@ -252,4 +252,47 @@ def review(project, rules, heights, height_info, rafters):
     for c in cross_rafters(project, rules):
         if c["warning"]:
             add(WARN, "مداد الوادي", c["warning"], "وصلة مزدوجة 5×15 مع براغي، ومرتكزة على جدار أو دعامة 7×5.")
+    # مراجعة المصمم: الأثاث مع الأبواب والشبابيك (قاعدة المصنع — CLAUDE.md)
+    for lvl_, title_, detail_ in furniture_conflicts(project, half):
+        add(lvl_, title_, detail_, "تحريك القطعة أو الباب/الشباك.")
     return issues
+
+
+def furniture_conflicts(project, half):
+    """قطعة أثاث في مسار فتح باب، أو قطعة عالية (دولاب/ثلاجة/كاونتر) لاصقة بشباك."""
+    out = []
+
+    def overlap(r1, r2, m=0):
+        return r1[0] < r2[2] - m and r2[0] < r1[2] - m and r1[1] < r2[3] - m and r2[1] < r1[3] - m
+
+    def bbox(pts):
+        xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+        return (min(xs), min(ys), max(xs), max(ys))
+
+    for w in project.walls:
+        furn = [f for f in project.furniture if f.floor == w.floor]
+        for o in w.openings:
+            a, b = o.offset, o.offset + o.width
+            if o.kind == "door" and o.leaves and o.style not in ("sliding", "fixed"):
+                leaf = o.width / max(1, o.leaves)
+                sw = (half, 1) if (w.exterior or o.swing == "left") else (-half, -1)
+                zones = [(sw[0], sw[1], leaf)]                       # مسار الضلفة
+                if not w.exterior:
+                    zones.append((-sw[0], -sw[1], 60))               # الممر قدام الباب من الجهة الثانية
+                for side, sg, depth in zones:
+                    zone = bbox([w.point(a, side), w.point(b, side), w.point(a, side + sg * depth),
+                                 w.point(b, side + sg * depth)])
+                    for f in furn:
+                        if overlap(zone, f.rect, 3):
+                            out.append(("تنبيه", f"{f.name or f.shape} في مسار فتح {o.name}",
+                                        f"القطعة تسد فتحة الباب في {w.title or w.name}."))
+            if o.kind == "window":
+                for side in (half, -half):
+                    zone = bbox([w.point(a, side), w.point(b, side), w.point(a, side * 3), w.point(b, side * 3)])
+                    for f in furn:
+                        tall = any(k in f.name for k in ("دولاب", "ثلاجة")) or (
+                            "كاونتر" in f.name and (o.sill or 0) < 90)
+                        if tall and overlap(zone, f.rect, 2):
+                            out.append(("تنبيه", f"{f.name} قدام {o.name}",
+                                        f"قطعة عالية لاصقة بالشباك في {w.title or w.name}."))
+    return out
