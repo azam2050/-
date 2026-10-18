@@ -186,7 +186,7 @@ pergolas:
 decks:
   - {name: عتبة المدخل, rect: [370, -150, 546, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 176}}
   - {name: عتبة باب السيرفيس, rect: [1030, 828, 1140, 918], height: 45, railing: [], stairs: {side: N, offset: 0, width: 110}}
-  - {name: عتبة مدخل المجلس, rect: [1694, 210, 1834, 390], height: 45, railing: [], stairs: {side: E, offset: 0, width: 200}}   # تحت البرندة الجانبية
+  - {name: تراس المجلس, rect: [1694, 40, 1874, 600], height: 45, railing: [E, S, N], railing_style: vertical_balusters, stairs: {side: E, offset: 190, width: 180}}   # تراس أرضي تحت البرندة بطولها + درج بالمنتصف قدام الباب (ملاحظة العميل)
   - {name: البرندة الجانبية, rect: [1694, 40, 1874, 600], level: 305, railing: [E, S, N], railing_style: vertical_balusters}
   - {name: البلكونة, rect: [528, -150, 1182, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}   # ملاحظة العميل: بلكونة طويلة لين الركن
   - {name: البلكونة الجانبية, rect: [-126, 60, -6, 340], level: 305, railing: [S, W, N], railing_style: vertical_balusters}
