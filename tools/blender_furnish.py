@@ -47,6 +47,9 @@ FM = {
     "throw": pmat("F_throw", "#8C6A4E", 1.0, bump=0.6, bump_scale=150),
     "headboard": pmat("F_head", "#B8AD9C", 0.95, bump=0.4),
     "rug": pmat("F_rug", "#C9BFAE", 1.0, bump=0.8, bump_scale=120),
+    "majlis": pmat("F_majlis", "#7A2E2A", 0.95, bump=0.45, bump_scale=200),      # قماش جلسة عربية عنابي
+    "majlis_trim": pmat("F_majlis_trim", "#C9A45C", 0.6, bump=0.2),              # حواف ذهبية
+    "majlis_rug": pmat("F_majlis_rug", "#8E3B2F", 1.0, bump=0.9, bump_scale=90),
     "cabinet": pmat("F_cab", "#ECE7DF", 0.55),
     "stone": pmat("F_stone", "#DEDAD3", 0.22, bump=0.05, bump_scale=40),
     "paver": pmat("F_paver", "#A9A398", 0.85, bump=0.4, bump_scale=25),
@@ -222,6 +225,23 @@ def p_sofa(it):
         fbox(e, mt, a - 0.22, y1 - 0.42, 0.46, a + 0.22, y1 - 0.30, 0.86, 0.07, 6)
 
 
+def p_majlis(it):
+    """جلسة عربية أرضية: مرتبة منخفضة + مساند ظهر على الجدار + مساند يد (تكايات) + حواف ذهبية."""
+    e, W, D = holder(it)
+    y0, y1 = -D / 2, D / 2
+    fbox(e, "majlis", -W / 2, y0, 0.0, W / 2, y1, 0.16, 0.03, 4)                     # المرتبة
+    fbox(e, "majlis_trim", -W / 2, y0 - 0.005, 0.07, W / 2, y0 + 0.01, 0.09, 0.003)
+    n = max(1, round(W / 0.65))
+    cw = W / n
+    for i in range(n):                                                              # مساند الظهر
+        a = -W / 2 + i * cw
+        fbox(e, "majlis", a + 0.01, y1 - 0.20, 0.16, a + cw - 0.01, y1 - 0.02, 0.62, 0.07, 6)
+        fbox(e, "majlis_trim", a + 0.03, y1 - 0.21, 0.36, a + cw - 0.03, y1 - 0.20, 0.38, 0.002)
+    for sx in (-1, 1):                                                              # تكايات
+        x = sx * (W / 2 - 0.14)
+        fbox(e, "majlis", x - 0.12, y0 + 0.08, 0.16, x + 0.12, y1 - 0.22, 0.36, 0.08, 6)
+
+
 def p_armchair(it):
     e, W, D = holder(it)
     model("mid_century_lounge_chair", e, W + 0.1, D + 0.1)
@@ -303,7 +323,7 @@ def p_basin(it):
 
 
 BUILD = {"bed": p_bed, "wardrobe": p_wardrobe, "kitchen": p_kitchen, "fridge": p_fridge, "tv": p_tv,
-         "sofa": p_sofa, "armchair": p_armchair, "coffee_table": p_coffee, "dining_table": p_dining,
+         "sofa": p_sofa, "majlis_seat": p_majlis, "armchair": p_armchair, "coffee_table": p_coffee, "dining_table": p_dining,
          "dining_chair": p_dchair, "nightstand": p_night, "side_table": p_side,
          "shower": p_shower, "wc": p_wc, "basin": p_basin}
 

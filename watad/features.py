@@ -463,7 +463,7 @@ def add_bumps_3d(S, P, rules, style, cut=None):
         wv = Wall("bmp", o(a + L / 2 - 30, d + 0.5), o(a + L / 2 + 30, d + 0.5))
         S.wbox("frame", wv, 0, 60, -2, 2, fz + 140, fz + 180)
         S.wbox("glass", wv, 4, 56, -1, 1, fz + 144, fz + 176)
-        S.wbox("door", wv, -5, 65, -2, 2, z0 + 45, z0 + 45 + b.get("door_h", 120))
+        S.wbox("door", wv, -5, 65, -2, 2, z0 + 45, min(fz - 25, z0 + 45 + b.get("door_h", 120)))
     S.zoff = 0
 
 
@@ -504,10 +504,10 @@ def draw_bumps_elev(ax, P, rules, w, stack):
                                  fc="#fff3e0", ec="#c56b1a", lw=0.9, zorder=5))
             ax.add_patch(Rectangle((x0, fz - 20), L, 20, fc="#c9a27c", ec="k", lw=0.5, zorder=6))
             ax.add_patch(Rectangle((x0 + L / 2 - 30, fz + 140), 60, 40, fc="white", ec="#1f3fff", lw=0.8, zorder=6))
-            ax.add_patch(Rectangle((x0 + L / 2 - 30, z0 + 45), 60, b.get("door_h", 120), fc="white", ec="#10a010",
+            ax.add_patch(Rectangle((x0 + L / 2 - 30, z0 + 45), 60, min(fz - 25 - z0 - 45, b.get("door_h", 120)), fc="white", ec="#10a010",
                                    lw=0.8, zorder=6))
             ax.text(x0 + L / 2, fz + 60, b.get("name_up", "دورة مياه"), ha="center", fontsize=6, zorder=7)
-            ax.text(x0 + L / 2, z0 + 175, b.get("name_down", "غرفة تفتيش"), ha="center", fontsize=6, zorder=7)
+            ax.text(x0 + L / 2, fz - 45, b.get("name_down", "غرفة تفتيش"), ha="center", fontsize=6, zorder=7)
         else:                            # جانبي: البروز يطلع من الجدار
             ux, uy = w.u
             pts = [o(a, 0), o(a, d), o(a + L, d), o(a + L, 0)]

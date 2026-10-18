@@ -468,7 +468,7 @@ def gable_glass_geometry(L, H, rise, tp, border=20, post=10, spacing=110):
     return inner, posts, zin, bv, tl
 
 
-FURN_H = [("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 80, "fabric"), ("كرسي", 80, "fabric"),
+FURN_H = [("جلسة عربية", 45, "fabric"), ("سرير", 55, "linen"), ("دولاب", 220, "furn"), ("كنبة", 80, "fabric"), ("كرسي", 80, "fabric"),
           ("طاولة", 75, "furn"), ("تلفزيون", 110, "dark"), ("كاونتر", 90, "counter"),
           ("ثلاجة", 180, "white")]
 

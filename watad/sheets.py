@@ -424,9 +424,10 @@ def plan_sheet(ctx, floor=0):
         ts = [half if cont else -half] + sorted(t for o in w.openings for t in (o.offset, o.offset + o.width)) \
             + [w.length + half]
         pts = [w.point(t, -half) for t in ts]
+        bx_ = max([b.get("depth", 150) for b in P_full.bumps if b["wall"] == w.name] + [0])   # الأبعاد ورا البروز
         # dim() يزيح لليسار؛ الخارج على يمين الجدار → نعكس الاتجاه
-        chain(ax, pts[::-1], 45)
-        dim(ax, pts[-1], pts[0], 90, fs=8)
+        chain(ax, pts[::-1], 45 + bx_)
+        dim(ax, pts[-1], pts[0], 90 + bx_, fs=8)
     # البعد الإجمالي لكل جهة (قاعدة المصنع): إذا الجهة فيها أكثر من جدار (ملحق/بروز) — الطول الكامل ثم التقسيمات
     bx0_, by0_, bx1_, by1_ = outer_bbox(P, rules)
     sides = {"S": (by0_, lambda w: abs(w.u[1]) < 1e-6 and abs(w.start[1] - half - by0_) < 1),
@@ -468,6 +469,8 @@ def plan_sheet(ctx, floor=0):
         ax.text(xb, y, letters[i], ha="center", va="center", fontsize=9, color="#555")
     y1 = max(y1, by1 + 60)
     x1 = max(x1, bx1 + 60)
+    for b in P_full.bumps:                       # البروز وأبعاده داخل حدود اللوحة
+        y1 = max(y1, by1 + b.get("depth", 150) + 110)
     # سهم الشمال
     nx_, ny_ = x1 + 120, y1 - 60
     ax.add_patch(Polygon([(nx_ - 18, ny_ - 40), (nx_, ny_ + 30), (nx_ + 18, ny_ - 40), (nx_, ny_ - 25)],
