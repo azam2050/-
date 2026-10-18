@@ -1303,7 +1303,9 @@ def bom_rows(ctx):
 def build_client_pdf(ctx, path, with_perspective=True):
     """نسخة العميل بطابع مكتب هندسي: إطار عنوان بالشعار، مسقط، واجهات، سقف وقطاع، جداول، لقطات 3D."""
     from .features import mezz_sheet
-    pages = [(plan_sheet(ctx, f), "1:50") for f in range(len(ctx["project"].floor_list))] + \
+    from .site import site_sheet
+    pages = ([(site_sheet(ctx), "1:200")] if ctx["project"].site else []) + \
+        [(plan_sheet(ctx, f), "1:50") for f in range(len(ctx["project"].floor_list))] + \
         ([(mezz_sheet(ctx), "1:50")] if ctx["project"].mezzanines else []) + \
         [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]

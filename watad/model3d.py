@@ -324,6 +324,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     add_mezz_3d(S, project, rules, style, cut)
     from .features import add_bumps_3d
     add_bumps_3d(S, project, rules, style, cut)
+    from .site import add_site_3d       # السور والمسبح والجلسات
+    add_site_3d(S, project, rules, style, cut)
     # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
     pz = []
     for pt in project.posts:

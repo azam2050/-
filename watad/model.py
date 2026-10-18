@@ -159,6 +159,7 @@ class Project:
     pergolas: list = field(default_factory=list)  # برجولات خشب فوق الأبواب/الشبابيك
     mezzanines: list = field(default_factory=list)  # نص دور (ميزانين) داخل المبنى — watad/features.py
     straight_stairs: list = field(default_factory=list)  # درج مستقيم (للميزانين)
+    site: dict = None                            # الموقع العام (الأرض، السور، المسبح، الجلسات، الحديقة) — watad/site.py
     bumps: list = field(default_factory=list)   # بروز مقفل خارج الجدار (دورة مياه الميزانين + غرفة تفتيش تحت)
     meta: dict = field(default_factory=dict)
     notes: list = field(default_factory=list)
@@ -224,6 +225,7 @@ def load_project(path, rules):
         mezzanines=d.get("mezzanines", []),
         straight_stairs=d.get("straight_stairs", []),
         bumps=d.get("bumps", []),
+        site=d.get("site"),
         meta=d.get("meta", {}),
         notes=d.get("notes", []),
         height_exact=d.get("height_exact", False),

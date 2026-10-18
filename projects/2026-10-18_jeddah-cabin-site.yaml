@@ -1,0 +1,171 @@
+# عميل جديد — جدة (سكن خاص / استجمام): أرض 10 × 30 م (الواجهة 10 م على شارع 16 م)
+# المطلوب: تصميم كامل للأرض (لاندسكيب): سور بلك وبوابة حديثة، مسبح، جلسة خارجية، حديقة ومسطحات خضراء بأشجار،
+#   والكوخ في آخر الأرض (مكانه حسب رسمة المصنع) — دورين:
+#   الأرضي: صالة كبيرة تطل على الحديقة والمسبح + مطبخ أمريكي + دورة مياه
+#   العلوي: 3 غرف نوم (ماستر بدورة مياه خاصة + غرفتين) + دورة مياه تخدم الغرفتين
+# الكوخ 7.00 × 9.00 لكل دور = 63 × 2 = 126 م². ارتدادات: 1.50 جانبي و1.50 خلفي.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف (بعيد عن الشارع)، الشارع جنوب.
+name: jeddah-cabin-site
+title: كوخ دورين + تنسيق حديقة ومسبح — جدة
+client: "عميل جديد — جدة"
+meta:
+  location: جدة
+  usage: سكن خاص / استجمام
+  date: 2026-10-18
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 35, overhang: 40}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ================= الأرضي =================
+  - {name: أ-جنوب, title: الواجهة الأمامية (على الحديقة), start: [0, 0], end: [688, 0], openings: [
+      {kind: door, code: ب1, name: ب1 المدخل, offset: 60, width: 100, height: 225, leaves: 1, grid: [2, 5]},
+      {kind: door, code: ب2, name: ب2 سحاب زجاج على الحديقة, offset: 220, width: 300, height: 240, style: sliding, leaves: 3},
+      {kind: window, code: ش1, name: ش1 الصالة, offset: 560, width: 100, height: 150, sill: 75, grid: [2, 4]}]}
+  - {name: أ-شرق, title: الواجهة الشرقية, start: [688, 0], end: [688, 888], openings: [
+      {kind: window, code: ش1, name: ش1 الصالة, offset: 160, width: 120, height: 150, sill: 75, grid: [2, 4]},
+      {kind: window, code: ش2, name: ش2 المطبخ, offset: 640, width: 120, height: 100, sill: 110, grid: [2, 2]}]}
+  - {name: أ-شمال, title: الواجهة الخلفية, start: [688, 888], end: [0, 888], openings: [
+      {kind: window, code: ش3, name: ش3 دورة المياه, offset: 330, width: 60, height: 60, sill: 150}]}
+  - {name: أ-غرب, title: الواجهة الغربية, start: [0, 888], end: [0, 0], openings: [
+      {kind: window, code: ش5, name: ش5 الدرج, offset: 180, width: 100, height: 110, sill: 100, grid: [2, 3]},
+      {kind: window, code: ش1, name: ش1 الصالة, offset: 708, width: 120, height: 150, sill: 75, grid: [2, 4]}]}
+  - {name: أ-جدار الدرج, exterior: false, start: [246, 538], end: [246, 888]}
+  - {name: أ-دورة المياه جنوب, exterior: false, start: [246, 656], end: [418, 656], openings: [
+      {kind: door, code: ب3, name: ب3 دورة المياه, offset: 50, width: 70, height: 210}]}
+  - {name: أ-دورة المياه شرق, exterior: false, start: [418, 656], end: [418, 888]}
+
+  # ================= الأول =================
+  - {name: ب-جنوب, floor: 1, title: الواجهة الأمامية (على الحديقة), gable_glass: true, start: [0, 0], end: [688, 0], openings: [
+      {kind: window, code: ش4, name: ش4 غرفة 1, offset: 60, width: 180, height: 150, sill: 80, grid: [3, 3]},
+      {kind: window, code: ش4, name: ش4 الماستر, offset: 380, width: 220, height: 150, sill: 80, grid: [3, 3]}]}
+  - {name: ب-شرق, floor: 1, title: الواجهة الشرقية, start: [688, 0], end: [688, 888], openings: [
+      {kind: window, code: ش1, name: ش1 الماستر, offset: 60, width: 120, height: 120, sill: 90, grid: [2, 3]},
+      {kind: window, code: ش3, name: ش3 حمام الماستر, offset: 300, width: 60, height: 60, sill: 150},
+      {kind: window, code: ش1, name: ش1 غرفة 2, offset: 660, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+  - {name: ب-شمال, floor: 1, title: الواجهة الخلفية, start: [688, 888], end: [0, 888], openings: [
+      {kind: window, code: ش3, name: ش3 دورة المياه, offset: 330, width: 60, height: 60, sill: 150}]}
+  - {name: ب-غرب, floor: 1, title: الواجهة الغربية, start: [0, 888], end: [0, 0], openings: [
+      {kind: window, code: ش5, name: ش5 الدرج, offset: 180, width: 100, height: 110, sill: 100, grid: [2, 3]},
+      {kind: window, code: ش1, name: ش1 غرفة 1, offset: 618, width: 120, height: 120, sill: 90, grid: [2, 3]}]}
+  - {name: ب-فاصل أمامي, floor: 1, exterior: false, start: [0, 426], end: [688, 426], openings: [
+      {kind: door, code: ب4, name: ب4 غرفة 1, offset: 190, width: 80, height: 210},
+      {kind: door, code: ب4, name: ب4 الماستر, offset: 330, width: 80, height: 210, swing: right}]}
+  - {name: ب-فاصل الغرفتين, floor: 1, exterior: false, start: [306, 0], end: [306, 426]}
+  - {name: ب-حمام الماستر شمال, floor: 1, exterior: false, start: [526, 230], end: [688, 230]}
+  - {name: ب-حمام الماستر غرب, floor: 1, exterior: false, start: [526, 230], end: [526, 426], openings: [
+      {kind: door, code: ب3, name: ب3 حمام الماستر, offset: 30, width: 70, height: 210, swing: right}]}
+  - {name: ب-فاصل خلفي, floor: 1, exterior: false, start: [246, 538], end: [688, 538], openings: [
+      {kind: door, code: ب3, name: ب3 دورة المياه, offset: 40, width: 70, height: 210},
+      {kind: door, code: ب4, name: ب4 غرفة 2, offset: 210, width: 80, height: 210, swing: right}]}
+  - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [246, 538], end: [246, 888]}
+  - {name: ب-فاصل دورة المياه, floor: 1, exterior: false, start: [418, 538], end: [418, 888]}
+
+stairs:
+  - {from: 0, rect: [6, 538, 240, 838], flight_w: 90, first: east, tread: 26, landing: 90}
+
+rooms:
+  - {name: الصالة, rect: [6, 6, 682, 526], label: [420, 470]}
+  - {name: الدرج, rect: [6, 538, 240, 838], kind: stair}
+  - {name: دورة مياه, rect: [252, 662, 412, 882], wet: true}
+  - {name: المطبخ الأمريكي, rect: [424, 538, 682, 882]}
+  - {name: غرفة نوم 1, floor: 1, rect: [6, 6, 300, 420], label: [190, 320]}
+  - {name: غرفة الماستر, floor: 1, rect: [312, 6, 682, 420], cut: [[520, 224, 688, 426]], label: [600, 120]}
+  - {name: حمام الماستر, floor: 1, rect: [532, 236, 682, 420], wet: true}
+  - {name: الممر, floor: 1, rect: [6, 432, 682, 532], kind: corridor, label: [470, 482]}
+  - {name: فتحة الدرج, floor: 1, rect: [6, 538, 240, 838], kind: stair}
+  - {name: دورة مياه (للغرفتين), floor: 1, rect: [252, 544, 412, 882], wet: true, label: [357, 690]}
+  - {name: غرفة نوم 2, floor: 1, rect: [424, 544, 682, 882], label: [540, 610]}
+
+decks:
+  - {name: تراس الكوخ, rect: [-6, -246, 694, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 250, width: 200}}
+
+furniture:
+  # الصالة — جلسة تطل على الحديقة والمسبح + طاولة طعام
+  # الجلسة مقابل جدار التلفزيون (الغربي المصمت)، وممر 90 سم من المدخل للدرج بين التلفزيون والطاولة
+  - {name: كنبة 3 مقاعد, rect: [270, 190, 360, 410]}
+  - {name: كرسي, rect: [150, 110, 220, 180]}
+  - {name: طاولة, rect: [130, 260, 210, 340]}
+  - {name: تلفزيون, rect: [8, 220, 40, 380]}
+  - {name: طاولة 6, rect: [450, 260, 610, 350]}
+  - {name: "", rect: [465, 215, 510, 255]}
+  - {name: "", rect: [550, 215, 595, 255]}
+  - {name: "", rect: [465, 355, 510, 395]}
+  - {name: "", rect: [550, 355, 595, 395]}
+  # المطبخ
+  - {name: كاونتر, rect: [622, 620, 682, 882]}
+  - {name: كاونتر, rect: [424, 822, 622, 882]}
+  - {name: ثلاجة, rect: [617, 545, 682, 615]}
+  # دورة المياه الأرضي
+  - {name: دش, rect: [322, 792, 412, 882], shape: shower}
+  - {name: "", rect: [256, 832, 296, 882], shape: wc}
+  - {name: "", rect: [256, 736, 302, 786], shape: basin}
+  # العلوي
+  # غرفة 1: رأس السرير على الجدار الفاصل المصمت، الدولاب بعيد عن فتحة الباب
+  - {name: سرير 120×200, floor: 1, rect: [100, 150, 300, 270]}
+  - {name: دولاب, floor: 1, rect: [6, 360, 126, 420]}
+  # الماستر: رأس السرير على الجدار الغربي المصمت (مو تحت الشباك)
+  - {name: سرير 180×200, floor: 1, rect: [312, 30, 512, 210]}
+  - {name: دولاب, floor: 1, rect: [420, 360, 520, 420]}
+  - {name: دش, floor: 1, rect: [592, 330, 682, 420], shape: shower}
+  - {name: "", floor: 1, rect: [642, 240, 682, 290], shape: wc}
+  - {name: "", floor: 1, rect: [536, 374, 582, 420], shape: basin}
+  - {name: دش, floor: 1, rect: [322, 792, 412, 882], shape: shower}
+  - {name: "", floor: 1, rect: [256, 832, 296, 882], shape: wc}
+  - {name: "", floor: 1, rect: [256, 700, 302, 750], shape: basin}
+  - {name: سرير 120×200, floor: 1, rect: [490, 682, 610, 882]}
+  - {name: دولاب, floor: 1, rect: [622, 560, 682, 655]}
+
+site:
+  plot: [-156, -1956, 844, 1044]
+  street: S
+  street_width: 1600
+  wall: {t: 20, h: 250}
+  gates:
+    - {x: 444, width: 380, kind: car}
+    - {x: -136, width: 110, kind: person}
+  zones:
+    - {kind: parking, rect: [454, -1946, 834, -1396], name: موقف سيارة}
+    - {kind: path, rect: [-146, -1946, -26, -246], name: ممر المشاة}
+    - {kind: paving, rect: [294, -1350, 834, -300], name: ""}   # بلاط حول المسبح (الجدول يخصم المسبح منه)
+    - {kind: pool, rect: [394, -1250, 744, -450], name: المسبح, depth: 140}
+    - {kind: path, rect: [-26, -400, 294, -300], name: ""}   # وصلة من ممر المشاة لدرج التراس والمسبح
+    - {kind: seating, rect: [-26, -1000, 274, -420], name: الجلسة الخارجية, label: [170, -520]}
+    - {kind: planter, rect: [-146, 914, 834, 1034], name: أحواض زراعة}
+  pergolas:
+    - {rect: [-6, -980, 254, -440], name: برجولة الجلسة, h: 270,
+       furniture: [{rect: [4, -970, 84, -450]}, {rect: [84, -970, 244, -890]}, {rect: [110, -760, 210, -620]}]}
+  furniture:
+    - {rect: [304, -1230, 364, -1040]}
+    - {rect: [304, -1010, 364, -820]}
+  trees:
+    - {at: [100, -1800], kind: palm, r: 160}
+    - {at: [300, -1650], kind: tree, r: 140}
+    - {at: [150, -1350], kind: tree, r: 130}
+    - {at: [-80, -100], kind: shrub, r: 50}
+    - {at: [764, -150], kind: palm, r: 70}
+    - {at: [-80, 300], kind: shrub, r: 50}
+    - {at: [-80, 700], kind: shrub, r: 50}
+    - {at: [770, 300], kind: shrub, r: 50}
+    - {at: [770, 700], kind: shrub, r: 50}
+    - {at: [-70, 975], kind: shrub, r: 45}
+    - {at: [140, 975], kind: shrub, r: 45}
+    - {at: [550, 975], kind: shrub, r: 45}
+    - {at: [760, 975], kind: shrub, r: 45}
+    - {at: [790, -1300], kind: shrub, r: 40}
+  notes:
+    - "الكوخ في آخر الأرض بعيد عن الشارع (خصوصية)، والصالة والتراس يطلّون على المسبح والحديقة."
+    - "بوابة سيارة 3.80 م + باب مشاة مستقل، سور بلك 2.50 م بغطاء خشب أعلى السور."
+    - "ممر المشاة من الباب للتراس بمحاذاة السور الغربي، والموقف عند البوابة بدون ما يقطع الحديقة."
+    - "المسبح 3.50 × 8.00 م بعمق 1.40 م، حوله بلاط ودرج نزول، وكراسي استلقاء على الجهة الغربية."
+    - "جلسة خارجية تحت برجولة خشب بين المسبح والسور، وظل أشجار من جهة الشارع."
