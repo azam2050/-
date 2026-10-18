@@ -68,6 +68,8 @@ def is_front(project, w):
         return True
     nx, ny = w.n
     for d in project.decks:
+        if max(d.rect[2] - d.rect[0], d.rect[3] - d.rect[1]) < 200 or d.level > 0:
+            continue                  # عتبة باب صغيرة (سيرفيس/مدخل جانبي) أو بلكونة — مو تراس الواجهة
         cx, cy = (d.rect[0] + d.rect[2]) / 2, (d.rect[1] + d.rect[3]) / 2
         sd = (cx - w.start[0]) * nx + (cy - w.start[1]) * ny
         if sd < 0 and abs(sd) < 400 and (d.rect[3] - d.rect[1]) < (d.rect[2] - d.rect[0]) * 2:
