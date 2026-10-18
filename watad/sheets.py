@@ -416,12 +416,32 @@ def plan_sheet(ctx, floor=0):
                     color=C_WIN if o.kind == "window" else C_DOOR)
     # سلاسل الأبعاد الخارجية
     for w in P.exterior_walls:
-        ts = [-half] + sorted(t for o in w.openings for t in (o.offset, o.offset + o.width)) \
+        # جدار مكمّل لجدار قبله على نفس الخط (ملحق): يبدأ من وجه الجدار الأول عشان التقسيمات = الطول الإجمالي
+        cont = any(tuple(v.end) == tuple(w.start) and abs(v.u[0] * w.u[1] - v.u[1] * w.u[0]) < 1e-6
+                   for v in P.exterior_walls if v is not w)
+        ts = [half if cont else -half] + sorted(t for o in w.openings for t in (o.offset, o.offset + o.width)) \
             + [w.length + half]
         pts = [w.point(t, -half) for t in ts]
         # dim() يزيح لليسار؛ الخارج على يمين الجدار → نعكس الاتجاه
         chain(ax, pts[::-1], 45)
         dim(ax, pts[-1], pts[0], 90, fs=8)
+    # البعد الإجمالي لكل جهة (قاعدة المصنع): إذا الجهة فيها أكثر من جدار (ملحق/بروز) — الطول الكامل ثم التقسيمات
+    bx0_, by0_, bx1_, by1_ = outer_bbox(P, rules)
+    sides = {"S": (by0_, lambda w: abs(w.u[1]) < 1e-6 and abs(w.start[1] - half - by0_) < 1),
+             "N": (by1_, lambda w: abs(w.u[1]) < 1e-6 and abs(w.start[1] + half - by1_) < 1),
+             "W": (bx0_, lambda w: abs(w.u[0]) < 1e-6 and abs(w.start[0] - half - bx0_) < 1),
+             "E": (bx1_, lambda w: abs(w.u[0]) < 1e-6 and abs(w.start[0] + half - bx1_) < 1)}
+    for side, (_c, test) in sides.items():
+        if sum(1 for w in P.exterior_walls if test(w)) < 2:
+            continue
+        if side == "S":
+            dim(ax, (bx1_, by0_), (bx0_, by0_), 135, fs=9)
+        elif side == "N":
+            dim(ax, (bx0_, by1_), (bx1_, by1_), 135, fs=9)
+        elif side == "W":
+            dim(ax, (bx0_, by0_), (bx0_, by1_), 135, fs=9)
+        else:
+            dim(ax, (bx1_, by1_), (bx1_, by0_), 135, fs=9)
     # محاور الشبكة (أرقام للجدران الرأسية، حروف للأفقية) مثل لوحات المكتب
     xs = sorted({round(w.start[0]) for w in P.walls if abs(w.u[0]) < 1e-6})
     ys = sorted({round(w.start[1]) for w in P.walls if abs(w.u[1]) < 1e-6})
