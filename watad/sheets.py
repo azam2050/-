@@ -579,7 +579,7 @@ def elevation(ax, ctx, w):
                 px, py = pt["at"]
                 tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
                 if tpos < -5 or tpos > L + 5:
-                    ax.add_patch(Rectangle((tpos - 7, 0), 14, H, fc="#f3e3d3", ec="k", lw=0.6))
+                    ax.add_patch(Rectangle((tpos - 7, 0), 14, pt.get("top", H), fc="#f3e3d3", ec="k", lw=0.6))
             roof_top = top + depth
     # المثلثات البارزة (جملون متقاطع)
     from .roof import cross_gables
@@ -625,7 +625,7 @@ def elevation(ax, ctx, w):
         sd = (px - w.start[0]) * nx_ + (py - w.start[1]) * ny_
         tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
         if sd < -half - 20 and -20 <= tpos <= L + 20:
-            front_posts.append(tpos)
+            front_posts.append((tpos, pt.get("top")))
     for d in P.decks:
         dx0, dy0, dx1, dy1 = d.rect
         cs = [((cx - w.start[0]) * nx_ + (cy - w.start[1]) * ny_,
@@ -650,8 +650,11 @@ def elevation(ax, ctx, w):
             rh = 95
             for tt in (t0, t1):
                 ax.add_patch(Rectangle((tt - 5 if tt == t1 else tt, top_d), 5, rh, fc="#8b5a2b", ec="none"))
-    for tp_ in front_posts:
-        ax.add_patch(Rectangle((tp_ - 8, 0), 16, H, fc="#c9a27c", ec="k", lw=0.7))
+    for tp_, ptop in front_posts:
+        z0_ = 0 if ptop is None else -sh
+        ax.add_patch(Rectangle((tp_ - 8, z0_), 16, (H if ptop is None else ptop) - z0_, fc="#c9a27c", ec="k", lw=0.7))
+    roof_posts = [t for t, ptop in front_posts if ptop is None]
+    front_posts = roof_posts
     if len(front_posts) >= 2:
         ax.add_patch(Rectangle((min(front_posts) - 8, H - 22), max(front_posts) - min(front_posts) + 16, 22,
                                fc="#c9a27c", ec="k", lw=0.7))

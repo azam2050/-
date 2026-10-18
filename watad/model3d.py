@@ -327,6 +327,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         else:
             a = px if ridge_y else py
             ztop = zsh(a) if project.roof.type == "shed" else zb(a, -1 if a <= ac else 1)
+        if "top" in pt:              # عمود يحمل برندة/بلكونة (ينتهي تحت أرضيتها)
+            ztop = pt["top"] if not cut else min(cut, pt["top"])
         ps = pt.get("size", 15)
         S.box("trim", px - ps / 2, py - ps / 2, pt.get("base", 0), px + ps / 2, py + ps / 2, ztop)
         pz.append((px, py, ztop))
