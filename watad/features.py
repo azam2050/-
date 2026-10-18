@@ -357,15 +357,15 @@ def mezz_sheet(ctx):
     ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
     lv = P.mezzanines[0]["level"] if P.mezzanines else 0
     title(ax, "مسقط الميزانين (نص الدور) — غرفة النوم", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
-    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec="k", lw=1.6, zorder=1))
+    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec="k", lw=1.6, zorder=0.3))
     ax.add_patch(Rectangle((x0 + 2 * half, y0 + 2 * half), x1 - x0 - 4 * half, y1 - y0 - 4 * half, fc="white", ec="k",
-                           lw=0.8, zorder=1))
+                           lw=0.8, zorder=0.4))
     for m in P.mezzanines:
         mx0, my0, mx1, my1 = m["rect"]
-        ax.add_patch(Rectangle((mx0, my0), mx1 - mx0, my1 - my0, fc="#f6ecdf", ec="#8b5a2b", lw=1, zorder=2))
+        ax.add_patch(Rectangle((mx0, my0), mx1 - mx0, my1 - my0, fc="#f6ecdf", ec="#8b5a2b", lw=1, zorder=0.5))
         yy = my0 + 14
         while yy < my1:
-            ax.plot([mx0, mx1], [yy, yy], color="#e3cdb0", lw=0.4, zorder=2)
+            ax.plot([mx0, mx1], [yy, yy], color="#e3cdb0", lw=0.4, zorder=0.6)
             yy += 14
         for side in m.get("railing", ["S"]):
             p0, p1 = _mezz_edges(m)[side]
@@ -375,7 +375,7 @@ def mezz_sheet(ctx):
         ax.text((mx0 + mx1) / 2, my1 - 20, f"{m.get('name', 'الميزانين')}  {(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
                 f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
         vy0 = y0 + 2 * half
-        ax.add_patch(Rectangle((mx0, vy0), mx1 - mx0, my0 - vy0, fill=False, ec="#999", lw=0.6, hatch="..", zorder=1))
+        ax.add_patch(Rectangle((mx0, vy0), mx1 - mx0, my0 - vy0, fill=False, ec="#999", lw=0.6, hatch="..", zorder=0.5))
         ax.text((mx0 + mx1) / 2, (vy0 + my0) / 2 + 40, "فراغ مزدوج الارتفاع (الصالة تحت)\nالواجهة زجاج كامل",
                 ha="center", va="center", fontsize=9, color="#777", zorder=6)
         hb = m.get("headroom")
@@ -405,6 +405,11 @@ def mezz_sheet(ctx):
             ax.plot([p[0], q[0]], [p[1], q[1]], color=C_DOOR, lw=1.2, zorder=6)
             m_ = w.point(go["offset"] + go["width"] / 2, half + 14)
             ax.text(*m_, go.get("code", ""), ha="center", fontsize=8, color=C_DOOR, zorder=6)
+    draw_bumps_plan(ax, P, rules, "mezz")
+    for b in P.bumps:
+        _w, _h, o_, a_, L_, d_ = bump_geom(P, rules, b)
+        x0, y0 = min(x0, *(o_(t, d_)[0] for t in (a_, a_ + L_))), min(y0, *(o_(t, d_)[1] for t in (a_, a_ + L_)))
+        x1, y1 = max(x1, *(o_(t, d_)[0] for t in (a_, a_ + L_))), max(y1, *(o_(t, d_)[1] for t in (a_, a_ + L_)))
     for d in P.decks:
         if d.level and P.mezzanines and abs(d.level - lv) < 1:
             dx0, dy0, dx1, dy1 = d.rect
@@ -417,3 +422,104 @@ def mezz_sheet(ctx):
     ax.set_aspect("equal")
     ax.axis("off")
     return fig, "مسقط الميزانين"
+
+
+# ---------------------------------------------------------------- بروز مقفل (دورة مياه الميزانين فوق + غرفة تفتيش تحت)
+def bump_geom(P, rules, b):
+    w = _wall(P, b["wall"])
+    half = wall_thickness(rules) / 2
+    o = _out(w, half)
+    a, L, d = b["offset"], b["width"], b.get("depth", 150)
+    return w, half, o, a, L, d
+
+
+def add_bumps_3d(S, P, rules, style, cut=None):
+    for b in P.bumps:
+        w, half, o, a, L, d = bump_geom(P, rules, b)
+        if cut:
+            continue
+        S.zoff = 0
+        z0, ze = b.get("base", -P.slab_height), b.get("eave", 445)
+        tp = math.tan(math.radians(b.get("pitch", 40)))
+        rise = L / 2 * tp
+        ov = b.get("overhang", 12)
+        # الجدران (صندوق مقفل من الأرض لين الرفرف)
+        S.wbox("wood", w, a, a + L, -half - d, -half, z0, ze)
+        # جملون البروز (مثلث أمامي) + سطحين قرميد يصرّفون للجنبين
+        S.wprism("wood", w, [(a, ze), (a + L, ze), (a + L / 2, ze + rise)], -half - d, -half - d + 12)
+        tc = a + L / 2
+        for sg in (-1, 1):
+            te = tc + sg * (L / 2 + ov)
+            zl = ze - ov * tp
+            q = [(tc, ze + rise + 2), (te, zl + 2), (te, zl + 8), (tc, ze + rise + 8)]
+            front = [(*w.point(t, -half - d - ov), z) for t, z in q]
+            back = [(*w.point(t, -half), z) for t, z in q]
+            S.poly("roof_tiles", front + back, [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5),
+                                                (2, 3, 7, 6), (3, 0, 4, 7)])
+            S.wdiag("trim", w, tc, ze + rise + 4, te, zl + 4, 14, -half - d - ov - 2.5, -half - d - ov)
+        # حزام بين الدورين (منسوب أرضية الحمام) + شباك تهوية + باب غرفة التفتيش
+        fz = b.get("floor_z", 245)
+        S.wbox("trim", w, a - 2, a + L + 2, -half - d - 3, -half, fz - 20, fz)
+        wv = Wall("bmp", o(a + L / 2 - 30, d + 0.5), o(a + L / 2 + 30, d + 0.5))
+        S.wbox("frame", wv, 0, 60, -2, 2, fz + 140, fz + 180)
+        S.wbox("glass", wv, 4, 56, -1, 1, fz + 144, fz + 176)
+        S.wbox("door", wv, -5, 65, -2, 2, z0 + 45, z0 + 45 + b.get("door_h", 120))
+    S.zoff = 0
+
+
+def draw_bumps_plan(ax, P, rules, which):
+    """which = 'ground' (غرفة التفتيش) أو 'mezz' (دورة المياه)."""
+    for b in P.bumps:
+        w, half, o, a, L, d = bump_geom(P, rules, b)
+        outer = [o(a, 0), o(a, d), o(a + L, d), o(a + L, 0)]
+        inner = [o(a + 12, 0), o(a + 12, d - 12), o(a + L - 12, d - 12), o(a + L - 12, 0)]
+        ax.add_patch(Polygon(outer, closed=True, fc="#eeeeee", ec="k", lw=1.2, hatch="////", zorder=0.7))
+        ax.add_patch(Polygon(inner, closed=True, fc="#eef6ff" if which == "mezz" else "white", ec="k", lw=0.8,
+                             zorder=0.8))
+        c = o(a + L / 2, d / 2)
+        if which == "ground":
+            ax.text(*c, b.get("name_down", "غرفة تفتيش"), ha="center", va="center", fontsize=6.5, zorder=5)
+            p0, p1 = o(a + L / 2 - 30, d), o(a + L / 2 + 30, d)
+            ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="white", lw=3, zorder=4)
+            ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#10a010", lw=1.2, zorder=5)
+        else:
+            ax.text(c[0], c[1] + 10, b.get("name_up", "دورة مياه"), ha="center", va="center", fontsize=7, zorder=5)
+            ax.text(c[0], c[1] - 8, f"{(L - 24) / 100:.2f} × {(d - 12) / 100:.2f} م", ha="center", va="center",
+                    fontsize=6, zorder=5)
+
+
+def draw_bumps_elev(ax, P, rules, w, stack):
+    """البروز في الواجهة الخلفية (وجه) والجانبية (مقطع جانبي)."""
+    names = {w2.name for w2, _l in stack}
+    for b in P.bumps:
+        bw, half, o, a, L, d = bump_geom(P, rules, b)
+        z0, ze = b.get("base", -P.slab_height), b.get("eave", 445)
+        tp = math.tan(math.radians(b.get("pitch", 40)))
+        rise = L / 2 * tp
+        fz = b.get("floor_z", 245)
+        if b["wall"] in names:           # الوجه
+            x0 = a + half
+            ax.add_patch(Rectangle((x0, z0), L, ze - z0, fc="#f3e7d6", ec="k", lw=1, zorder=5))
+            ax.add_patch(Polygon([(x0 - 12, ze - 10), (x0 + L / 2, ze + rise), (x0 + L + 12, ze - 10)], closed=True,
+                                 fc="#fff3e0", ec="#c56b1a", lw=0.9, zorder=5))
+            ax.add_patch(Rectangle((x0, fz - 20), L, 20, fc="#c9a27c", ec="k", lw=0.5, zorder=6))
+            ax.add_patch(Rectangle((x0 + L / 2 - 30, fz + 140), 60, 40, fc="white", ec="#1f3fff", lw=0.8, zorder=6))
+            ax.add_patch(Rectangle((x0 + L / 2 - 30, z0 + 45), 60, b.get("door_h", 120), fc="white", ec="#10a010",
+                                   lw=0.8, zorder=6))
+            ax.text(x0 + L / 2, fz + 60, b.get("name_up", "دورة مياه"), ha="center", fontsize=6, zorder=7)
+            ax.text(x0 + L / 2, z0 + 175, b.get("name_down", "غرفة تفتيش"), ha="center", fontsize=6, zorder=7)
+        else:                            # جانبي: البروز يطلع من الجدار
+            ux, uy = w.u
+            pts = [o(a, 0), o(a, d), o(a + L, d), o(a + L, 0)]
+            ts = [(px - w.start[0]) * ux + (py - w.start[1]) * uy + half for px, py in pts]
+            nx_, ny_ = w.n
+            sds = [(px - w.start[0]) * nx_ + (py - w.start[1]) * ny_ for px, py in pts]
+            if max(abs(v) for v in sds) > 3000:
+                continue
+            t0, t1 = min(ts), max(ts)
+            if t1 - t0 < 5 or t1 - t0 > d + 5:
+                continue                  # الوجه الأمامي/الخلفي يرسم فوق
+            ax.add_patch(Rectangle((t0, z0), t1 - t0, ze - z0, fc="#f3e7d6", ec="k", lw=1, zorder=5))
+            ax.add_patch(Rectangle((t0 - 12, ze), t1 - t0 + 12, rise + 10, fc="#fff3e0", ec="#c56b1a", lw=0.9,
+                                   zorder=5))
+            ax.add_patch(Rectangle((t0, fz - 20), t1 - t0, 20, fc="#c9a27c", ec="k", lw=0.5, zorder=6))

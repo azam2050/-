@@ -322,6 +322,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     add_3d(S, project, rules, style, cut)
     from .features import add_mezz_3d    # ميزانين + درج مستقيم
     add_mezz_3d(S, project, rules, style, cut)
+    from .features import add_bumps_3d
+    add_bumps_3d(S, project, rules, style, cut)
     # أعمدة الجلسة المسقوفة + جسر أمامي يحمل طرف الجملون
     pz = []
     for pt in project.posts:
@@ -709,7 +711,14 @@ def _gable_with_openings(S, w, L, H, rise, half, style):
         if a < L / 2 < b:
             pts.append((L / 2, H + rise))
         pts.append((a, zr(a)))
-        S.wprism("wood", w, pts, -half, half)
+        clean = []
+        for pt in pts:                                    # بدون نقاط مكررة (المثلث عند الركن)
+            if not clean or math.dist(pt, clean[-1]) > 0.1:
+                clean.append(pt)
+        if len(clean) > 2 and math.dist(clean[0], clean[-1]) < 0.1:
+            clean.pop()
+        if len(clean) >= 3:
+            S.wprism("wood", w, clean, -half, half)
     for o in ops:                                          # فوق وتحت كل فتحة
         a, b = o["offset"], o["offset"] + o["width"]
         z0, z1 = o.get("sill", 0), o.get("sill", 0) + o["height"]
@@ -722,7 +731,7 @@ def _gable_with_openings(S, w, L, H, rise, half, style):
         _opening(S, w, op, a, b, z0, z1, half, style, exterior=True)
 
 
-def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8):
+def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8, split=False):
     """واجهة A-frame زجاج كاملة (إحداثيات الواجهة الخارجية 0..Lo): إطار خشب + قوائم + عوارض + باب بالوسط.
     door = (بداية، نهاية، ارتفاع) بإحداثيات الواجهة. يرجع dict للرسم (2D) والمجسم (3D)."""
     k = rise / (Lo / 2)
@@ -738,8 +747,20 @@ def glass_front_geometry(Lo, H, rise, door, border=15, side=12, sill=10, mull=8)
     mulls = [da - mull / 2, db + mull / 2]
     ta = max(tl, (zt1 - H + bv) / k)
     trans = [(ta, Lo - ta, zt1)]
+    posts = []
+    if split:      # تقسيم أصغر للتركيب (طلب المصنع): عارضة ثانية بالمثلث + قائمين لطرفيها + قائم بنص كل لوح سفلي
+        apex_ = H + rise - bv
+        zt2 = zt1 + (apex_ - zt1) * 0.5
+        ta2 = max(tl, (zt2 - H + bv) / k)
+        if Lo - 2 * ta2 > 40:
+            trans.append((ta2, Lo - ta2, zt2))
+            for t in (ta2, Lo - ta2):
+                posts.append((t, zt1 + mull / 2, zt2 - mull / 2))
+        for a_, b_ in ((tl, da - mull), (db + mull, Lo - tl)):
+            if b_ - a_ > 110:
+                mulls.append((a_ + b_) / 2)
     return {"outer": [(0, 0), (Lo, 0), (Lo, H), (Lo / 2, H + rise), (0, H)], "inner": inner, "zin": zin,
-            "mulls": [(t, min(zin(t), zt1 - mull / 2)) for t in mulls], "trans": trans, "door": door, "mull": mull, "apex": apex,
+            "mulls": [(t, min(zin(t), zt1 - mull / 2)) for t in mulls], "trans": trans, "posts": posts, "door": door, "mull": mull, "apex": apex,
             "border": border, "bv": bv, "sill": sill, "tl": tl}
 
 
@@ -748,8 +769,10 @@ def _glass_front(S, w, L, H, rise, half):
     Lo = L + 2 * half
     d = next((o for o in w.openings if o.kind == "door"), None)
     door = (d.offset + half, d.offset + d.width + half, d.height) if d else (Lo / 2 - 45, Lo / 2 + 45, 210)
-    G = glass_front_geometry(Lo, H, rise, door)
+    G = glass_front_geometry(Lo, H, rise, door, split=getattr(w, "glass_split", False))
     m, fw_, fd = G["mull"], 4, 4
+    for t, z0_, z1_ in G["posts"]:
+        S.wbox("wood", w, t - half - m / 2, t - half + m / 2, -half, half, z0_, z1_)
     sh = lambda t: t - half                          # noqa: E731  (إحداثي الواجهة → إحداثي الجدار)
     zin, tl, bv = G["zin"], G["tl"], G["bv"]
     # الإطار: عتبة سفلية + قائمين جانبيين + الحافة المائلة

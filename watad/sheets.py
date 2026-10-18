@@ -399,6 +399,8 @@ def plan_sheet(ctx, floor=0):
     if floor == 0:
         from .features import draw_mezz_on_ground
         draw_mezz_on_ground(ax, P_full)
+        from .features import draw_bumps_plan
+        draw_bumps_plan(ax, P_full, rules, "ground")
     for r in P.rooms:
         cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
         big = r.area_m2 > 4 and r.kind != "stair"
@@ -549,7 +551,7 @@ def elevation(ax, ctx, w):
             from .model3d import glass_front_geometry
             d_ = next((o for o in w.openings if o.kind == "door"), None)
             door = (d_.offset + half, d_.offset + d_.width + half, d_.height) if d_ else (L / 2 - 45, L / 2 + 45, 210)
-            G = glass_front_geometry(L, H, rise, door)
+            G = glass_front_geometry(L, H, rise, door, split=any(getattr(w2, "glass_split", False) for w2, _l in stack))
             ax.add_patch(Polygon(G["outer"], closed=True, fc="#e9d9c4", ec="k", lw=1))
             ax.add_patch(Polygon(G["inner"], closed=True, fc="#e8f0f7", ec=C_WIN, lw=1.1))
             m = G["mull"]
@@ -557,6 +559,8 @@ def elevation(ax, ctx, w):
                 ax.add_patch(Rectangle((t - m / 2, G["sill"]), m, zt_ - G["sill"], fc="#e9d9c4", ec="k", lw=0.5))
             for ta, tb, z in G["trans"]:
                 ax.add_patch(Rectangle((ta, z - m / 2), tb - ta, m, fc="#e9d9c4", ec="k", lw=0.5))
+            for t, z0_, z1_ in G["posts"]:
+                ax.add_patch(Rectangle((t - m / 2, z0_), m, z1_ - z0_, fc="#e9d9c4", ec="k", lw=0.5))
             da, db, dh = door
             ax.add_patch(Rectangle((da, G["sill"]), db - da, dh - m / 2 - G["sill"], fill=False, ec=C_DOOR, lw=1.2))
             ax.add_patch(Rectangle((da + 7, G["sill"] + 14), db - da - 14, dh - m / 2 - G["sill"] - 21, fill=False,
@@ -741,6 +745,8 @@ def elevation(ax, ctx, w):
                         color=C_DOOR, zorder=5)
     from .features import draw_elev as _feat_elev     # شباك بارز / مظلة / برجولة
     _feat_elev(ax, P, rules, w, stack, gable_end)
+    from .features import draw_bumps_elev
+    draw_bumps_elev(ax, P, rules, w, stack)
     for t0, t1, top_d in late_rails:        # دربزين البلكونة فوق الفتحات
         ax.add_patch(Rectangle((t0, top_d), t1 - t0, 105, fc="#fbf6ef", ec="#8b5a2b", lw=0.9, alpha=0.85))
         for yy in range(12, 105, 13):
