@@ -463,7 +463,11 @@ def add_bumps_3d(S, P, rules, style, cut=None):
         wv = Wall("bmp", o(a + L / 2 - 30, d + 0.5), o(a + L / 2 + 30, d + 0.5))
         S.wbox("frame", wv, 0, 60, -2, 2, fz + 140, fz + 180)
         S.wbox("glass", wv, 4, 56, -1, 1, fz + 144, fz + 176)
-        S.wbox("door", wv, -5, 65, -2, 2, z0 + 45, min(fz - 25, z0 + 45 + b.get("door_h", 120)))
+        if b.get("door_h", 120):                     # باب خارجي للمخزن/غرفة التفتيش
+            S.wbox("door", wv, -5, 65, -2, 2, z0 + 45, min(fz - 25, z0 + 45 + b.get("door_h", 120)))
+        else:                                        # تحت دورة مياه داخلية: شباك تهوية بدل الباب
+            S.wbox("frame", wv, 0, 60, -2, 2, 150, 190)
+            S.wbox("glass", wv, 4, 56, -1, 1, 154, 186)
     S.zoff = 0
 
 
@@ -474,14 +478,15 @@ def draw_bumps_plan(ax, P, rules, which):
         outer = [o(a, 0), o(a, d), o(a + L, d), o(a + L, 0)]
         inner = [o(a + 12, 0), o(a + 12, d - 12), o(a + L - 12, d - 12), o(a + L - 12, 0)]
         ax.add_patch(Polygon(outer, closed=True, fc="#eeeeee", ec="k", lw=1.2, hatch="////", zorder=0.7))
-        ax.add_patch(Polygon(inner, closed=True, fc="#eef6ff" if which == "mezz" else "white", ec="k", lw=0.8,
-                             zorder=0.8))
+        wet_down = not b.get("door_h", 120)          # الدور الأرضي للبروز دورة مياه (بابها من داخل الكوخ)
+        ax.add_patch(Polygon(inner, closed=True, fc="#eef6ff" if which == "mezz" or wet_down else "white", ec="k",
+                             lw=0.8, zorder=0.8))
         c = o(a + L / 2, d / 2)
         if which == "ground":
             ax.text(*c, b.get("name_down", "غرفة تفتيش"), ha="center", va="center", fontsize=6.5, zorder=5)
             p0, p1 = o(a + L / 2 - 30, d), o(a + L / 2 + 30, d)
             ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="white", lw=3, zorder=4)
-            ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#10a010", lw=1.2, zorder=5)
+            ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#1f3fff" if wet_down else "#10a010", lw=1.2, zorder=5)
         else:
             ax.text(c[0], c[1] + 10, b.get("name_up", "دورة مياه"), ha="center", va="center", fontsize=7, zorder=5)
             ax.text(c[0], c[1] - 8, f"{(L - 24) / 100:.2f} × {(d - 12) / 100:.2f} م", ha="center", va="center",
@@ -504,8 +509,11 @@ def draw_bumps_elev(ax, P, rules, w, stack):
                                  fc="#fff3e0", ec="#c56b1a", lw=0.9, zorder=5))
             ax.add_patch(Rectangle((x0, fz - 20), L, 20, fc="#c9a27c", ec="k", lw=0.5, zorder=6))
             ax.add_patch(Rectangle((x0 + L / 2 - 30, fz + 140), 60, 40, fc="white", ec="#1f3fff", lw=0.8, zorder=6))
-            ax.add_patch(Rectangle((x0 + L / 2 - 30, z0 + 45), 60, min(fz - 25 - z0 - 45, b.get("door_h", 120)), fc="white", ec="#10a010",
-                                   lw=0.8, zorder=6))
+            if b.get("door_h", 120):
+                ax.add_patch(Rectangle((x0 + L / 2 - 30, z0 + 45), 60, min(fz - 25 - z0 - 45, b.get("door_h", 120)),
+                                       fc="white", ec="#10a010", lw=0.8, zorder=6))
+            else:
+                ax.add_patch(Rectangle((x0 + L / 2 - 30, 150), 60, 40, fc="white", ec="#1f3fff", lw=0.8, zorder=6))
             ax.text(x0 + L / 2, fz + 60, b.get("name_up", "دورة مياه"), ha="center", fontsize=6, zorder=7)
             ax.text(x0 + L / 2, fz - 45, b.get("name_down", "غرفة تفتيش"), ha="center", fontsize=6, zorder=7)
         else:                            # جانبي: البروز يطلع من الجدار
