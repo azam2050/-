@@ -436,7 +436,14 @@ def bump_geom(P, rules, b):
 def add_bumps_3d(S, P, rules, style, cut=None):
     for b in P.bumps:
         w, half, o, a, L, d = bump_geom(P, rules, b)
-        if cut:
+        if cut:                                      # المقطع: جدران البروز لين منسوب القطع (عشان قطع الحمام ما تطيح برا)
+            S.zoff = 0
+            z0, zc = b.get("base", -P.slab_height), min(cut, b.get("eave", 445))
+            S.wbox("wood", w, a, a + 12, -half - d, -half, z0, zc)
+            S.wbox("wood", w, a + L - 12, a + L, -half - d, -half, z0, zc)
+            S.wbox("wood", w, a, a + L, -half - d, -half - d + 12, z0, zc)
+            S.material("tiles", "#D5D9DC")
+            S.wbox("tiles", w, a + 12, a + L - 12, -half - d + 12, -half, z0, 1.2)
             continue
         S.zoff = 0
         z0, ze = b.get("base", -P.slab_height), b.get("eave", 445)

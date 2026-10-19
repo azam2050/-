@@ -1,0 +1,110 @@
+# عميل الهدا — تعديل المصنع: المقاس 5.00 × 8.00 = 40 م² (بدل 5 × 5)، والدرج مستقيم بدون لفّة طالع دايركت للدور الثاني (الميزانين).
+#  الأرضي: صالة بارتفاع مزدوج تطل على الواجهة الزجاج + مطبخ أمريكي وركن طعام تحت الميزانين،
+#          ودورة المياه الأرضية داخل البروز الخلفي تحت دورة مياه الغرفة بالضبط (خيار 2 المعتمد — الحمامين فوق بعض).
+#  الميزانين (+2.45): غرفة النوم فوق الجزء الخلفي (3.82 × 4.76) + باب دورة مياه الغرفة في البروز.
+#  الدرج: مستقيم عمودي على حافة الميزانين (اتجاه الشمال) — يوصل للميزانين وجهك للغرفة بدون لف،
+#         ومكانه في الحزام الأوسط تحت القمة عشان الارتفاع فوق آخر درجة ≥ 2.00 م.
+# الميل 55°: المداد 514 سم (رفرف 45) من طبلية 520 بدون وصلات، والقمة 5.57 م (نفس الكوخ الأصلي — العرض ما تغيّر).
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: aframe-alhada-5x8
+title: كوخ A-frame بواجهة زجاج + ميزانين — 5 × 8 = 40 م²
+client: "عميل — الهدا"
+meta:
+  location: الهدا
+  usage: استراحة / سكن
+  date: 2026-10-19
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 200
+height_exact: true
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 55, overhang: 45}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    glass_front: true
+    glass_split: true
+    start: [0, 0]
+    end: [488, 0]
+    openings:
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 185, height: 200, sill: 10, style: fixed}
+      - {kind: door, code: ب1, name: ب1 باب زجاج بإطار خشب, offset: 199, width: 90, height: 210, leaves: 1}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 297, width: 185, height: 200, sill: 10, style: fixed}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [488, 0]
+    end: [488, 788]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 60, width: 100, height: 85, sill: 65, grid: [2, 2]}
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 560, width: 90, height: 50, sill: 105, grid: [2, 1]}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [488, 788]
+    end: [0, 788]
+    openings:   # باب دورة المياه الأرضية (داخل البروز)
+      - {kind: door, code: ب2, name: ب2 دورة المياه, offset: 188, width: 70, height: 195}
+    gable_openings:   # باب دورة مياه الغرفة (منسوب الميزانين)
+      - {code: ب3, name: ب3 باب دورة مياه الغرفة, offset: 188, width: 70, height: 200, sill: 245, grid: [2, 4]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 788]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش3, name: ش3 ركن الطعام, offset: 188, width: 80, height: 85, sill: 70, grid: [2, 2]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 628, width: 100, height: 85, sill: 65, grid: [2, 2]}
+
+rooms:
+  - {name: الصالة (ارتفاع مزدوج), rect: [6, 6, 482, 394], label: [130, 340]}
+  - {name: المطبخ الأمريكي + ركن طعام, rect: [6, 406, 482, 782], label: [250, 470]}
+
+mezzanines:
+  - name: غرفة النوم (نص دور)
+    rect: [6, 400, 482, 782]
+    level: 245
+    railing: [S]
+    gaps: [[250, 320]]           # وصول الدرج المستقيم
+    headroom: [159, 329]
+    railing_span: [100, 388]
+
+decks:
+  - name: عتبة المدخل
+    rect: [174, -126, 314, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 0, width: 140}
+
+bumps:   # البروز الخلفي: دورة مياه الغرفة فوق (منسوب الميزانين) ودورة المياه الأرضية تحتها بالضبط
+  - {wall: شمال, offset: 143, width: 160, depth: 220, base: -45, floor_z: 245, eave: 445, pitch: 40, overhang: 12,
+     name_up: دورة مياه الغرفة, name_down: دورة مياه, door_h: 0}
+
+straight_stairs:   # مستقيم بدون لف: 12 قائمة × 20.4 ونائمة 22 — من الصالة دايركت لحافة الميزانين
+  - {name: درج الميزانين, start: [250, 158], dir: N, width: 70, rise: 245, riser: 20.4, tread: 22, rail: E}
+
+furniture:
+  # الصالة: كنبة على الجدار الغربي تطل على الزجاج، والدرج على يمين المدخل
+  - {name: كنبة, rect: [6, 60, 86, 300]}
+  - {name: طاولة, rect: [120, 150, 190, 240]}
+  - {name: كرسي, rect: [380, 60, 450, 130]}
+  # تحت الميزانين (ارتفاع صافي 2.20): المطبخ الأمريكي على الجدار الشرقي + ركن طعام غربي، والممر لباب الدورة بالنص فاضي
+  - {name: كاونتر, rect: [422, 430, 482, 700]}
+  - {name: ثلاجة, rect: [417, 710, 482, 775]}
+  - {name: كاونتر, rect: [330, 722, 412, 782]}
+  - {name: طاولة, rect: [40, 520, 130, 620]}
+  - {name: "", rect: [65, 480, 105, 515]}
+  - {name: "", rect: [65, 625, 105, 660]}
+  # دورة المياه الأرضية (داخل البروز)
+  - {name: دش, rect: [253, 922, 333, 1002], shape: shower}
+  - {name: "", rect: [197, 952, 237, 1002], shape: wc}
+  - {name: "", rect: [197, 876, 243, 922], shape: basin}
+  # الميزانين (floor: -1 + z = منسوب أرضية الميزانين): السرير غرب الممر، والممر من الدرج لباب الدورة مستقيم
+  - {name: سرير 140×200, rect: [90, 560, 230, 760], floor: -1, z: 245}
+  # دورة مياه الغرفة (داخل البروز — فوق الأرضية)
+  - {name: دش, rect: [253, 922, 333, 1002], shape: shower, floor: -1, z: 245}
+  - {name: "", rect: [197, 952, 237, 1002], shape: wc, floor: -1, z: 245}
+  - {name: "", rect: [197, 876, 243, 922], shape: basin, floor: -1, z: 245}
