@@ -1,0 +1,129 @@
+# مشروع استثماري (عميل جديد): أرض 25 × 36 م = 900 م² — الواجهة 25 م على الشارع (ملاحظة المصنع الصوتية).
+#  1) تقسيم احترافي للأرض: 3 وحدات متساوية بعرض 8.20 م صافي × 36 م، جدران فاصلة 2.50 م للخصوصية،
+#     وكل وحدة لها بوابة سيارة + باب مشاة مستقل على الشارع.
+#  2) تصميم الكوخ الاستثماري (يتكرر في الوحدات الثلاث): دور واحد 7.00 × 11.00 = 77 م²:
+#     صالة + مطبخ تحضيري تطل على المسبح، غرفتين نوم كل غرفة بدورة مياه خاصة (دورتين مياه)،
+#     وتراس أمامي مسقوف (السقف ممتد 2.40 م على أعمدة خشب).
+#  3) لاندسكيب لكل وحدة: مسبح 3.50 × 7.00، جلسة خارجية تحت برجولة، كراسي استلقاء، حديقة بأشجار، موقف وممر.
+# الإحداثيات على محور الجدار للوحدة الأولى (الغربية)، الجدار 12 سم، +y = الخلف، الشارع جنوب.
+name: invest-3-chalets-25x36
+title: مشروع 3 أكواخ استثمارية + لاندسكيب — أرض 25 × 36 م
+client: "عميل — مشروع استثماري"
+meta:
+  location: "—"
+  usage: استثماري (شاليهات / أكواخ تأجير)
+  date: 2026-10-19
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 40, ext_start: 240}   # السقف ممتد يغطي التراس
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - {name: جنوب, title: الواجهة الأمامية (على المسبح), start: [0, 0], end: [688, 0], openings: [
+      {kind: door, code: ب1, name: ب1 المدخل, offset: 70, width: 100, height: 225, leaves: 1, grid: [2, 5]},
+      {kind: door, code: ب2, name: ب2 سحاب زجاج على المسبح, offset: 300, width: 300, height: 240, style: sliding, leaves: 3}]}
+  - {name: شرق, title: الواجهة الشرقية, start: [688, 0], end: [688, 1088], openings: [
+      {kind: window, code: ش2, name: ش2 المطبخ, offset: 140, width: 120, height: 100, sill: 110, grid: [2, 2]},
+      {kind: window, code: ش1, name: ش1 غرفة 2, offset: 600, width: 120, height: 120, sill: 90, grid: [2, 3]},
+      {kind: window, code: ش3, name: ش3 حمام 2, offset: 960, width: 60, height: 60, sill: 150}]}
+  - {name: شمال, title: الواجهة الخلفية, start: [688, 1088], end: [0, 1088], openings: [
+      {kind: window, code: ش3, name: ش3 حمام 1, offset: 478, width: 60, height: 60, sill: 150}]}
+  - {name: غرب, title: الواجهة الغربية, start: [0, 1088], end: [0, 0], openings: [
+      {kind: window, code: ش1, name: ش1 غرفة 1, offset: 368, width: 120, height: 120, sill: 90, grid: [2, 3]},
+      {kind: window, code: ش4, name: ش4 الصالة, offset: 748, width: 140, height: 150, sill: 75, grid: [2, 4]}]}
+  - {name: فاصل الغرف, exterior: false, start: [0, 476], end: [688, 476], openings: [
+      {kind: door, code: ب3, name: ب3 غرفة 1, offset: 230, width: 80, height: 210},
+      {kind: door, code: ب3, name: ب3 غرفة 2, offset: 360, width: 80, height: 210}]}
+  - {name: فاصل الغرفتين, exterior: false, start: [336, 476], end: [336, 1088]}
+  - {name: فاصل الحمامات, exterior: false, start: [0, 896], end: [688, 896], openings: [
+      {kind: door, code: ب4, name: ب4 حمام 1, offset: 200, width: 70, height: 210},
+      {kind: door, code: ب4, name: ب4 حمام 2, offset: 380, width: 70, height: 210}]}
+
+rooms:
+  - {name: الصالة + مطبخ تحضيري, rect: [6, 6, 682, 470], label: [420, 420]}
+  - {name: غرفة نوم 1, rect: [6, 482, 330, 890], label: [150, 820]}
+  - {name: غرفة نوم 2, rect: [342, 482, 682, 890], label: [560, 820]}
+  - {name: حمام 1, rect: [6, 902, 330, 1082], wet: true, label: [160, 960]}
+  - {name: حمام 2, rect: [342, 902, 682, 1082], wet: true, label: [520, 960]}
+
+decks:
+  - {name: تراس مسقوف, rect: [-6, -246, 694, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 250, width: 200}}
+
+posts:   # أعمدة خشب تحمل امتداد السقف فوق التراس
+  - {at: [3, -237], size: 18}
+  - {at: [232, -237], size: 18}
+  - {at: [468, -237], size: 18}
+  - {at: [685, -237], size: 18}
+
+furniture:
+  # الصالة: جلسة تطل على المسبح + طعام 4 + مطبخ تحضيري على الجدار الشرقي، والممر من المدخل لأبواب الغرف فاضي
+  - {name: كنبة 3 مقاعد, rect: [60, 300, 300, 390]}
+  - {name: طاولة, rect: [120, 180, 240, 250]}
+  - {name: كرسي, rect: [10, 170, 80, 240]}
+  - {name: طاولة 4, rect: [440, 180, 560, 270]}
+  - {name: "", rect: [455, 135, 500, 175]}
+  - {name: "", rect: [505, 135, 550, 175]}
+  - {name: "", rect: [455, 275, 500, 315]}
+  - {name: "", rect: [505, 275, 550, 315]}
+  - {name: كاونتر, rect: [622, 60, 682, 330]}
+  - {name: ثلاجة, rect: [617, 340, 682, 405]}
+  # غرفة 1: رأس السرير على الفاصل المصمت
+  - {name: سرير 160×200, rect: [130, 600, 330, 760]}
+  - {name: دولاب, rect: [6, 482, 186, 542]}
+  # غرفة 2: رأس السرير على الفاصل المصمت والشباك قدامه
+  - {name: سرير 160×200, rect: [342, 600, 542, 760]}
+  - {name: دولاب, rect: [500, 482, 682, 542]}
+  # حمام 1
+  - {name: دش, rect: [240, 992, 330, 1082], shape: shower}
+  - {name: "", rect: [100, 1032, 140, 1082], shape: wc}
+  - {name: "", rect: [6, 920, 52, 966], shape: basin}
+  # حمام 2
+  - {name: دش, rect: [592, 992, 682, 1082], shape: shower}
+  - {name: "", rect: [500, 1032, 540, 1082], shape: wc}
+  - {name: "", rect: [636, 912, 682, 958], shape: basin}
+
+site:
+  plot: [-66, -2406, 2434, 1194]
+  street: S
+  street_width: 1600
+  wall: {t: 20, h: 250}
+  units: [[0, 0], [840, 0], [1680, 0]]        # 3 وحدات متساوية (عرض 8.20 صافي + جدار فاصل 20 سم)
+  unit_rect: [-66, -2406, 754, 1194]
+  dividers:
+    - {x: 754, t: 20}
+    - {x: 1594, t: 20}
+  gates:   # لكل وحدة (تتكرر)
+    - {x: 384, width: 360, kind: car}
+    - {x: -46, width: 90, kind: person}
+  zones:   # للوحدة الأولى (تتكرر)
+    - {kind: parking, rect: [384, -2396, 744, -1846], name: موقف}
+    - {kind: path, rect: [-56, -2396, 44, -1200], name: ممر}
+    - {kind: paving, rect: [-56, -1200, 744, -266], name: ""}
+    - {kind: pool, rect: [20, -1100, 370, -400], name: مسبح, depth: 140}
+    - {kind: seating, rect: [440, -760, 744, -340], name: جلسة, label: [560, -420]}
+    - {kind: planter, rect: [-56, 1114, 744, 1184], name: ""}
+  pergolas:
+    - {rect: [450, -750, 734, -350], name: برجولة, h: 260,
+       furniture: [{rect: [664, -740, 724, -360]}, {rect: [460, -740, 664, -680]}, {rect: [540, -600, 620, -480]}]}
+  furniture:   # كراسي استلقاء جنب المسبح
+    - {rect: [450, -1100, 510, -910]}
+    - {rect: [540, -1100, 600, -910]}
+  trees:
+    - {at: [180, -1520], kind: palm, r: 140}
+    - {at: [600, -1530], kind: tree, r: 120}
+    - {at: [200, -1980], kind: tree, r: 130}
+    - {at: [60, 1150], kind: shrub, r: 30}
+    - {at: [350, 1150], kind: shrub, r: 30}
+    - {at: [640, 1150], kind: shrub, r: 30}
+  notes:
+    - "تقسيم الأرض 25 × 36 م إلى 3 وحدات متساوية (8.20 × 36 م صافي) بجدران فاصلة 2.50 م — خصوصية كاملة لكل وحدة."
+    - "لكل وحدة بوابة سيارة 3.60 م + باب مشاة مستقل، الموقف عند البوابة والممر بمحاذاة الجدار للتراس."
+    - "الكوخ 7.00 × 11.00 = 77 م²: صالة ومطبخ تحضيري يطلّون على المسبح + غرفتين نوم كل غرفة بدورة مياه خاصة."
+    - "مسبح 3.50 × 7.00 م بعمق 1.40 م قدام التراس المسقوف، جلسة تحت برجولة خشب وكراسي استلقاء."
+    - "حديقة وأشجار ونخيل بين الموقف والمسبح تعزل منطقة الجلوس عن الشارع."

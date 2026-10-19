@@ -27,14 +27,45 @@ def _area(r):
     return (r[2] - r[0]) * (r[3] - r[1]) / 1e4
 
 
+def _mv(r, dx, dy):
+    return [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy]
+
+
+def units_of(st):
+    return st.get("units") or [[0, 0]]
+
+
+def expand(st):
+    """site.units: [[dx, dy], ...] — مشروع استثماري بأكثر من وحدة: تقسيم الوحدة الأولى (المناطق، البرجولات،
+    الفرش، الأشجار، البوابات) يتكرر بالإزاحات، والكوخ نفسه يتكرر في المسقط والـ3D."""
+    units = st.get("units")
+    if not units:
+        return st
+    out = dict(st)
+    for key in ("zones", "pergolas", "furniture"):
+        out[key] = []
+        for dx, dy in units:
+            for z in st.get(key, []):
+                z2 = dict(z, rect=_mv(z["rect"], dx, dy))
+                if z.get("label"):
+                    z2["label"] = [z["label"][0] + dx, z["label"][1] + dy]
+                if z.get("furniture"):
+                    z2["furniture"] = [dict(f, rect=_mv(f["rect"], dx, dy)) for f in z["furniture"]]
+                out[key].append(z2)
+    out["trees"] = [dict(t, at=[t["at"][0] + dx, t["at"][1] + dy]) for dx, dy in units for t in st.get("trees", [])]
+    out["gates"] = [dict(g, x=g["x"] + dx) for dx, dy in units for g in st.get("gates", [])]
+    return out
+
+
 def site_rows(P, rules):
     """جدول المساحات للموقع."""
     from .model import outer_bbox
-    st = P.site
+    st = expand(P.site)
+    n_u = len(units_of(P.site))
     x0, y0, x1, y1 = st["plot"]
     plot = _area(st["plot"])
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
-    fp = (bx1 - bx0) * (by1 - by0) / 1e4
+    fp = (bx1 - bx0) * (by1 - by0) / 1e4 * n_u
     sums = {}
     zones = st.get("zones", [])
     for z in zones:
@@ -49,17 +80,25 @@ def site_rows(P, rules):
                         a -= ix * iy / 1e4
         sums.setdefault(z["kind"], 0)
         sums[z["kind"]] += a
-    deck = sum(_area(d.rect) for d in P.decks if not d.level)
+    deck = sum(_area(d.rect) for d in P.decks if not d.level) * n_u
     used = fp + deck + sum(v for k, v in sums.items() if k != "lawn")
-    rows = [["مساحة الأرض", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f} م", f"{plot:.1f}"],
-            ["مسطح الكوخ (البصمة)", f"{(bx1 - bx0) / 100:.2f} × {(by1 - by0) / 100:.2f} م", f"{fp:.1f}"]]
+    rows = [["مساحة الأرض", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f} م", f"{plot:.1f}"]]
+    xn = f" × {n_u}" if n_u > 1 else ""
+    if n_u > 1 and st.get("unit_rect"):
+        u = st["unit_rect"]
+        rows.append([f"الوحدة الواحدة ({n_u} وحدات)", f"{(u[2] - u[0]) / 100:.2f} × {(u[3] - u[1]) / 100:.2f} م",
+                     f"{_area(u):.1f}"])
+    rows.append([f"مسطح الأكواخ ({n_u})" if n_u > 1 else "مسطح الكوخ (البصمة)",
+                 f"{(bx1 - bx0) / 100:.2f} × {(by1 - by0) / 100:.2f} م{xn}", f"{fp:.1f}"])
     if deck:
-        rows.append(["تراس الكوخ", "", f"{deck:.1f}"])
+        dr = [d.rect for d in P.decks if not d.level]
+        dsz = f"{(dr[0][2] - dr[0][0]) / 100:.2f} × {(dr[0][3] - dr[0][1]) / 100:.2f} م{xn}" if len(dr) == 1 else ""
+        rows.append(["تراس الكوخ", dsz, f"{deck:.1f}"])
     for k in ("pool", "deck", "seating", "paving", "parking", "path", "planter"):
         if k in sums:
             zs = [z["rect"] for z in st.get("zones", []) if z["kind"] == k]
-            size = f"{(zs[0][2] - zs[0][0]) / 100:.2f} × {(zs[0][3] - zs[0][1]) / 100:.2f} م" \
-                if len(zs) == 1 and k != "paving" else ""
+            size = f"{(zs[0][2] - zs[0][0]) / 100:.2f} × {(zs[0][3] - zs[0][1]) / 100:.2f} م{xn}" \
+                if len(zs) == n_u and k != "paving" else ""
             rows.append([AR[k], size, f"{sums[k]:.1f}"])
     rows.append(["المسطحات الخضراء (حديقة)", "الباقي", f"{plot - used:.1f}"])
     return rows, plot, plot - used
@@ -69,7 +108,7 @@ def site_sheet(ctx):
     from .model import outer_bbox, wall_thickness
     from .sheets import A3, BROWN, chain, dim, drawing_ax, new_page, table, title
     P, rules = ctx["project"], ctx["rules"]
-    st = P.site
+    st = expand(P.site)
     x0, y0, x1, y1 = st["plot"]
     t = st.get("wall", {}).get("t", 20)
     fig = new_page((A3[1], A3[0]))
@@ -125,18 +164,29 @@ def site_sheet(ctx):
         ax.add_patch(Rectangle((fr[0], fr[1]), fr[2] - fr[0], fr[3] - fr[1], fc="#f4ead8", ec="#6b4f3a", lw=0.6, zorder=4))
     # الكوخ (البصمة + المسقط الأرضي مبسّط)
     from .sheets import draw_openings_plan, wall_shapes, _draw_shape, floor_view
+    from shapely.affinity import translate
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
-    ax.add_patch(Rectangle((bx0, by0), bx1 - bx0, by1 - by0, fc="white", ec="k", lw=1.2, zorder=5))
     G = floor_view(P, 0)
-    _draw_shape(ax, wall_shapes(G, rules), fc="#d9c7ae", ec="k", lw=0.6, zorder=6)
-    for d in P.decks:
-        if d.level:
-            continue
-        r = d.rect
-        ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc="#ead2b0", ec="#8b5a2b", lw=0.8, zorder=5))
-        ax.text((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, d.name, ha="center", va="center", fontsize=7, color=BROWN, zorder=6)
-    ax.text((bx0 + bx1) / 2, (by0 + by1) / 2, f"الكوخ\n{(bx1 - bx0) / 100:.2f} × {(by1 - by0) / 100:.2f} م\nدورين",
-            ha="center", va="center", fontsize=10, weight="bold", color=BROWN, zorder=7)
+    shapes = wall_shapes(G, rules)
+    nfl = len(P.floor_list)
+    units = units_of(P.site)
+    for k, (dx, dy) in enumerate(units):
+        ax.add_patch(Rectangle((bx0 + dx, by0 + dy), bx1 - bx0, by1 - by0, fc="white", ec="k", lw=1.2, zorder=5))
+        _draw_shape(ax, translate(shapes, dx, dy), fc="#d9c7ae", ec="k", lw=0.6, zorder=6)
+        for d in P.decks:
+            if d.level:
+                continue
+            r = _mv(d.rect, dx, dy)
+            ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc="#ead2b0", ec="#8b5a2b", lw=0.8,
+                                   zorder=5))
+            ax.text((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, d.name, ha="center", va="center", fontsize=7, color=BROWN,
+                    zorder=6)
+        name = f"كوخ {k + 1}" if len(units) > 1 else "الكوخ"
+        ax.text((bx0 + bx1) / 2 + dx, (by0 + (by1 - by0) * (0.5 if len(units) == 1 else 0.22)) + dy,
+                f"{name}\n{(bx1 - bx0) / 100:.2f} × {(by1 - by0) / 100:.2f} م" + ("\nدورين" if nfl > 1 else ""),
+                ha="center", va="center", fontsize=10 if len(units) == 1 else 8, weight="bold", color=BROWN, zorder=7)
+    for dv in st.get("dividers", []):                         # جدران فاصلة بين الوحدات (خصوصية)
+        ax.add_patch(Rectangle((dv["x"], y0), dv.get("t", t), y1 - y0, fc="#6e6e6e", ec="k", lw=0.5, zorder=9))
     # الأشجار
     for tr in st.get("trees", []):
         cx, cy = tr["at"]
@@ -180,7 +230,10 @@ def site_sheet(ctx):
                                       for r in (z["rect"][1], z["rect"][3])})
     chain(ax, [(x0, v) for v in ys], 60, fs=7)
     dim(ax, (x0, y1), (x1, y1), 120, fs=9)
-    xs = sorted({x0, x1, bx0, bx1})
+    if st.get("dividers"):
+        xs = sorted({x0, x1} | {v for dv in st["dividers"] for v in (dv["x"], dv["x"] + dv.get("t", t))})
+    else:
+        xs = sorted({x0, x1, bx0, bx1})
     chain(ax, [(v, y1) for v in xs], 60, fs=7)
     # سهم الشمال
     nx, ny = x1 + 160, y1 - 200
@@ -194,6 +247,8 @@ def site_sheet(ctx):
     table(ax2, ["البند", "المقاس", "المساحة (م²)"], rows, [3.0, 2.2, 1.6], fs=9)
     ax2.set_title("جدول مساحات الموقع", fontsize=13, weight="bold", color=BROWN, loc="right")
     notes = st.get("notes", [])
+    import textwrap
+    notes = [textwrap.fill(n, 62) for n in notes]
     fig.text(0.965, 0.38, "\n".join("• " + n for n in notes), ha="right", va="top", fontsize=8.5, color="#333",
              linespacing=1.6)
     return fig, "الموقع العام واللاندسكيب"
@@ -204,6 +259,14 @@ def add_site_3d(S, P, rules, style, cut=None):
     st = P.site
     if not st or cut:
         return
+    base = {m: (len(V), len(F)) for m, (V, F) in S.parts.items()}
+    for dx, dy in units_of(st)[1:]:                     # تكرار الكوخ لكل وحدة
+        for mat, (nv, nf) in base.items():
+            V, F = S.parts[mat]
+            n0 = len(V)
+            V.extend([(x + dx, y + dy, z) for x, y, z in V[:nv]])
+            F.extend([[i + n0 for i in f] for f in F[:nf]])
+    st = expand(st)
     S.material("site_wall", "#E9E4DA")
     S.material("paver", "#CFC8BB")
     S.material("pool_edge", "#EDEAE4")
@@ -232,6 +295,9 @@ def add_site_3d(S, P, rules, style, cut=None):
     S.box("site_wall", x0 - t, y1, gz, x1 + t, y1 + t, gz + h)
     S.box("site_wall", x0 - t, y0, gz, x0, y1, gz + h)
     S.box("site_wall", x1, y0, gz, x1 + t, y1, gz + h)
+    for dv in st.get("dividers", []):
+        S.box("site_wall", dv["x"], y0, gz, dv["x"] + dv.get("t", t), y1, gz + h)
+        S.box("trim", dv["x"] - 2, y0, gz + h - 12, dv["x"] + dv.get("t", t) + 2, y1, gz + h)
     for z in st.get("zones", []):
         r = z["rect"]
         k = z["kind"]
