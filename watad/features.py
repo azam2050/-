@@ -263,6 +263,27 @@ def _mezz_edges(m):
     return {"S": ((x0, y0), (x1, y0)), "E": ((x1, y0), (x1, y1)), "N": ((x1, y1), (x0, y1)), "W": ((x0, y1), (x0, y0))}
 
 
+def _slab_pieces(r, holes):
+    """البلاطة ناقص الفتحات (مستطيلات)."""
+    pieces = [r]
+    for hx0, hy0, hx1, hy1 in holes:
+        out = []
+        for x0, y0, x1, y1 in pieces:
+            if hx1 <= x0 or hx0 >= x1 or hy1 <= y0 or hy0 >= y1:
+                out.append((x0, y0, x1, y1))
+                continue
+            if hy0 > y0:
+                out.append((x0, y0, x1, hy0))
+            if hy1 < y1:
+                out.append((x0, hy1, x1, y1))
+            if hx0 > x0:
+                out.append((x0, max(y0, hy0), hx0, min(y1, hy1)))
+            if hx1 < x1:
+                out.append((hx1, max(y0, hy0), x1, min(y1, hy1)))
+        pieces = out
+    return pieces
+
+
 def add_mezz_3d(S, P, rules, style, cut=None):
     import yaml
     from .model3d import railing_run
@@ -275,11 +296,38 @@ def add_mezz_3d(S, P, rules, style, cut=None):
             continue
         x0, y0, x1, y1 = m["rect"]
         S.zoff = 0
-        S.box("wood_in", x0, y0, lv - 4, x1, y1, lv)                     # تطبيق الأرضية
+        holes = [h["rect"] for h in m.get("holes", [])]                  # فتحة بالأرضية (درج حلزوني)
+        for rx0, ry0, rx1, ry1 in _slab_pieces((x0, y0, x1, y1), holes):
+            S.box("wood_in", rx0, ry0, lv - 4, rx1, ry1, lv)              # تطبيق الأرضية
         k = x0 + 30
         while k < x1 - 5:                                                 # مدادات 5×15 كل 60 (مكشوفة من تحت)
-            S.box("joist", k - 2.5, y0, lv - 19, k + 2.5, y1, lv - 4)
+            cuts = [(h[1], h[3]) for h in holes if h[0] - 3 < k < h[2] + 3]
+            from .model3d import _segments
+            for ja, jb in _segments(y0, y1, cuts):
+                S.box("joist", k - 2.5, ja, lv - 19, k + 2.5, jb, lv - 4)
             k += 60
+        for h in holes:                                                   # إطار الفتحة + دربزين حولها
+            hx0, hy0, hx1, hy1 = h
+            S.box("joist", hx0 - 5, hy0, lv - 19, hx0, hy1, lv - 4)
+            S.box("joist", hx1, hy0, lv - 19, hx1 + 5, hy1, lv - 4)
+        for hd in m.get("holes", []):
+            hx0, hy0, hx1, hy1 = hd["rect"]
+            edges = {"S": ((hx0, hy0), (hx1, hy0)), "N": ((hx1, hy1), (hx0, hy1)),
+                     "W": ((hx0, hy1), (hx0, hy0)), "E": ((hx1, hy0), (hx1, hy1))}
+            hname = hd.get("railing_style", m.get("railing_style", "vertical_balusters"))
+            from .model3d import _segments
+            for side in hd.get("railing", ["S", "E", "W", "N"]):
+                p0, p1 = edges[side]
+                w = Wall("hole", p0, p1)
+                gs = []
+                for g0, g1 in hd.get("gaps", {}).get(side, []):         # مدى بالإحداثي (x للشمال/الجنوب، y للشرق/الغرب)
+                    if side in "SN":
+                        ta, tb = (g0 - hx0, g1 - hx0) if side == "S" else (hx1 - g1, hx1 - g0)
+                    else:
+                        ta, tb = (g0 - hy0, g1 - hy0) if side == "E" else (hy1 - g1, hy1 - g0)
+                    gs.append((ta, tb))
+                for a_, b_ in _segments(0, w.length, gs):
+                    railing_run(S, w, a_, b_, lv, hname, lib[hname], height=100)
         S.box("joist", x0, y0, lv - 25, x1, y0 + 7, lv - 4)               # جسر الحافة
         name = m.get("railing_style", "vertical_balusters")
         spec = lib[name]
@@ -444,6 +492,21 @@ def mezz_sheet(ctx):
             ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#8b5a2b", lw=2.4, zorder=4)
         for g0, g1 in m.get("gaps", []):
             ax.plot([g0, g1], [my0, my0], color="white", lw=3, zorder=5)
+        for hd in m.get("holes", []):                 # فتحة الدرج بالأرضية + الدربزين حولها
+            hx0, hy0, hx1, hy1 = hd["rect"]
+            ax.add_patch(Rectangle((hx0, hy0), hx1 - hx0, hy1 - hy0, fc="white", ec="none", zorder=0.65))
+            edges = {"S": ((hx0, hy0), (hx1, hy0)), "N": ((hx1, hy1), (hx0, hy1)),
+                     "W": ((hx0, hy1), (hx0, hy0)), "E": ((hx1, hy0), (hx1, hy1))}
+            for side in hd.get("railing", ["S", "E", "W", "N"]):
+                (pa, pb) = edges[side]
+                ax.plot([pa[0], pb[0]], [pa[1], pb[1]], color="#8b5a2b", lw=2.4, zorder=4)
+                for g0, g1 in hd.get("gaps", {}).get(side, []):
+                    if side in "SN":
+                        ax.plot([g0, g1], [pa[1], pa[1]], color="white", lw=3, zorder=5)
+                    else:
+                        ax.plot([pa[0], pa[0]], [g0, g1], color="white", lw=3, zorder=5)
+            ax.text((hx0 + hx1) / 2, hy0 - 6, "فتحة الدرج + دربزين", ha="center", va="top", fontsize=6.5,
+                    color="#8b5a2b", zorder=6)
         ax.text((mx0 + mx1) / 2, my1 - 20, f"{m.get('name', 'الميزانين')}  {(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
                 f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
         vy0 = y0 + 2 * half
