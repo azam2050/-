@@ -10,7 +10,7 @@
 """
 import math
 
-from matplotlib.patches import Polygon, Rectangle
+from matplotlib.patches import Circle, Polygon, Rectangle
 
 from .model import Wall, wall_thickness
 
@@ -323,6 +323,77 @@ def add_mezz_3d(S, P, rules, style, cut=None):
             S.hexa("stair", [(ax0, ry, 95), (ax1, ry, top + 95), (ax1, ry + 5, top + 95), (ax0, ry + 5, 95),
                              (ax0, ry, 100), (ax1, ry, top + 100), (ax1, ry + 5, top + 100), (ax0, ry + 5, 100)])
     S.zoff = 0
+    add_spiral_3d(S, P, cut)
+
+
+def spiral_steps(sp):
+    """درج حلزوني: [(زاوية من، زاوية إلى، z_top)] بالدرجات — عكس عقارب الساعة (ccw) أو معها (cw).
+    sp: {center, r, rise, riser, step_deg, end_deg, dir} — end_deg = زاوية آخر درجة (الوصول للميزانين)."""
+    n = max(2, round(sp["rise"] / sp.get("riser", 19)))
+    r = sp["rise"] / n
+    stp = sp.get("step_deg", 30)
+    sg = 1 if sp.get("dir", "ccw") == "ccw" else -1
+    end = sp.get("end_deg", 90)
+    start = end - sg * stp * (n - 1)
+    out = []
+    for i in range(n - 1):
+        a0 = start + sg * stp * i
+        out.append((a0, a0 + sg * stp, (i + 1) * r))
+    return out, n, r
+
+
+def _arc(c, rad, a0, a1, k=6):
+    return [(c[0] + rad * math.cos(math.radians(a0 + (a1 - a0) * j / k)),
+             c[1] + rad * math.sin(math.radians(a0 + (a1 - a0) * j / k))) for j in range(k + 1)]
+
+
+def add_spiral_3d(S, P, cut=None):
+    """درجات إسفين حول عمود وسطي + دربزين حلزوني على الحافة الخارجية."""
+    for sp in P.spiral_stairs:
+        steps, n, r = spiral_steps(sp)
+        c, R = sp["center"], sp.get("r", 80)
+        S.zoff = 0
+        top = sp["rise"] + 95
+        S.box("stair", c[0] - 6, c[1] - 6, 0, c[0] + 6, c[1] + 6, min(top, cut) if cut else top)    # العمود
+        for a0, a1, zt in steps:
+            if cut and zt > cut:
+                continue
+            pts = [tuple(c)] + _arc(c, R, a0, a1)
+            m = len(pts)
+            S.poly("stair", [(x, y, zt - 4) for x, y in pts] + [(x, y, zt) for x, y in pts],
+                   [tuple(range(m)), tuple(range(m, 2 * m))] + [(i, (i + 1) % m, m + (i + 1) % m, m + i) for i in range(m)])
+            if not cut:                                   # قائم دربزين بطرف كل درجة
+                x, y = _arc(c, R - 4, a0, a0, 1)[0]
+                S.box("stair", x - 2, y - 2, zt, x + 2, y + 2, zt + 90)
+        if not cut:                                       # الدربزين الحلزوني (قطع قصيرة متصلة)
+            for a0, a1, zt in steps:
+                q = _arc(c, R - 4, a0, a1, 3)
+                for j in range(3):
+                    (xa, ya), (xb, yb) = q[j], q[j + 1]
+                    za, zb = zt + 90 + r * j / 3, zt + 90 + r * (j + 1) / 3
+                    S.hexa("stair", [(xa - 2, ya - 2, za), (xb - 2, yb - 2, zb), (xb + 2, yb + 2, zb), (xa + 2, ya + 2, za),
+                                     (xa - 2, ya - 2, za + 5), (xb - 2, yb - 2, zb + 5), (xb + 2, yb + 2, zb + 5),
+                                     (xa + 2, ya + 2, za + 5)])
+    S.zoff = 0
+
+
+def draw_spiral_plan(ax, P, upper=False):
+    """مسقط الدرج الحلزوني: دائرة + خطوط الدرجات الشعاعية + سهم الصعود."""
+    for sp in P.spiral_stairs:
+        steps, n, r = spiral_steps(sp)
+        c, R = sp["center"], sp.get("r", 80)
+        ax.add_patch(Circle(c, R, fill=False, ec="#6b4f3a", lw=0.8, zorder=3))
+        ax.add_patch(Circle(c, 6, fc="#6b4f3a", ec="none", zorder=3))
+        for a0, a1, zt in steps + [(steps[-1][1], None, 0)]:
+            x, y = _arc(c, R, a0, a0, 1)[0]
+            dashed = (not upper) and zt > 120
+            ax.plot([c[0], x], [c[1], y], color="#6b4f3a", lw=0.4 if dashed else 0.6, ls=(0, (4, 3)) if dashed else "-",
+                    zorder=3)
+        mid = [_arc(c, R * 0.62, a0 + (a1 - a0) / 2, a0 + (a1 - a0) / 2, 1)[0] for a0, a1, _ in steps]
+        ax.plot([p[0] for p in mid[:-1]], [p[1] for p in mid[:-1]], color="#b04020", lw=0.8, zorder=4)
+        ax.annotate("", mid[-1], mid[-2], arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9), zorder=4)
+        ax.text(c[0], c[1] - R - 8, f"{sp.get('name', 'درج حلزوني')} Ø{2 * R / 100:.2f} م — {n} قائمة × {r:.1f} سم",
+                ha="center", va="top", fontsize=6.5, color="#b04020", zorder=5)
 
 
 def draw_mezz_on_ground(ax, P):
@@ -344,6 +415,7 @@ def draw_mezz_on_ground(ax, P):
                     arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9), zorder=4)
         ax.text((a[0] + b[2]) / 2, a[3] + 6, f"{st.get('name', 'درج الميزانين')} {n} قائمة × {r:.1f} سم", ha="center", va="bottom",
                 fontsize=6.5, color="#b04020", zorder=5)
+    draw_spiral_plan(ax, P)
 
 
 def mezz_sheet(ctx):
@@ -376,7 +448,8 @@ def mezz_sheet(ctx):
                 f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
         vy0 = y0 + 2 * half
         ax.add_patch(Rectangle((mx0, vy0), mx1 - mx0, my0 - vy0, fill=False, ec="#999", lw=0.6, hatch="..", zorder=0.5))
-        ax.text((mx0 + mx1) / 2, (vy0 + my0) / 2 + 40, "فراغ مزدوج الارتفاع (الصالة تحت)\nالواجهة زجاج كامل",
+        ax.text((mx0 + mx1) / 2, vy0 + 60 if P.spiral_stairs else (vy0 + my0) / 2 + 40,
+                "فراغ مزدوج الارتفاع (الصالة تحت)\nالواجهة زجاج كامل",
                 ha="center", va="center", fontsize=9, color="#777", zorder=6)
         hb = m.get("headroom")
         if hb:                                     # خط ارتفاع 1.90 م تحت السقف المائل
@@ -395,6 +468,7 @@ def mezz_sheet(ctx):
         ax.annotate("", ((b[0] + b[2]) / 2, cy), ((a[0] + a[2]) / 2, cy),
                     arrowprops=dict(arrowstyle="->", color="#b04020", lw=0.9), zorder=4)
         ax.text((a[0] + b[2]) / 2, a[1] - 6, "صعود", ha="center", va="top", fontsize=7, color="#b04020", zorder=5)
+    draw_spiral_plan(ax, P, upper=True)
     import dataclasses
     PM = dataclasses.replace(P, furniture=[f for f in P.furniture if f.floor == -1])
     draw_furniture(ax, dataclasses.replace(PM, furniture=[dataclasses.replace(f, floor=0) for f in PM.furniture]))
