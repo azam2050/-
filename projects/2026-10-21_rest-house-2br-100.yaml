@@ -1,0 +1,136 @@
+# عميل جديد — استراحة 100 م² (رسالة العميل): غرفتين + مطبخ + حمامين + صالة كبيرة.
+# المقاس الخارجي 8.00 × 12.50 = 100 م² — دور واحد، سقف جملون + تراس أمامي مسقوف.
+#  - الصالة الكبيرة على الواجهة بعرض الكوخ كامل (7.76 × 4.58 = 35.5 م²): جلسة + طاولة طعام جنب باب المطبخ.
+#  - باب ممر عائلي من الصالة (الضيف ما يشوف الغرف)، والممر يخدم الغرفتين والحمامين.
+#  - الغرف 3.28 × 3.68 و 3.28 × 3.76 (≥ 3.20 × 3.60) — رأس السرير على جدار مصمت وممر ≥ 60 حول السرير.
+#  - المطبخ بابه من الصالة (يخدم الجلسة) + باب خدمة جانبي. الحمامين على الجدار الشرقي الخارجي (شباك جانبي مو على الواجهة).
+# الميل 30°: المداد 508 سم (رفرف 40) من طبلية 520 بدون وصلات.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: rest-house-2br-100
+title: استراحة — غرفتين + صالة كبيرة — 8.00 × 12.50 = 100 م²
+client: "عميل — استراحة 100 م²"
+meta:
+  location: "—"
+  usage: استراحة
+  date: 2026-10-21
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 40, ext_start: 200}   # السقف ممتد 2 م يغطي التراس
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [788, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 60, width: 200, height: 160, sill: 60, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 المدخل, offset: 344, width: 100, height: 225, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 528, width: 200, height: 160, sill: 60, grid: [3, 3]}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [788, 0]
+    end: [788, 1238]
+    openings:
+      - {kind: window, code: ش2, name: ش2 الصالة, offset: 150, width: 140, height: 140, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 المطبخ, offset: 520, width: 110, height: 100, sill: 110, grid: [2, 2]}
+      - {kind: door, code: ب2, name: ب2 باب خدمة المطبخ, offset: 670, width: 90, height: 215, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش4, name: ش4 دورة مياه 1, offset: 875, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش4, name: ش4 دورة مياه 2, offset: 1095, width: 60, height: 60, sill: 150}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [788, 1238]
+    end: [0, 1238]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة نوم 2, offset: 468, width: 120, height: 120, sill: 90, grid: [2, 3]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 1238]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة نوم 1, offset: 558, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش2, name: ش2 الصالة, offset: 948, width: 140, height: 140, sill: 80, grid: [2, 3]}
+  - name: فاصل الصالة
+    exterior: false
+    start: [0, 470]
+    end: [788, 470]
+    openings:   # باب الممر العائلي + باب المطبخ من الصالة
+      - {kind: door, code: ب3, name: ب3 باب الممر العائلي, offset: 355, width: 80, height: 210}
+      - {kind: door, code: ب4, name: ب4 المطبخ, offset: 560, width: 90, height: 210}
+  - name: جدار الممر الغربي
+    exterior: false
+    start: [340, 470]
+    end: [340, 1238]
+    openings:
+      - {kind: door, code: ب5, name: ب5 غرفة نوم 1, offset: 20, width: 80, height: 210}
+      - {kind: door, code: ب5, name: ب5 غرفة نوم 2, offset: 660, width: 80, height: 210}
+  - {name: فاصل الغرفتين, exterior: false, start: [0, 850], end: [340, 850]}
+  - name: جدار الممر الشرقي
+    exterior: false
+    start: [450, 470]
+    end: [450, 1238]
+    openings:
+      - {kind: door, code: ب6, name: ب6 دورة مياه 1, offset: 350, width: 70, height: 210, swing: right}
+      - {kind: door, code: ب6, name: ب6 دورة مياه 2, offset: 560, width: 70, height: 210, swing: right}
+  - {name: فاصل المطبخ, exterior: false, start: [450, 800], end: [788, 800]}
+  - {name: فاصل الحمامين, exterior: false, start: [450, 1010], end: [788, 1010]}
+
+rooms:
+  - {name: الصالة (جلسة + طعام), rect: [6, 6, 782, 464], label: [420, 360]}
+  - {name: غرفة نوم 1, rect: [6, 476, 334, 844], label: [170, 600]}
+  - {name: غرفة نوم 2, rect: [6, 856, 334, 1232], label: [170, 1120]}
+  - {name: الممر, rect: [346, 476, 444, 1232], kind: corridor, label: [395, 700]}
+  - {name: المطبخ, rect: [456, 476, 782, 794], label: [620, 640]}
+  - {name: دورة مياه 1, rect: [456, 806, 782, 1004], wet: true, label: [620, 930]}
+  - {name: دورة مياه 2, rect: [456, 1016, 782, 1232], wet: true, label: [620, 1120]}
+
+decks:
+  - {name: تراس مسقوف, rect: [-6, -206, 794, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 300, width: 200}}
+
+posts:   # أعمدة خشب تحمل امتداد السقف فوق التراس
+  - {at: [3, -197], size: 18}
+  - {at: [262, -197], size: 18}
+  - {at: [526, -197], size: 18}
+  - {at: [785, -197], size: 18}
+
+furniture:
+  # الصالة: جلسة L على الغرب والواجهة مقابل التلفزيون (على الجدار المصمت لغرفة 1)، وطاولة طعام 6 جنب باب المطبخ،
+  #   والممر من المدخل لباب الممر العائلي مستقيم وفاضي
+  - {name: كنبة, rect: [6, 60, 86, 400]}
+  - {name: كنبة, rect: [86, 6, 300, 86]}
+  - {name: طاولة, rect: [140, 160, 250, 280]}
+  - {name: تلفزيون, rect: [110, 444, 290, 464]}
+  - {name: طاولة 6, rect: [560, 150, 720, 260]}
+  - {name: "", rect: [575, 105, 620, 145]}
+  - {name: "", rect: [660, 105, 705, 145]}
+  - {name: "", rect: [575, 265, 620, 305]}
+  - {name: "", rect: [660, 265, 705, 305]}
+  # المطبخ: كاونتر L على جدار الممر والفاصل + ثلاجة بالركن، وباب الخدمة وباب الصالة فاضيين
+  - {name: ثلاجة, rect: [456, 476, 521, 541]}
+  - {name: كاونتر, rect: [456, 541, 516, 734]}
+  - {name: كاونتر, rect: [456, 734, 690, 794]}
+  # غرفة 1: رأس السرير على الفاصل المصمت، الدولاب على جدار الصالة
+  - {name: سرير 160×200, rect: [90, 644, 250, 844]}
+  - {name: دولاب, rect: [6, 476, 186, 536]}
+  # غرفة 2: رأس السرير على نفس الفاصل (من الجهة الثانية)، الدولاب على الجدار الخلفي
+  - {name: سرير 160×200, rect: [90, 856, 250, 1056]}
+  - {name: دولاب, rect: [6, 1172, 186, 1232]}
+  # دورة مياه 1
+  - {name: دش, rect: [692, 806, 782, 896], shape: shower}
+  - {name: "", rect: [742, 954, 782, 1004], shape: wc}
+  - {name: "", rect: [556, 958, 602, 1004], shape: basin}
+  # دورة مياه 2
+  - {name: دش, rect: [692, 1142, 782, 1232], shape: shower}
+  - {name: "", rect: [742, 1016, 782, 1066], shape: wc}
+  - {name: "", rect: [556, 1186, 602, 1232], shape: basin}
+
+notes:
+  - "الصالة الكبيرة 35.5 م² على الواجهة: جلسة L + طاولة طعام 6 أشخاص، والمطبخ بابه من الصالة يخدم الجلسة."
+  - "باب ممر عائلي يفصل الغرف والحمامات عن الصالة (خصوصية)."
+  - "تراس أمامي 8.00 × 2.00 م مسقوف بامتداد السقف على 4 أعمدة خشب."
