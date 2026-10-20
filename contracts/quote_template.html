@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>{{ title }}</title>
+<style>
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Black.ttf"); font-weight: 900; }
+@font-face { font-family: "ArimoL"; src: url("../library/fonts/Arimo-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "ArimoL"; src: url("../library/fonts/Arimo-Bold.ttf"); font-weight: 700; }
+@page {
+  size: 595pt 841pt;
+  margin: 118pt 40pt 92pt 40pt;
+  @bottom-left { content: "صفحة " counter(page) " من " counter(pages); font-family: "NotoAr"; font-size: 7pt; color: #777; margin-bottom: 70pt; }
+}
+.hdr { position: fixed; top: -119pt; left: -40pt; width: 595pt; height: 113pt; }
+.ftr { position: fixed; bottom: -92pt; left: -40pt; width: 595pt; height: 77pt; }
+.wm { position: fixed; top: 179pt; left: 130pt; width: 255pt; height: 255pt; opacity: 0.35; z-index: -1; }
+html { font-family: "NotoAr", "ArimoL"; font-size: 8.6pt; color: #222; line-height: 1.6; }
+body { margin: 0; }
+h1 { font-weight: 900; font-size: 14pt; color: #3f1813; text-align: center; margin: 0 0 6pt; }
+h2 { font-weight: 900; font-size: 10.5pt; color: #2d3155; margin: 10pt 0 3pt; }
+p { margin: 0 0 3pt; text-align: justify; }
+ul, ol { margin: 0 0 3pt; padding: 0 13pt 0 0; }
+li { margin: 0 0 1pt; text-align: justify; }
+b { font-weight: 700; }
+.meta { width: 100%; border-collapse: collapse; margin-bottom: 6pt; }
+.meta td { border: 0.6pt solid #d9d2c6; padding: 2.5pt 6pt; }
+.meta td.k { background: #f4efe7; font-weight: 700; width: 16%; color: #3f1813; }
+table.boq { width: 100%; border-collapse: collapse; margin: 2pt 0 6pt; }
+.boq th { background: #3f1813; color: #fff; font-weight: 700; padding: 3pt 4pt; font-size: 8pt; }
+.boq td { border-bottom: 0.5pt solid #e1dacd; padding: 2.6pt 4pt; vertical-align: top; }
+.boq td.c { text-align: center; white-space: nowrap; }
+.boq td.v { text-align: left; white-space: nowrap; font-weight: 700; }
+.boq tr.sec td { background: #efe7da; font-weight: 900; color: #3f1813; border-bottom: 0.8pt solid #b8ad9a; }
+.boq tr.sub td { font-weight: 900; background: #faf7f2; }
+.boq tr.grand td { background: #3f1813; color: #fff; font-weight: 900; font-size: 9.5pt; }
+.boq tr { break-inside: avoid; }
+.boq img { width: 30pt; height: 30pt; object-fit: contain; float: left; margin-right: 4pt; }
+.total { border: 1pt solid #3f1813; border-radius: 8pt; padding: 5pt 10pt; margin: 6pt 0; background: #faf7f2; }
+.total p { margin: 0; text-align: right; }
+.total .big { font-size: 12pt; font-weight: 900; color: #3f1813; }
+.note { border-right: 2.4pt solid #9a5a1e; padding-right: 6pt; margin: 4pt 0; color: #444; }
+.scope { columns: 2; column-gap: 14pt; }
+.scope li { break-inside: avoid; }
+.pb { break-before: page; }
+ol.terms li { font-size: 8.1pt; line-height: 1.5; }
+.grid { font-size: 0; }
+.card { display: inline-block; vertical-align: top; width: 108pt; margin: 0 0 6pt 5pt; border: 0.6pt solid #d9d2c6; border-radius: 6pt; padding: 4pt; break-inside: avoid; background: #fff; font-size: 8.6pt; }
+.card.wide { display: block; width: auto; margin-left: 0; }
+.card img { display: block; width: 100%; height: 78pt; object-fit: contain; }
+.card.wide img { float: left; width: 240pt; height: 140pt; object-fit: cover; border-radius: 4pt; margin-right: 8pt; }
+.card.wide:after { content: ""; display: block; clear: both; }
+.card h4 { margin: 2pt 0 1pt; font-size: 8.4pt; color: #3f1813; font-weight: 900; }
+.card p { font-size: 7.6pt; margin: 0; text-align: right; color: #444; }
+.sig { width: 100%; border-collapse: collapse; margin-top: 8pt; }
+.sig td { width: 50%; border: 0.6pt solid #d9d2c6; padding: 6pt 8pt; vertical-align: top; line-height: 2.1; }
+</style>
+</head>
+<body>
+<img class="hdr" src="assets/header.png" alt="">
+<img class="ftr" src="assets/footer.png" alt="">
+<img class="wm" src="assets/watermark.png" alt="">
+
+<h1>{{ title }}</h1>
+<table class="meta">
+<tr><td class="k">رقم العرض</td><td>{{ number }}</td><td class="k">التاريخ</td><td>{{ date }}م</td></tr>
+<tr><td class="k">العميل</td><td>........................................</td><td class="k">صلاحية العرض</td><td>{{ validity_days }} يومًا (حتى {{ valid_until }}م)</td></tr>
+<tr><td class="k">المشروع</td><td colspan="3">{{ project }}</td></tr>
+<tr><td class="k">الموقع</td><td>{{ site }}</td><td class="k">مدة التنفيذ</td><td>{{ duration_days }} يومًا (انظر البند 4)</td></tr>
+</table>
+
+<h2>أولًا: نطاق العرض</h2>
+<p>يسرّ مؤسسة وتد الأخشاب للصناعة أن تقدم لكم عرض السعر التالي لتنفيذ المشروع <b>تسليم مفتاح</b>، ويشمل:</p>
+<ul class="scope">
+<li>تصنيع وتركيب الكوخ الخشبي حسب المخططات المعتمدة.</li>
+<li>الأعمال الهندسية والإنشائية: المكتب الهندسي، السور، القواعد، البوابات، البيارة، الخزان.</li>
+<li>توريد وتركيب المسبح الفايبرجلاس وأعمال موقعه.</li>
+<li>اللاندسكيب: البلاط والبرجولة والمسطحات الخضراء والري والإنارة الخارجية.</li>
+<li>الكهرباء والسباكة الداخلية وأطقم دورات المياه.</li>
+<li>المكيفات والأجهزة والأثاث والستائر حسب الجدول.</li>
+<li><b>الإشراف الكامل وإدارة المشروع والتنسيق بين جميع المقاولين والموردين</b> حتى التسليم.</li>
+<li>التسليم النهائي بمحضر استلام موقّع من الطرفين.</li>
+</ul>
+
+<h2>ملخص الأسعار</h2>
+<table class="boq">
+<tr><th style="width:6%">م</th><th>القسم</th><th style="width:22%">الإجمالي (ريال)</th></tr>
+{% for s in sections %}
+<tr><td class="c">{{ loop.index }}</td><td>{{ s.name }}</td><td class="v">{{ s.total }}</td></tr>
+{% endfor %}
+<tr class="grand"><td></td><td>الإجمالي الكلي للمشروع{% if vat %} (شامل ضريبة القيمة المضافة){% endif %}</td><td class="v">{{ total }}</td></tr>
+</table>
+<div class="total">
+<p class="big">الإجمالي: {{ total }} ريال سعودي</p>
+<p>فقط: {{ total_words }} لا غير{% if vat %} — شامل ضريبة القيمة المضافة 15% وقدرها {{ vat }} ريال{% else %} — غير شامل ضريبة القيمة المضافة{% endif %}.</p>
+</div>
+<p class="note">تفاصيل كل قسم في جدول الكميات التالي، والمواصفات والصور في صفحة المواد. أي بند غير مذكور في الجدول غير مشمول في هذا العرض.</p>
+
+<h2 class="pb">ثانيًا: جدول الكميات والأسعار</h2>
+<table class="boq">
+<thead><tr><th style="width:4%">م</th><th>البند والمواصفات</th><th style="width:8%">الكمية</th><th style="width:8%">الوحدة</th><th style="width:12%">سعر الوحدة</th><th style="width:13%">الإجمالي</th></tr></thead>
+{% for s in sections %}
+<tr class="sec"><td colspan="6">{{ loop.index }}) {{ s.name }}</td></tr>
+{% for r in s.rows %}
+<tr><td class="c">{{ r.n }}</td><td>{% if r.photo %}<img src="assets/products/{{ r.photo }}" alt="">{% endif %}{{ r.item }}</td>
+<td class="c">{{ r.qty_s }}</td><td class="c">{{ r.unit }}</td><td class="v">{{ r.unit_price }}</td><td class="v">{{ r.amount }}</td></tr>
+{% endfor %}
+<tr class="sub"><td></td><td colspan="4">إجمالي {{ s.name }}</td><td class="v">{{ s.total }}</td></tr>
+{% endfor %}
+<tr class="grand"><td></td><td colspan="4">الإجمالي الكلي{% if vat %} (شامل الضريبة){% endif %}</td><td class="v">{{ total }}</td></tr>
+</table>
+
+<h2>ثالثًا: الدفعات</h2>
+<table class="boq">
+<tr><th style="width:6%">م</th><th>الدفعة</th><th style="width:9%">النسبة</th><th style="width:18%">المبلغ (ريال)</th></tr>
+{% for p in pays %}
+<tr><td class="c">{{ loop.index }}</td><td>{{ p.label }}</td><td class="c">{{ p.pct }}%</td><td class="v">{{ p.amount }}</td></tr>
+{% endfor %}
+<tr class="grand"><td></td><td>الإجمالي</td><td class="c">100%</td><td class="v">{{ total }}</td></tr>
+</table>
+
+<h2>رابعًا: الشروط والأحكام</h2>
+<ol class="terms">
+<li><b>نطاق العمل:</b> يقتصر هذا العرض على البنود والكميات والمواصفات المذكورة في جدول الكميات والمخططات المعتمدة فقط. البنود المقطوعية ثابتة السعر لنطاقها المذكور، والبنود المقاسة (م²، م.ط) تُحاسب حسب الكمية المنفذة فعليًا في الموقع بنفس سعر الوحدة.</li>
+<li><b>التعديلات والأعمال الإضافية:</b> أي تعديل يطلبه العميل على المخططات أو المواصفات أو الكميات بعد الاعتماد، أو أي عمل غير مذكور في هذا العرض، يُسعّر بعرض مستقل ولا يُنفذ إلا بعد موافقة العميل الكتابية، وقد يترتب عليه تمديد مدة التنفيذ.</li>
+<li><b>غير مشمول في العرض:</b> الرسوم الحكومية ورسوم البلدية والرخص والغرامات، رسوم توصيل وعدادات الكهرباء والمياه، الحفر في الصخر أو التربة غير الصالحة أو المياه الجوفية (تُسعّر بعد تقرير التربة)، إزالة أي مبانٍ أو مخلفات قائمة بالموقع، أعمال الحماية من السيول، أجهزة المطبخ (عدا الثلاجة)، الديكورات والإكسسوارات، وأي بند غير مذكور صراحةً.</li>
+<li><b>مدة التنفيذ:</b> {{ duration_days }} يومًا تبدأ من تاريخ استلام الدفعة الأولى وصدور رخصة البناء واستلام الموقع خاليًا من العوائق، أيهم أحدث. ولا تُحتسب ضمن المدة: فترات توقف العمل بسبب العميل أو تأخر الدفعات أو الجهات الحكومية أو الظروف الجوية أو القوة القاهرة.</li>
+<li><b>التزامات العميل:</b> تسليم صك الأرض والهوية والمستندات اللازمة للرخصة، توفير مدخل للموقع يسمح بدخول الرافعة والشاحنات، توفير مصدر كهرباء ومياه مؤقت للتنفيذ، وسداد الدفعات في مواعيدها. ويحق للمؤسسة إيقاف العمل عند تأخر أي دفعة مستحقة أكثر من 7 أيام مع تمديد المدة بقدر التأخير.</li>
+<li><b>المواد والماركات:</b> تُورد المواد بالماركات والموديلات المذكورة أو ما يعادلها في الجودة والمواصفات عند عدم توفرها، ولا يُستبدل أي صنف إلا بعد إشعار العميل وموافقته. الصور في صفحة المواد توضيحية، والألوان والتفاصيل النهائية حسب المتوفر لدى المورد وقت التوريد.</li>
+<li><b>الضمان:</b> الكوخ الخشبي حسب عقد التنفيذ الموقّع مع المؤسسة. المسبح: 10 سنوات على جسم المسبح ضد التهريب، وسنتان على المضخة والفلتر (عدا رأس الفلتر). الأجهزة والمكيفات والأثاث: حسب ضمان الوكيل أو المصنّع. أعمال التنفيذ (السباكة والكهرباء والبلاط): سنة واحدة من تاريخ الاستلام ضد عيوب التنفيذ. ولا يشمل الضمان سوء الاستخدام أو التعديل من الغير أو الأضرار الناتجة عن ظروف خارجة عن الإرادة.</li>
+<li><b>الإشراف والاستلام:</b> تتولى المؤسسة الإشراف على جميع الأعمال وإدارتها والتنسيق بين المقاولين والموردين. ويتم الاستلام النهائي بمحضر استلام موقّع من الطرفين بعد تشغيل المسبح والكهرباء والمكيفات وتجربتها بحضور العميل، والملاحظات البسيطة التي لا تمنع الاستخدام لا تؤخر الاستلام وتُنجز خلال 15 يومًا.</li>
+<li><b>الأسعار:</b> بالريال السعودي{% if vat %} وشاملة ضريبة القيمة المضافة 15%{% else %} وغير شاملة ضريبة القيمة المضافة{% endif %}. العرض صالح {{ validity_days }} يومًا من تاريخه، وبعدها يخضع لإعادة التسعير حسب أسعار السوق.</li>
+<li><b>المستندات:</b> عند الموافقة يُحرر عقد تنفيذ بين الطرفين، ويعتبر هذا العرض وجدول الكميات والمخططات المعتمدة جزءًا لا يتجزأ منه. وفي حال التعارض يُقدّم العقد ثم المخططات ثم هذا العرض.</li>
+</ol>
+
+<h2 class="pb">خامسًا: المواد والمواصفات</h2>
+<div class="grid">
+{% for m in materials %}
+<div class="card{% if m.wide %} wide{% endif %}">
+<img src="assets/products/{{ m.photo }}" alt="">
+<div><h4>{{ m.title }}</h4>{% for s in m.spec %}<p>{{ s }}</p>{% endfor %}</div>
+</div>
+{% endfor %}
+</div>
+<p class="note" style="margin-top:6pt">الصور توضيحية للموديلات المعتمدة في العرض — ويمكن للعميل اختيار بدائل بفرق السعر قبل التوريد.</p>
+
+<h2>موافقة العميل على العرض</h2>
+<table class="sig">
+<tr>
+<td><b>العميل</b><br>الاسم: ........................................<br>التوقيع: ........................................<br>التاريخ: ........................................</td>
+<td><b>مؤسسة وتد الأخشاب للصناعة</b><br>اسم المسؤول: أحمد تركي<br>التوقيع: ........................................<br>الختم: ........................................</td>
+</tr>
+</table>
+
+</body>
+</html>

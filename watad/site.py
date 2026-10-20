@@ -104,6 +104,28 @@ def site_rows(P, rules):
     return rows, plot, plot - used
 
 
+
+def _kidney(r):
+    """حدود مسبح بشكل كلية داخل المستطيل r (المحور الطويل على الضلع الأطول): فصّين وتجويف على جنب واحد."""
+    from shapely.geometry import Point
+    from shapely import affinity
+    x0, y0, x1, y1 = r
+    w, h = x1 - x0, y1 - y0
+    L, W = max(w, h), min(w, h)
+    big = affinity.scale(Point(0, 0).buffer(1, 64), W / 2, W * 0.55)
+    big = affinity.translate(big, W / 2 - L / 2 + W * 0.0, 0)
+    sm = affinity.scale(Point(0, 0).buffer(1, 64), W * 0.42, W * 0.45)
+    sm = affinity.translate(sm, L / 2 - W * 0.45, -W * 0.08)
+    shp = big.union(sm).convex_hull.difference(
+        affinity.translate(Point(0, 0).buffer(W * 0.38, 64), W * 0.25, W * 0.78))
+    bx0, by0, bx1, by1 = shp.bounds
+    shp = affinity.scale(shp, L / (bx1 - bx0), W / (by1 - by0), origin=((bx0 + bx1) / 2, (by0 + by1) / 2))
+    if h > w:
+        shp = affinity.rotate(shp, 90, origin=(0, 0))
+    bx0, by0, _, _ = shp.bounds
+    shp = affinity.translate(shp, x0 - bx0, y0 - by0)
+    return list(shp.exterior.coords)
+
 def site_sheet(ctx):
     from .model import outer_bbox, wall_thickness
     from .sheets import A3, BROWN, chain, dim, drawing_ax, new_page, table, title
@@ -119,9 +141,14 @@ def site_sheet(ctx):
     for z in st.get("zones", []):                              # المناطق
         r = z["rect"]
         fc, ec = COL.get(z["kind"], ("#eee", "#999"))
-        ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc=fc, ec=ec, lw=0.9, zorder=1,
-                               hatch="...." if z["kind"] == "paving" else None))
-        if z["kind"] == "pool":
+        if z.get("shape") == "kidney":                         # مسبح جاهز بشكل حر (كلية) — المستطيل = حدوده الخارجية
+            ax.add_patch(Polygon(_kidney(r), closed=True, fc="#8fd3f0", ec="#2b8cbe", lw=1.0, zorder=1.1))
+            ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc="none", ec=ec, lw=0.4, ls=":",
+                                   zorder=1.05))
+        else:
+            ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc=fc, ec=ec, lw=0.9, zorder=1,
+                                   hatch="...." if z["kind"] == "paving" else None))
+        if z["kind"] == "pool" and z.get("shape") != "kidney":
             ax.add_patch(Rectangle((r[0] + 15, r[1] + 15), r[2] - r[0] - 30, r[3] - r[1] - 30, fc="#8fd3f0", ec="#2b8cbe",
                                    lw=0.6, zorder=1.1))
             for k in range(1, 4):                              # درج نزول المسبح

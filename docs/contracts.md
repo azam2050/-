@@ -30,3 +30,10 @@
   والمبلغ يُدفع عند التوقيع ويُخصم من الدفعة الأولى لعقد التنفيذ إذا اعتمد العميل التصميم وتعاقد على التنفيذ.
 - نسخة فاضية قابلة للتعبئة: `contracts/عقد_زيارة_وتصميم_فاضي.pdf`
   (`python tools/contract.py --blank --template visit_design -o ...`).
+
+## عرض سعر تسليم مفتاح (tools/quote.py)
+- البيانات: `contracts/quotes/*.yaml` — أقسام وبنود بتكلفة المصنع (`base`) وهامش القسم `markup` (افتراضي 15%، الكوخ 0%).
+- العميل يشوف سعر الوحدة بعد الهامش والإجمالي والدفعات والشروط وصفحة المواد بالصور (`contracts/assets/products/`).
+- `python tools/quote.py contracts/quotes/X.yaml -o عرض.pdf`
+- `python tools/quote.py contracts/quotes/X.yaml --internal` ← ملخص التكلفة والربح للمصنع فقط (ما يطلع بالـPDF).
+- بدون اسم أو جوال العميل في الملف — يُكتب باليد على النسخة المطبوعة.
