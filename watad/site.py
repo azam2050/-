@@ -391,6 +391,12 @@ def fitout_sheet(ctx):
     fig.text(0.5, 0.945, "التكلفة التقديرية — التجهيزات الداخلية والفرش", ha="center", fontsize=17,
              weight="bold", color=BROWN)
     rows, lo_f, hi_f = _cost_rows(st.get("fitout", []))
+    if st.get("electrical"):                          # الكهرباء الداخلية من جدول الكميات التفصيلي
+        _e, lo_e, hi_e = _cost_rows(st["electrical"])
+        rows.insert(0, ["الكهرباء الداخلية — حسب جدول الكميات التفصيلي (الفنار)", "1 جدول", "",
+                        _rng(round(lo_e, -1), round(hi_e, -1))])
+        lo_f += lo_e
+        hi_f += hi_e
     rows.append(["إجمالي التجهيزات الداخلية والفرش", "", "", _rng(round(lo_f, -3), round(hi_f, -3))])
     _a, c = _cabin_cost(P, rules)
     _r, lo_s, hi_s = _cost_rows(st.get("costs", []))
@@ -405,3 +411,23 @@ def fitout_sheet(ctx):
         fig.text(0.95, 0.135, "\n".join("• " + n for n in notes), ha="right", va="top", fontsize=8, color="#333",
                  linespacing=1.5)
     return fig, "التجهيزات والفرش"
+
+
+def electrical_sheet(ctx):
+    """جدول كميات الكهرباء التفصيلي (أفياش، مفاتيح، قواطع، أسلاك، تمديد، أجور) — site.electrical."""
+    from .sheets import BROWN, new_page, table
+    P = ctx["project"]
+    st = P.site
+    fig = new_page()
+    fig.text(0.5, 0.945, st.get("electrical_title", "جدول كميات الكهرباء الداخلية"), ha="center", fontsize=16,
+             weight="bold", color=BROWN)
+    rows, lo, hi = _cost_rows(st["electrical"])
+    rows.append(["إجمالي الكهرباء الداخلية", "", "", _rng(round(lo, -1), round(hi, -1))])
+    ax = fig.add_axes([0.05, 0.13, 0.9, 0.78])
+    table(ax, ["البند", "الكمية", "سعر الوحدة (ريال)", "الإجمالي (ريال)"], rows, [5.6, 1.4, 1.9, 2.3], fs=7.8,
+          bold_last=1, wrap=10, row_h=0.8)
+    notes = st.get("electrical_notes", [])
+    if notes:
+        fig.text(0.95, 0.115, "\n".join("• " + n for n in notes), ha="right", va="top", fontsize=7.5, color="#333",
+                 linespacing=1.5)
+    return fig, "جدول كميات الكهرباء"

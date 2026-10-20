@@ -1321,6 +1321,9 @@ def build_client_pdf(ctx, path, with_perspective=True):
         pages.append((cost_sheet(ctx), "—"))
         if ctx["project"].site.get("fitout"):
             pages.append((fitout_sheet(ctx), "—"))
+        if ctx["project"].site.get("electrical"):
+            from .site import electrical_sheet
+            pages.append((electrical_sheet(ctx), "—"))
     pages += [(r, "—") for r in real_sheets(ctx)]
     # المعاينة المبسطة للخارج تنشال إذا فيه صور واقعية (السقف فيها تقريبي) — يبقى المقطع بالفرش
     rs = renders_sheets(ctx)
