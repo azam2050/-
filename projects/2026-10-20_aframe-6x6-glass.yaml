@@ -1,22 +1,21 @@
-# عميل جديد: كوخ A-frame 6.00 × 6.00 = 36 م² — مثل الصورة المرسلة: واجهة زجاج كاملة بقواطع خشب سوداء،
-#   ميزانين (غرفة نوم مفتوحة) يبان من ورا الزجاج، وتراس خشب كبير قدام (جلسة نار + طعام خارجي).
-#  الأرضي: صالة بارتفاع مزدوج تطل على الزجاج + مطبخ أمريكي + دورة مياه تحت الميزانين.
-#  الميزانين (+2.45): غرفة نوم مفتوحة بسرير 160 على الجدار الخلفي، دربزين خشب على الحافة.
-#  الدرج: حلزوني Ø1.40 قدام حافة الميزانين في الحزام الأوسط تحت القمة (ارتفاع صافي ≥ 1.90 فوق كل درجة).
-# الميل 47°: المداد 515 سم (رفرف 45) من طبلية 520 بدون وصلات — عرض 6 م ما يسمح بميل أكبر من 47° بدون وصلة.
+# عميل جديد: كوخ A-frame 6.00 × 6.00 = 36 م² — مثل الصورة المرسلة: واجهة زجاج كاملة بقواطع خشب سوداء وتراس خشب كبير قدام.
+# تعديل المصنع: غرفة وحدة مفتوحة — بدون درج وبدون حمام وبدون مطبخ وبدون ميزانين.
+#   عشان ما فيه ميزانين نزّلنا الجدار الجانبي لـ 1.50 م فصار الشكل A-frame أكثر (السقف نازل قريب من الأرض)،
+#   والإضاءة من الواجهة الزجاج الكاملة + شباك صغير في جملون الخلف.
+# الميل 47°: المداد 515 سم (رفرف 45) من طبلية 520 بدون وصلات.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: aframe-6x6-glass
-title: كوخ A-frame بواجهة زجاج كاملة + ميزانين — 6 × 6 = 36 م²
+title: كوخ A-frame بواجهة زجاج كاملة — غرفة وحدة 6 × 6 = 36 م²
 client: "عميل — A-frame 6×6"
 meta:
   location: "—"
-  usage: استراحة / سكن
+  usage: استراحة / جلسة
   date: 2026-10-20
   price_note: ""
   price_scope: building
   hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
 style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
-wall_height: 200
+wall_height: 150
 height_exact: true
 slab_height: 45
 roof: {ridge_axis: y, pitch_deg: 47, overhang: 45}
@@ -32,52 +31,20 @@ walls:
     start: [0, 0]
     end: [588, 0]
     openings:
-      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 235, height: 200, sill: 10, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 235, height: 140, sill: 10, style: fixed}
       - {kind: door, code: ب1, name: ب1 باب زجاج بإطار خشب, offset: 249, width: 90, height: 210, leaves: 1}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 347, width: 235, height: 200, sill: 10, style: fixed}
-  - name: شرق
-    title: الواجهة الشرقية
-    start: [588, 0]
-    end: [588, 588]
-    openings:
-      - {kind: window, code: ش1, name: ش1 الصالة, offset: 80, width: 100, height: 85, sill: 65, grid: [2, 2]}
-      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 420, width: 90, height: 45, sill: 105, grid: [2, 1]}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 347, width: 235, height: 140, sill: 10, style: fixed}
+  - {name: شرق, title: الواجهة الشرقية, start: [588, 0], end: [588, 588]}
   - name: شمال
     title: الواجهة الخلفية
     start: [588, 588]
     end: [0, 588]
-  - name: غرب
-    title: الواجهة الغربية
-    start: [0, 588]
-    end: [0, 0]
-    openings:
-      - {kind: window, code: ش3, name: ش3 دورة المياه, offset: 28, width: 60, height: 45, sill: 105}
-      - {kind: window, code: ش1, name: ش1 الصالة, offset: 408, width: 100, height: 85, sill: 65, grid: [2, 2]}
-  - {name: دورة المياه جنوب, exterior: false, height: 220, start: [0, 394], end: [206, 394]}
-  - name: دورة المياه شرق
-    exterior: false
-    height: 220
-    start: [206, 394]
-    end: [206, 588]
-    openings:
-      - {kind: door, code: ب2, name: ب2 دورة المياه, offset: 20, width: 70, height: 205}
+    gable_openings:   # شباك صغير في جملون الخلف (إضاءة وتهوية)
+      - {code: ش1, name: ش1 شباك الجملون الخلفي, offset: 249, width: 90, height: 90, sill: 200, grid: [2, 2]}
+  - {name: غرب, title: الواجهة الغربية, start: [0, 588], end: [0, 0]}
 
 rooms:
-  - {name: الصالة (ارتفاع مزدوج), rect: [6, 6, 582, 294], label: [180, 250]}
-  - {name: المطبخ الأمريكي, rect: [212, 306, 582, 582], label: [380, 450]}
-  - {name: دورة مياه, rect: [6, 400, 200, 582], wet: true}
-
-mezzanines:
-  - name: غرفة النوم (ميزانين مفتوح)
-    rect: [6, 300, 582, 582]
-    level: 245
-    railing: [S]
-    gaps: [[270, 330]]           # وصول الدرج الحلزوني
-    headroom: [213, 375]
-    railing_span: [140, 448]
-
-spiral_stairs:
-  - {name: درج حلزوني, center: [300, 228], r: 70, rise: 245, riser: 20.4, step_deg: 30, end_deg: 105, dir: ccw}
+  - {name: الغرفة (مفتوحة), rect: [6, 6, 582, 582], label: [294, 110]}
 
 decks:
   - name: التراس الأمامي (جلسة نار + طعام خارجي)
@@ -86,20 +53,8 @@ decks:
     railing: []
     stairs: {side: S, offset: 200, width: 200}
 
-furniture:
-  # الصالة: كنبة على الجدار الغربي + طاولة + كرسيين، والممر من الباب للدرج فاضي
-  - {name: كنبة, rect: [6, 40, 86, 280]}
-  - {name: طاولة, rect: [120, 110, 190, 210]}
-  - {name: كرسي, rect: [460, 60, 540, 140]}
-  - {name: كرسي, rect: [460, 170, 540, 250]}
-  # المطبخ الأمريكي (تحت الميزانين — ارتفاع صافي 2.20)
-  - {name: ثلاجة, rect: [517, 310, 582, 375]}
-  - {name: كاونتر, rect: [522, 380, 582, 582]}
-  - {name: كاونتر, rect: [380, 522, 522, 582]}
-  - {name: طاولة 4, rect: [300, 390, 400, 460]}
-  # دورة المياه
-  - {name: دش, rect: [110, 492, 200, 582], shape: shower}
-  - {name: "", rect: [6, 500, 46, 550], shape: wc}
-  - {name: "", rect: [6, 410, 52, 456], shape: basin}
-  # الميزانين: سرير 160 رأسه على الجدار الخلفي بالنص (تحت القمة)
-  - {name: سرير 160×200, rect: [214, 382, 374, 582], floor: -1, z: 245}
+furniture:   # فرش استرشادي (جلسة) — الغرفة مفتوحة للعميل
+  - {name: كنبة 3 مقاعد, rect: [174, 400, 414, 490]}
+  - {name: طاولة, rect: [234, 260, 354, 330]}
+  - {name: كرسي, rect: [120, 200, 200, 280]}
+  - {name: كرسي, rect: [388, 200, 468, 280]}
