@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>{{ doc_title }}</title>
+<style>
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "NotoAr"; src: url("../library/fonts/NotoSansArabic-Black.ttf"); font-weight: 900; }
+@font-face { font-family: "ArimoL"; src: url("../library/fonts/Arimo-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "ArimoL"; src: url("../library/fonts/Arimo-Bold.ttf"); font-weight: 700; }
+@page {
+  size: 595pt 841pt;
+  margin: 118pt 45pt 92pt 45pt;
+}
+/* الترويسة والتذييل والعلامة المائية تتكرر في كل صفحة (مواقعها من العقد الأصلي) */
+.hdr { position: fixed; top: -119pt; left: -45pt; width: 595pt; height: 113pt; }
+.ftr { position: fixed; bottom: -92pt; left: -45pt; width: 595pt; height: 77pt; }
+.wm { position: fixed; top: 179pt; left: 125pt; width: 255pt; height: 255pt; opacity: 0.55; z-index: -1; }
+html { font-family: "NotoAr", "ArimoL"; font-size: 9.1pt; color: #222; line-height: 1.86; }
+body { margin: 0; }
+h1 { font-weight: 900; font-size: 15pt; color: #3f1813; text-align: center; margin: 4pt 0 10pt; }
+h2 { font-weight: 900; font-size: 10.9pt; color: #2d3155; margin: 14pt 0 1pt; }
+h3 { font-weight: 700; font-size: 13.7pt; margin: 14pt 0 2pt; }
+p { margin: 0 0 4pt; text-align: justify; }
+ul { margin: 0 0 4pt; padding: 0 12pt 0 0; }
+li { margin: 0; }
+b { font-weight: 700; }
+.box { border: 0.8pt solid #b8ad9a; border-radius: 9pt; padding: 4pt 10pt; margin: 6pt 0 8pt; }
+.box p { margin: 0; text-align: right; }
+.pay { border: 0.8pt solid #d9d2c6; border-radius: 9pt; padding: 2pt 10pt; margin: 8pt 0; }
+.pay table { width: 100%; border-collapse: collapse; }
+.pay td { padding: 3.3pt 0; border-bottom: 0.6pt solid #e6e0d6; }
+.pay tr:last-child td { border-bottom: none; }
+.pay td.v { text-align: left; font-weight: 700; white-space: nowrap; direction: rtl; }
+.pay tr.tot td:first-child { font-weight: 900; }
+.note { border-right: 2.4pt solid #8a8a8a; padding-right: 6pt; margin: 4pt 0; }
+.sig p { margin: 0 0 8pt; text-align: right; }
+.page2 { break-before: page; }
+/* حقول التعبئة: في النسخة الفاضية تطلع مربعات قابلة للكتابة */
+.f { display: inline-block; vertical-align: baseline; }
+.blank p { text-align: right; }
+.blank .f { height: 9pt; text-align: right; color: #fff; font-size: 4pt; line-height: 9pt; }
+.blank .pay td { padding: 2.6pt 0; }
+/* عقد الزيارة صفحة واحدة */
+html { line-height: 1.62; }
+h2 { margin: 8pt 0 0; }
+h3 { margin: 8pt 0 2pt; font-size: 12pt; }
+.sig p { margin: 0 0 4pt; }
+</style>
+</head>
+<body class="{{ 'blank' if blank else '' }}">
+<img class="hdr" src="assets/header.png" alt="">
+<img class="ftr" src="assets/footer.png" alt="">
+<img class="wm" src="assets/watermark.png" alt="">
+
+<h1>{{ doc_title }}</h1>
+<p>بسم الله الرحمن الرحيم</p>
+<p>إنه في يوم {{ fld('day', 60) }} الموافق {{ fld('date', 70) }}م، تم الاتفاق بين كل من:</p>
+
+<div class="box">
+<p><b>الطرف الأول – العميل:</b> الاسم: {{ fld('client_name', 70) }} | رقم الهوية: {{ fld('client_id', 50) }} | رقم الجوال: {{ fld('client_phone', 50) }} | العنوان: {{ fld('client_address', 40) }}</p>
+<p><b>الطرف الثاني – المصمم والمنفذ:</b> مؤسسة وتد الأخشاب للصناعة | السجل التجاري: 7055256700 | يمثلها: أحمد تركي | رقم الجوال: 0502190921 | العنوان: حي شهار – الطائف</p>
+</div>
+
+<h2>المادة الأولى: موضوع العقد</h2>
+<p>يتعهد الطرف الثاني بزيارة الطرف الأول في موقعه المتفق عليه بين الطرفين، ورفع المساحات والمقاسات، وإعداد التصميم الكامل للمشروع وفق احتياجات الطرف الأول.</p>
+<p>ويعتبر عرض السعر والمخططات جزءًا لا يتجزأ من هذا العقد.</p>
+
+<h2>المادة الثانية: مواصفات الأعمال</h2>
+<p><b>نوع الأعمال:</b> {{ fld('project_type', 160) }}</p>
+<p><b>الموقع:</b> {{ fld('site', 160) }}</p>
+<p><b>المساحة التقريبية:</b> تُحدد بعد رفع المساحات واعتماد التصميم.</p>
+<p>وتشمل الأعمال المتفق عليها:</p>
+<ul>
+<li>زيارة الموقع ورفع المساحات والمقاسات.</li>
+<li>مخطط أوتوكاد (المساقط والواجهات والسقف وجداول الأبواب والشبابيك والمساحات).</li>
+<li>تصميم ثلاثي الأبعاد (3D) للمشروع.</li>
+<li>التعديلات اللازمة على التصميم حتى اعتماده من الطرف الأول.</li>
+</ul>
+
+<h2>المادة الثالثة: قيمة العقد</h2>
+<p>قيمة الزيارة والتصميم: <b>{{ fld('total', 45) }} ريال سعودي</b>، فقط: {{ fld('total_words', 150) }} لا غير، تُدفع عند توقيع هذا العقد.</p>
+<p class="note">في حال اعتماد الطرف الأول للتصميم (الكروكي) والتعاقد على تنفيذ المشروع مع الطرف الثاني، يعتبر هذا المبلغ جزءًا لا يتجزأ من قيمة المشروع ويُخصم من الدفعة الأولى لعقد التنفيذ.</p>
+
+<h2>المادة الرابعة: أحكام عامة</h2>
+<ul>
+<li>يعتبر هذا العقد وعرض السعر والمخططات مستندات مكملة لبعضها البعض.</li>
+<li>لا يجوز تعديل أي بند من بنود العقد إلا بموافقة مكتوبة من الطرفين.</li>
+<li>تم تحرير هذا العقد من نسختين، تسلم كل طرف نسخة للعمل بموجبها.</li>
+</ul>
+
+<h3>التوقيعات</h3>
+<div class="sig">
+<p><b>الطرف الأول – العميل:</b> الاسم: {{ fld('client_name_sig', 120) }} &nbsp;&nbsp; التوقيع: ........................................ &nbsp;&nbsp; التاريخ: {{ fld('date_sig1', 60) }}م</p>
+<p><b>الطرف الثاني – مؤسسة وتد الأخشاب للصناعة:</b> اسم المسؤول: أحمد تركي &nbsp;&nbsp; التوقيع: ........................................</p>
+<p>الختم: ........................................ &nbsp;&nbsp; التاريخ: {{ fld('date_sig2', 60) }}م</p>
+</div>
+</body>
+</html>

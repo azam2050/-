@@ -7,7 +7,10 @@
 البيانات المتغيرة (اللي يعلّم عليها المصنع بالأحمر) — مثال في contracts/contract_example.yaml:
   date, client_name, client_id, client_phone, client_address, project_type, site, area,
   total, payments [4 نسب %], duration (يوم), warranty (سنوات)
-  title (اختياري): عنوان العقد فوق — الافتراضي "عقد تنفيذ وإنشاء كوخ خشبي" (مثل: "عقد زيارة وتصميم")
+  title (اختياري): عنوان العقد فوق — الافتراضي حسب نوع العقد
+  template (اختياري): build (عقد التنفيذ، الافتراضي) | visit_design (عقد زيارة وتصميم — صفحة واحدة،
+           المبلغ يُخصم من الدفعة الأولى عند اعتماد التصميم والتعاقد على التنفيذ)
+  نسخة فاضية لعقد الزيارة: python tools/contract.py --blank --template visit_design -o عقد.pdf
 الباقي يُحسب تلقائيًا: اليوم من التاريخ، المبلغ كتابة، مبالغ الدفعات من النسب.
 ملفات بيانات العملاء ما تُرفع للمستودع (contracts/data/ في .gitignore).
 """
@@ -21,12 +24,13 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 TPL = ROOT / "contracts" / "contract_template.html"
+TEMPLATES = {"build": (TPL, "عقد تنفيذ وإنشاء كوخ خشبي"),
+             "visit_design": (ROOT / "contracts" / "visit_design_template.html", "عقد زيارة وتصميم")}
 
 PAYMENTS = [("الدفعة الأولى عند توقيع العقد", "p1"),
             ("الدفعة الثانية عند بدء التصنيع/التنفيذ", "p2"),
             ("الدفعة الثالثة عند وصول المشروع للموقع/بدء التركيب", "p3"),
             ("الدفعة النهائية عند اكتمال التنفيذ", "p4")]
-DEFAULT_TITLE = "عقد تنفيذ وإنشاء كوخ خشبي"
 DAYS = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"]
 
 ONES = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"]
@@ -118,7 +122,7 @@ def values(d):
     return v
 
 
-def render(data=None, blank=False):
+def render(data=None, blank=False, template="build"):
     """يرجع (PDF bytes، قائمة الحقول [(اسم، علامة، عرض pt)])."""
     import jinja2
     from weasyprint import HTML
@@ -132,17 +136,18 @@ def render(data=None, blank=False):
         return jinja2.utils.markupsafe.Markup(f'<span class="f">{html.escape(str(data.get(key, "")))}</span>')
 
     env = jinja2.Environment(autoescape=True)
-    title = (data or {}).get("title") or DEFAULT_TITLE
-    src = env.from_string(TPL.read_text(encoding="utf-8")).render(fld=fld, blank=blank, payments=PAYMENTS,
+    tpl, default_title = TEMPLATES[(data or {}).get("template") or template]
+    title = (data or {}).get("title") or default_title
+    src = env.from_string(tpl.read_text(encoding="utf-8")).render(fld=fld, blank=blank, payments=PAYMENTS,
                                                                   doc_title=title)
-    pdf = HTML(string=src, base_url=str(TPL)).write_pdf()
+    pdf = HTML(string=src, base_url=str(tpl)).write_pdf()
     return pdf, fields
 
 
-def make_blank(out):
+def make_blank(out, template="build"):
     """نسخة فاضية بحقول نص قابلة للتعبئة (AcroForm) مكان البيانات المتغيرة."""
     import pymupdf
-    pdf, fields = render(blank=True)
+    pdf, fields = render(blank=True, template=template)
     doc = pymupdf.open("pdf", pdf)
     for key, mark, width in fields:
         for page in doc:
@@ -166,7 +171,7 @@ def make_blank(out):
             doc.xref_set_key(ann.xref, "Q", "2")          # محاذاة يمين للعربي
             break
     doc.xref_set_key(doc.pdf_catalog(), "AcroForm/NeedAppearances", "true")
-    doc.set_metadata({"title": "عقد تنفيذ وإنشاء كوخ خشبي — نموذج فاضي", "author": "مؤسسة وتد الأخشاب للصناعة"})
+    doc.set_metadata({"title": f"{TEMPLATES[template][1]} — نموذج فاضي", "author": "مؤسسة وتد الأخشاب للصناعة"})
     doc.save(out, garbage=3, deflate=True)
     return out
 
@@ -176,9 +181,10 @@ def main():
     ap.add_argument("data", nargs="?", help="ملف بيانات العقد YAML")
     ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--blank", action="store_true", help="نسخة فاضية بحقول قابلة للتعبئة")
+    ap.add_argument("--template", default="build", choices=list(TEMPLATES), help="نوع العقد للنسخة الفاضية")
     a = ap.parse_args()
     if a.blank:
-        print(make_blank(a.out))
+        print(make_blank(a.out, a.template))
         return
     d = yaml.safe_load(open(a.data, encoding="utf-8"))
     pdf, _ = render(values(d))
