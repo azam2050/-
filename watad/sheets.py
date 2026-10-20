@@ -1317,8 +1317,10 @@ def build_client_pdf(ctx, path, with_perspective=True):
         [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
     if (ctx["project"].site or {}).get("costs"):
-        from .site import cost_sheet
+        from .site import cost_sheet, fitout_sheet
         pages.append((cost_sheet(ctx), "—"))
+        if ctx["project"].site.get("fitout"):
+            pages.append((fitout_sheet(ctx), "—"))
     pages += [(r, "—") for r in real_sheets(ctx)]
     # المعاينة المبسطة للخارج تنشال إذا فيه صور واقعية (السقف فيها تقريبي) — يبقى المقطع بالفرش
     rs = renders_sheets(ctx)

@@ -330,35 +330,47 @@ def add_site_3d(S, P, rules, style, cut=None):
 
 
 # ---------------------------------------------------------------- التكلفة التقديرية
+def _cost_rows(items):
+    rows, lo_t, hi_t = [], 0, 0
+    for it in items:
+        q = it.get("qty", 1)
+        lo, hi = q * it["low"], q * it.get("high", it["low"])
+        rows.append([it["item"], f"{q:g} {it.get('unit', '')}".strip(), _rng(it["low"], it.get("high", it["low"])),
+                     _rng(lo, hi)])
+        lo_t += lo
+        hi_t += hi
+    return rows, lo_t, hi_t
+
+
+def _rng(a, b):
+    return f"{a:,.0f}" if a == b else f"{a:,.0f} – {b:,.0f}"
+
+
+def _cabin_cost(P, rules):
+    from .model import outer_bbox
+    bx0, by0, bx1, by1 = outer_bbox(P, rules)
+    area = (bx1 - bx0) * (by1 - by0) / 1e4 * len(P.floor_list)
+    return area, (round(area * P.price_per_m2) if P.price_per_m2 else 0)
+
+
 def cost_sheet(ctx):
     """جدول تكلفة تقديرية للمشروع كامل: الكوخ بسعر المصنع + أعمال الموقع بأسعار السوق (من – إلى).
     site.costs: [{item, qty, unit, low, high}] — low/high سعر الوحدة بالريال."""
-    from .model import outer_bbox
     from .sheets import BROWN, new_page, table
     P, rules = ctx["project"], ctx["rules"]
     st = P.site
     fig = new_page()
     fig.text(0.5, 0.945, "التكلفة التقديرية للمشروع (الكوخ + أعمال الموقع)", ha="center", fontsize=17,
              weight="bold", color=BROWN)
-    bx0, by0, bx1, by1 = outer_bbox(P, rules)
-    area = (bx1 - bx0) * (by1 - by0) / 1e4 * len(P.floor_list)
-    rows, lo_t, hi_t = [], 0, 0
-
-    def rng(a, b):
-        return f"{a:,.0f}" if a == b else f"{a:,.0f} – {b:,.0f}"
-    if P.price_per_m2:
-        c = round(area * P.price_per_m2)
-        rows.append(["الكوخ الخشبي (دورين) — سعر المصنع", f"{area:g} م²", f"{P.price_per_m2:,.0f}", rng(c, c)])
-        lo_t += c
-        hi_t += c
-    for it in st.get("costs", []):
-        q = it.get("qty", 1)
-        lo, hi = q * it["low"], q * it.get("high", it["low"])
-        rows.append([it["item"], f"{q:g} {it.get('unit', '')}".strip(), rng(it["low"], it.get("high", it["low"])),
-                     rng(lo, hi)])
-        lo_t += lo
-        hi_t += hi
-    rows.append(["الإجمالي التقديري للمشروع", "", "", rng(round(lo_t, -3), round(hi_t, -3))])
+    area, c = _cabin_cost(P, rules)
+    rows, lo_t, hi_t = [], c, c
+    if c:
+        rows.append(["الكوخ الخشبي — سعر المصنع", f"{area:g} م²", f"{P.price_per_m2:,.0f}", _rng(c, c)])
+    r2, lo, hi = _cost_rows(st.get("costs", []))
+    rows += r2
+    lo_t += lo
+    hi_t += hi
+    rows.append(["الإجمالي التقديري (الكوخ + الموقع)", "", "", _rng(round(lo_t, -3), round(hi_t, -3))])
     ax = fig.add_axes([0.05, 0.2, 0.9, 0.68])
     table(ax, ["البند", "الكمية", "سعر الوحدة (ريال)", "الإجمالي (ريال)"], rows, [5.2, 1.6, 2.0, 2.4], fs=9.5,
           bold_last=1, wrap=9)
@@ -367,3 +379,29 @@ def cost_sheet(ctx):
         fig.text(0.95, 0.17, "\n".join("• " + n for n in notes), ha="right", va="top", fontsize=8.5, color="#333",
                  linespacing=1.6)
     return fig, "التكلفة التقديرية"
+
+
+def fitout_sheet(ctx):
+    """التجهيزات الداخلية (كهرباء وتوزيع، مكيفات، أجهزة، فرش، ستائر) + الإجمالي الكلي للمشروع.
+    site.fitout: [{item, qty, unit, low, high}]"""
+    from .sheets import BROWN, new_page, table
+    P, rules = ctx["project"], ctx["rules"]
+    st = P.site
+    fig = new_page()
+    fig.text(0.5, 0.945, "التكلفة التقديرية — التجهيزات الداخلية والفرش", ha="center", fontsize=17,
+             weight="bold", color=BROWN)
+    rows, lo_f, hi_f = _cost_rows(st.get("fitout", []))
+    rows.append(["إجمالي التجهيزات الداخلية والفرش", "", "", _rng(round(lo_f, -3), round(hi_f, -3))])
+    _a, c = _cabin_cost(P, rules)
+    _r, lo_s, hi_s = _cost_rows(st.get("costs", []))
+    lo_g, hi_g = c + lo_s + lo_f, c + hi_s + hi_f
+    rows.append(["الإجمالي الكلي للمشروع (الكوخ + الموقع + التجهيزات والفرش)", "", "",
+                 _rng(round(lo_g, -3), round(hi_g, -3))])
+    ax = fig.add_axes([0.05, 0.16, 0.9, 0.73])
+    table(ax, ["البند", "الكمية", "سعر الوحدة (ريال)", "الإجمالي (ريال)"], rows, [5.2, 1.6, 2.0, 2.4], fs=8.6,
+          bold_last=2, wrap=9, row_h=0.9)
+    notes = st.get("fitout_notes", [])
+    if notes:
+        fig.text(0.95, 0.135, "\n".join("• " + n for n in notes), ha="right", va="top", fontsize=8, color="#333",
+                 linespacing=1.5)
+    return fig, "التجهيزات والفرش"
