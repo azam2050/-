@@ -646,6 +646,9 @@ def draw_bumps_elev(ax, P, rules, w, stack):
         tp = math.tan(math.radians(b.get("pitch", 40)))
         rise = L / 2 * tp
         fz = b.get("floor_z", 245)
+        par = abs(bw.u[0] * w.u[0] + bw.u[1] * w.u[1]) > 0.9
+        if par and b["wall"] != w.name:  # الواجهة المقابلة: البروز وراء المبنى (ما يبان)
+            continue
         if b["wall"] in names:           # الوجه
             x0 = a + half
             ax.add_patch(Rectangle((x0, z0), L, ze - z0, fc="#f3e7d6", ec="k", lw=1, zorder=5))

@@ -1,0 +1,155 @@
+# عميل جديد — كوخ سكن في مزرعة (الرياض). المطلوب (رسالة العميل):
+#   3 غرف نوم + دورتين مياه + صالة جلوس تتسع لـ 10 أشخاص + مطبخ + مستودع + غرفة نوم بالدور العلوي بدورة مياه،
+#   مدخلين، استغلال الإضاءة الطبيعية والمساحات، تكلفة اقتصادية، تجهيز تكييف وإنارة.
+# الحل الاقتصادي: دور أرضي 8.00 × 12.00 + غرفة علوية (ميزانين/علّية) داخل الجملون — بدون دور ثاني كامل (أوفر بكثير).
+#   - الجملون للأمام بزجاج كامل فوق الصالة (ارتفاع مزدوج) = إضاءة طبيعية.
+#   - العلّية فوق الغرف الخلفية (منسوب +2.90): غرفة نوم + دورة مياه في بروز خلفي، وتحت البروز المستودع.
+#   - الدرج مستقيم في الممر يطلع من فتحة بأرضية العلّية عليها دربزين.
+#   - مدخلين: الرئيسي من الواجهة للصالة + مدخل جانبي للمطبخ (شرق).
+# الميل 35°: المداد 519 سم (رفرف 25) من طبلية 520 بدون وصلات.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: farm-cabin-riyadh-3br-loft
+title: كوخ مزرعة — 3 غرف + غرفة علوية — 8 × 12
+client: "عميل — مزرعة الرياض"
+meta:
+  location: الرياض (مزرعة)
+  usage: سكن
+  date: 2026-10-20
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 35, overhang: 25}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    gable_glass: true
+    start: [0, 0]
+    end: [788, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 60, width: 200, height: 160, sill: 60, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 المدخل الرئيسي, offset: 344, width: 100, height: 225, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش1, name: ش1 المطبخ والصالة, offset: 508, width: 190, height: 160, sill: 60, grid: [3, 3]}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [788, 0]
+    end: [788, 1188]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 120, width: 120, height: 100, sill: 110, grid: [2, 2]}
+      - {kind: door, code: ب2, name: ب2 المدخل الجانبي (المطبخ), offset: 340, width: 90, height: 215, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش4, name: ش4 غرفة 3, offset: 600, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 دورة مياه 1, offset: 900, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش3, name: ش3 دورة مياه 2, offset: 1080, width: 60, height: 60, sill: 150}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [788, 1188]
+    end: [0, 1188]
+    openings:   # باب المستودع (داخل البروز) من آخر الممر
+      - {kind: door, code: ب4, name: ب4 المستودع, offset: 308, width: 70, height: 205}
+    gable_openings:   # باب دورة مياه الغرفة العلوية (منسوب العلّية)
+      - {code: ب5, name: ب5 دورة مياه الغرفة العلوية, offset: 374, width: 70, height: 200, sill: 290, grid: [2, 4]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 1188]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش4, name: ش4 غرفة 2, offset: 108, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش4, name: ش4 غرفة 1, offset: 468, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 858, width: 180, height: 150, sill: 75, grid: [3, 3]}
+  - name: فاصل الصالة
+    exterior: false
+    start: [0, 476]
+    end: [788, 476]
+    openings:
+      - {kind: door, code: "", name: فتحة الممر, offset: 322, width: 180, height: 230, leaves: 0}
+  - name: جدار الغرفتين
+    exterior: false
+    start: [308, 476]
+    end: [308, 1188]
+    openings:
+      - {kind: door, code: ب3, name: ب3 غرفة 1, offset: 22, width: 80, height: 210}
+      - {kind: door, code: ب3, name: ب3 غرفة 2, offset: 424, width: 80, height: 210}
+  - {name: فاصل غرفة 1 و2, exterior: false, start: [0, 836], end: [308, 836]}
+  - name: جدار الممر الشرقي
+    exterior: false
+    start: [516, 476]
+    end: [516, 1188]
+    openings:
+      - {kind: door, code: ب3, name: ب3 غرفة 3, offset: 24, width: 80, height: 210, swing: right}
+      - {kind: door, code: ب6, name: ب6 دورة مياه 1, offset: 384, width: 70, height: 210, swing: right}
+      - {kind: door, code: ب6, name: ب6 دورة مياه 2, offset: 564, width: 70, height: 210, swing: right}
+  - {name: فاصل غرفة 3, exterior: false, start: [516, 836], end: [788, 836]}
+  - {name: فاصل الدورتين, exterior: false, start: [516, 1012], end: [788, 1012]}
+
+rooms:
+  - {name: الصالة + المطبخ الأمريكي (ارتفاع مزدوج), rect: [6, 6, 782, 470], label: [470, 420]}
+  - {name: غرفة نوم 1, rect: [6, 482, 302, 830], label: [150, 720]}
+  - {name: غرفة نوم 2, rect: [6, 842, 302, 1182], label: [150, 920]}
+  - {name: الممر والدرج, rect: [314, 482, 510, 1182], kind: corridor, label: [462, 560]}
+  - {name: غرفة نوم 3, rect: [522, 482, 782, 830], label: [700, 760]}
+  - {name: دورة مياه 1, rect: [522, 842, 782, 1006], wet: true, label: [610, 960]}
+  - {name: دورة مياه 2, rect: [522, 1018, 782, 1182], wet: true, label: [610, 1140]}
+
+mezzanines:
+  - name: الغرفة العلوية (علّية)
+    rect: [6, 476, 782, 1182]
+    level: 290
+    railing: [S]
+    headroom: [308, 480]
+    railing_span: [151, 637]
+    holes:   # فتحة الدرج + دربزين (مفتوحة من جهة الوصول بالشمال)
+      - {rect: [308, 665, 410, 906], railing: [S, E, W]}
+
+straight_stairs:   # مستقيم في الممر: 14 قائمة × 20.7 ونائمة 23 — يطلع للعلّية وجهك للغرفة
+  - {name: درج العلّية, start: [314, 600], dir: N, width: 90, rise: 290, riser: 20.7, tread: 23, rail: E}
+
+bumps:   # البروز الخلفي: دورة مياه الغرفة العلوية فوق، والمستودع تحتها (بابه من آخر الممر)
+  - {wall: شمال, offset: 304, width: 180, depth: 200, base: -45, floor_z: 290, eave: 490, pitch: 40, overhang: 12,
+     name_up: دورة مياه الغرفة العلوية, name_down: مستودع, door_h: 0}
+
+decks:
+  - {name: عتبة المدخل الرئيسي, rect: [314, -126, 474, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 160}}
+  - {name: عتبة المدخل الجانبي, rect: [794, 320, 914, 450], height: 45, railing: [], stairs: {side: E, offset: 0, width: 130}}
+
+furniture:
+  # الصالة: جلسة L لـ 10 أشخاص (4 + 3 + كرسيين + ركن) تطل على الزجاج، والمطبخ الأمريكي شرق بجزيرة
+  - {name: كنبة, rect: [6, 60, 86, 440]}
+  - {name: كنبة, rect: [86, 380, 300, 460]}
+  - {name: طاولة, rect: [140, 170, 250, 320]}
+  - {name: كرسي, rect: [320, 150, 395, 225]}
+  - {name: كرسي, rect: [320, 250, 395, 325]}
+  - {name: ثلاجة, rect: [717, 6, 782, 71]}
+  - {name: كاونتر, rect: [722, 71, 782, 320]}
+  - {name: كاونتر جزيرة, rect: [560, 140, 640, 340]}
+  # غرفة 1: رأس السرير على الفاصل المصمت (مو تحت الشباك)
+  - {name: سرير 140×200, rect: [70, 482, 210, 682]}
+  - {name: دولاب, rect: [6, 776, 186, 830]}
+  # غرفة 2
+  - {name: سرير 140×200, rect: [80, 982, 220, 1182]}
+  - {name: دولاب, rect: [6, 842, 186, 902]}
+  # غرفة 3
+  - {name: سرير 120×200, rect: [600, 482, 720, 682]}
+  - {name: دولاب, rect: [602, 770, 782, 830]}
+  # دورة مياه 1 و 2
+  - {name: دش, rect: [692, 916, 782, 1006], shape: shower}
+  - {name: "", rect: [742, 846, 782, 896], shape: wc}
+  - {name: "", rect: [690, 846, 736, 892], shape: basin}
+  - {name: دش, rect: [692, 1092, 782, 1182], shape: shower}
+  - {name: "", rect: [742, 1022, 782, 1072], shape: wc}
+  - {name: "", rect: [690, 1022, 736, 1068], shape: basin}
+  # الغرفة العلوية (floor: -1 + z = منسوب العلّية): سرير 160 بالحزام الأوسط، والممر من الدرج للدورة فاضي
+  - {name: سرير 160×200, rect: [200, 500, 400, 660], floor: -1, z: 290}
+  # دورة مياه الغرفة العلوية (داخل البروز)
+  - {name: دش, rect: [392, 1302, 472, 1382], shape: shower, floor: -1, z: 290}
+  - {name: "", rect: [316, 1336, 356, 1382], shape: wc, floor: -1, z: 290}
+  - {name: "", rect: [316, 1280, 362, 1326], shape: basin, floor: -1, z: 290}
+
+notes:
+  - "تجهيز تكييف: تمديدات مكيف سبليت لكل غرفة وللصالة والعلّية (مواسير نحاس + تصريف + فيش 20 أمبير)."
+  - "تجهيز إنارة: سبوتات بالأسقف، إنارة مخفية تحت حافة العلّية، ومخارج إنارة خارجية عند المدخلين."
