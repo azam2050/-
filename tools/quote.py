@@ -23,20 +23,27 @@ TPL = ROOT / "contracts" / "quote_template.html"
 DEFAULT_MARKUP = 15
 
 
-def priced(d):
-    """يحسب أسعار العميل لكل بند وقسم + ملخص التكلفة الداخلي."""
+def priced(d, mk_all=None, absorb=0.0):
+    """يحسب أسعار العميل لكل بند وقسم + ملخص التكلفة الداخلي.
+    mk_all: هامش موحّد لكل الأقسام اللي عليها هامش (يستخدمه target_total)، absorb: فرق يُضاف على البند absorb: true."""
+    if mk_all is None and d.get("target_total"):
+        return _to_target(d)
     step = d.get("round_to", 50)
     secs, base_total, total = [], 0.0, 0.0
     n = 0
     for s in d["sections"]:
         mk = s.get("markup", DEFAULT_MARKUP)
+        if mk_all is not None and mk:
+            mk = mk_all
         rows, s_base, s_total = [], 0.0, 0.0
         for it in s["items"]:
-            m = it.get("markup", mk)
+            m = mk if mk_all is not None and mk else it.get("markup", mk)
             unit = it["base"] * (1 + m / 100)
             if m:   # التقريب يتناسب مع السعر: الأسعار الصغيرة (م²، م.ط) ما تنتفخ بالتقريب
                 st = 5 if unit < 500 else 10 if unit < 5000 else step
                 unit = math.ceil(unit / st) * st
+            if it.get("absorb"):
+                unit += absorb / it["qty"]
             n += 1
             amt = unit * it["qty"]
             rows.append(dict(it, n=n, unit_price=money(unit), amount=money(amt), qty_s=f"{it['qty']:g}"))
@@ -46,6 +53,22 @@ def priced(d):
         base_total += s_base
         total += s_total
     return secs, base_total, total
+
+
+def _to_target(d):
+    """target_total: الإجمالي اللي يبيه المصنع — يحسب هامش موحّد للأقسام اللي عليها هامش (الكوخ يبقى بسعره)،
+    وفرق التقريب الأخير يدخل على البند المعلّم absorb: true."""
+    target = float(d["target_total"])
+    lo, hi = -50.0, 200.0
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if priced(d, mid)[2] < target else (lo, mid)
+    mk = lo
+    _s, _b, total = priced(d, mk)
+    if not any(it.get("absorb") for s in d["sections"] for it in s["items"]):
+        sys.exit("target_total يحتاج بند عليه absorb: true")
+    d["_markup"] = mk
+    return priced(d, mk, absorb=target - total)
 
 
 def payments(d, total):
@@ -78,6 +101,8 @@ def render(d):
 
 def internal(d):
     secs, base, total = priced(d)
+    if d.get("_markup") is not None:
+        print(f"الهامش الموحّد للوصول لـ {float(d['target_total']):,.0f}: {d['_markup']:.2f}%")
     print(f"{'القسم':<44}{'التكلفة':>12}{'سعر العميل':>12}{'الربح':>10}")
     for s in secs:
         print(f"{s['name']:<44}{s['base']:>12,.0f}{s['value']:>12,.0f}{s['value'] - s['base']:>10,.0f}")
