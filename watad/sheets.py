@@ -59,6 +59,9 @@ def title(ax, text, sub=""):
     ax.set_title(text + (f"\n{sub}" if sub else ""), fontsize=15, pad=12)
 
 
+C_IN = "#9a5a1e"     # أبعاد داخلية صافية
+
+
 def dim(ax, a, b, off, text=None, fs=7, color=C_DIM, ext=True):
     """خط بُعد بين a و b مُزاح off على يسار الاتجاه a→b."""
     dx, dy = b[0] - a[0], b[1] - a[1]
@@ -410,6 +413,10 @@ def plan_sheet(ctx, floor=0):
         if big:
             ax.text(cx, cy, f"{r.w / 100:.2f} × {r.h / 100:.2f} م  |  {r.area_m2:.1f} م2",
                     ha="center", va="top", fontsize=8)
+        if r.kind != "stair" and r.area_m2 >= 2.5:        # الأبعاد الداخلية الصافية لكل فراغ (قاعدة المصنع)
+            rx0, ry0, rx1, ry1 = r.rect
+            dim(ax, (rx0, ry1 - 18), (rx1, ry1 - 18), 0, fs=6, color=C_IN, ext=False)
+            dim(ax, (rx1 - 18, ry1), (rx1 - 18, ry0), 0, fs=6, color=C_IN, ext=False)
     # رموز الفتحات
     for w in P.walls:
         for o in w.openings:

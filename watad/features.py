@@ -284,6 +284,51 @@ def _slab_pieces(r, holes):
     return pieces
 
 
+def roof_z(P, rules, x, y):
+    """منسوب بطن السقف (الجملون) عند نقطة — للجدران اللي تطلع لين السقف."""
+    from .model import outer_bbox
+    bx0, by0, bx1, by1 = outer_bbox(P, rules)
+    tp = math.tan(math.radians(P.roof.pitch_deg))
+    if P.roof.ridge_axis == "y":
+        d = min(x - bx0, bx1 - x)
+    else:
+        d = min(y - by0, by1 - y)
+    return P.roof_base + max(0, d) * tp - 18
+
+
+def add_mezz_walls_3d(S, P, rules, m):
+    """جدار مقفل على حافة الميزانين من أرضيته لين بطن السقف (خصوصية غرفة النوم العلوية)."""
+    lv = m["level"]
+    for side in m.get("walls", []):
+        p0, p1 = _mezz_edges(m)[side]
+        w = Wall("mzw", p0, p1)
+        L = w.length
+        ts = [0, L]
+        if P.roof.ridge_axis == "y" and side in "SN" or P.roof.ridge_axis == "x" and side in "EW":
+            from .model import outer_bbox
+            bx0, by0, bx1, by1 = outer_bbox(P, rules)
+            c = (bx0 + bx1) / 2 if P.roof.ridge_axis == "y" else (by0 + by1) / 2
+            for t in (abs(c - (p0[0] if P.roof.ridge_axis == "y" else p0[1])),):
+                if 0 < t < L:
+                    ts.insert(1, t)
+        from .model3d import _segments
+        doors = [(d0 - min(p0[0], p1[0]) if side in "SN" else d0 - min(p0[1], p1[1]),
+                  d1 - min(p0[0], p1[0]) if side in "SN" else d1 - min(p0[1], p1[1]))
+                 for d0, d1 in m.get("wall_doors", {}).get(side, [])]
+        if side in "NW":
+            doors = [(L - b_, L - a_) for a_, b_ in doors]
+
+        def piece(ta, tb, zb):
+            cut_ts = [ta] + [t for t in ts if ta < t < tb] + [tb]
+            top = [(t, roof_z(P, rules, *w.point(t, 0))) for t in cut_ts]
+            S.wprism("wood_in", w, [(ta, zb), (tb, zb)] + list(reversed(top)), -6, 6)
+        for ta, tb in _segments(0, L, doors):
+            piece(ta, tb, lv)
+        for ta, tb in doors:                                  # فوق الباب (ساكف لين السقف)
+            piece(ta, tb, lv + 210)
+            S.wbox("door", w, ta + 4, tb - 4, -2, 2, lv, lv + 205)
+
+
 def add_mezz_3d(S, P, rules, style, cut=None):
     import yaml
     from .model3d import railing_run
@@ -329,6 +374,8 @@ def add_mezz_3d(S, P, rules, style, cut=None):
                 for a_, b_ in _segments(0, w.length, gs):
                     railing_run(S, w, a_, b_, lv, hname, lib[hname], height=100)
         S.box("joist", x0, y0, lv - 25, x1, y0 + 7, lv - 4)               # جسر الحافة
+        if not cut:
+            add_mezz_walls_3d(S, P, rules, m)
         name = m.get("railing_style", "vertical_balusters")
         spec = lib[name]
         for side in m.get("railing", ["S"]):
@@ -449,7 +496,8 @@ def draw_mezz_on_ground(ax, P):
     for m in P.mezzanines:
         x0, y0, x1, y1 = m["rect"]
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a", lw=0.8, ls=(0, (6, 4)), zorder=2))
-        ax.text((x0 + x1) / 2, y0 + 10, f"حد الميزانين فوق (منسوب +{m['level'] / 100:.2f})", ha="center", va="bottom",
+        ax.text((x0 + x1) / 2, y0 + 10, f"حد الميزانين فوق (منسوب +{m['level'] / 100:.2f})"
+                + (" — غرفة مقفلة بجدار" if m.get("walls") else ""), ha="center", va="bottom",
                 fontsize=6.5, color="#6b4f3a", zorder=5)
     for st in P.straight_stairs:
         steps, n, r = stair_steps(st)
@@ -490,6 +538,19 @@ def mezz_sheet(ctx):
         for side in m.get("railing", ["S"]):
             p0, p1 = _mezz_edges(m)[side]
             ax.plot([p0[0], p1[0]], [p0[1], p1[1]], color="#8b5a2b", lw=2.4, zorder=4)
+        for side in m.get("walls", []):             # جدار مقفل (خصوصية)
+            p0, p1 = _mezz_edges(m)[side]
+            wv = Wall("mzw", p0, p1)
+            q = [wv.point(0, -6), wv.point(wv.length, -6), wv.point(wv.length, 6), wv.point(0, 6)]
+            ax.add_patch(Polygon(q, closed=True, fc="#d9c7ae", ec="k", lw=0.9, hatch="////", zorder=4))
+            for d0, d1 in m.get("wall_doors", {}).get(side, []):
+                if side in "SN":
+                    ax.plot([d0, d1], [p0[1], p0[1]], color="white", lw=4, zorder=5)
+                    ax.plot([d0, d1], [p0[1], p0[1]], color="#10a010", lw=1.2, zorder=6)
+                    ax.text((d0 + d1) / 2, p0[1] + 16, "باب الغرفة", ha="center", fontsize=7, color="#10a010", zorder=6)
+                else:
+                    ax.plot([p0[0], p0[0]], [d0, d1], color="white", lw=4, zorder=5)
+                    ax.plot([p0[0], p0[0]], [d0, d1], color="#10a010", lw=1.2, zorder=6)
         for g0, g1 in m.get("gaps", []):
             ax.plot([g0, g1], [my0, my0], color="white", lw=3, zorder=5)
         for hd in m.get("holes", []):                 # فتحة الدرج بالأرضية + الدربزين حولها

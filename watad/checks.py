@@ -295,4 +295,43 @@ def furniture_conflicts(project, half):
                         if tall and overlap(zone, f.rect, 2):
                             out.append(("تنبيه", f"{f.name} قدام {o.name}",
                                         f"قطعة عالية لاصقة بالشباك في {w.title or w.name}."))
+    # ممر حول السرير (قاعدة المصنع): ≥ 60 سم على جنب طويل واحد على الأقل وعند الرجلين
+    for f in project.furniture:
+        if "سرير" not in (f.name or ""):
+            continue
+        rooms = [r for r in project.rooms if r.floor == f.floor and r.kind != "stair"
+                 and r.rect[0] - 2 <= f.rect[0] and f.rect[2] <= r.rect[2] + 2
+                 and r.rect[1] - 2 <= f.rect[1] and f.rect[3] <= r.rect[3] + 2]
+        if not rooms:
+            continue
+        rx0, ry0, rx1, ry1 = rooms[0].rect
+        x0, y0, x1, y1 = f.rect
+        gap = {"W": x0 - rx0, "E": rx1 - x1, "S": y0 - ry0, "N": ry1 - y1}
+        for g in project.furniture:                      # الدولاب/الطاولة جنب السرير تاكل من الممر
+            if g is f or g.floor != f.floor or g.shape:
+                continue
+            gx0, gy0, gx1, gy1 = g.rect
+            if min(gx1 - gx0, gy1 - gy0) < 45 and max(gx1 - gx0, gy1 - gy0) < 50:   # كومدينة صغيرة
+                continue
+            if gy0 < y1 and y0 < gy1:
+                if gx1 <= x0 + 1:
+                    gap["W"] = min(gap["W"], x0 - gx1)
+                if gx0 >= x1 - 1:
+                    gap["E"] = min(gap["E"], gx0 - x1)
+            if gx0 < x1 and x0 < gx1:
+                if gy1 <= y0 + 1:
+                    gap["S"] = min(gap["S"], y0 - gy1)
+                if gy0 >= y1 - 1:
+                    gap["N"] = min(gap["N"], gy0 - y1)
+        long_x = (x1 - x0) >= (y1 - y0)                    # الطول على x ← الجوانب الطويلة S/N
+        sides = ("S", "N") if long_x else ("W", "E")
+        ends = ("W", "E") if long_x else ("S", "N")
+        head = min(ends, key=lambda k: gap[k])            # الرأس على أقرب جدار
+        foot = ends[1] if head == ends[0] else ends[0]
+        wide = min(x1 - x0, y1 - y0) >= 140             # سرير مزدوج: الجنبين لازم ≥ 55 (نزول من الجهتين)
+        side_ok = min(gap[sides[0]], gap[sides[1]]) >= 55 if wide else max(gap[sides[0]], gap[sides[1]]) >= 60
+        if not side_ok or gap[foot] < 60:
+            out.append(("تنبيه", f"ممر حول {f.name} ضيق",
+                        f"الجنبين {gap[sides[0]]:.0f} / {gap[sides[1]]:.0f} سم وعند الرجلين {gap[foot]:.0f} سم "
+                        "— السرير المزدوج يحتاج ≥ 55 سم من الجهتين و ≥ 60 عند الرجلين (وسّع الغرفة أو غيّر اتجاه السرير)."))
     return out
