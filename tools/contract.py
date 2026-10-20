@@ -7,6 +7,7 @@
 البيانات المتغيرة (اللي يعلّم عليها المصنع بالأحمر) — مثال في contracts/contract_example.yaml:
   date, client_name, client_id, client_phone, client_address, project_type, site, area,
   total, payments [4 نسب %], duration (يوم), warranty (سنوات)
+  title (اختياري): عنوان العقد فوق — الافتراضي "عقد تنفيذ وإنشاء كوخ خشبي" (مثل: "عقد زيارة وتصميم")
 الباقي يُحسب تلقائيًا: اليوم من التاريخ، المبلغ كتابة، مبالغ الدفعات من النسب.
 ملفات بيانات العملاء ما تُرفع للمستودع (contracts/data/ في .gitignore).
 """
@@ -25,6 +26,7 @@ PAYMENTS = [("الدفعة الأولى عند توقيع العقد", "p1"),
             ("الدفعة الثانية عند بدء التصنيع/التنفيذ", "p2"),
             ("الدفعة الثالثة عند وصول المشروع للموقع/بدء التركيب", "p3"),
             ("الدفعة النهائية عند اكتمال التنفيذ", "p4")]
+DEFAULT_TITLE = "عقد تنفيذ وإنشاء كوخ خشبي"
 DAYS = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"]
 
 ONES = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"]
@@ -130,7 +132,9 @@ def render(data=None, blank=False):
         return jinja2.utils.markupsafe.Markup(f'<span class="f">{html.escape(str(data.get(key, "")))}</span>')
 
     env = jinja2.Environment(autoescape=True)
-    src = env.from_string(TPL.read_text(encoding="utf-8")).render(fld=fld, blank=blank, payments=PAYMENTS)
+    title = (data or {}).get("title") or DEFAULT_TITLE
+    src = env.from_string(TPL.read_text(encoding="utf-8")).render(fld=fld, blank=blank, payments=PAYMENTS,
+                                                                  doc_title=title)
     pdf = HTML(string=src, base_url=str(TPL)).write_pdf()
     return pdf, fields
 
