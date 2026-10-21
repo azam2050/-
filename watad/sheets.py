@@ -655,9 +655,27 @@ def elevation(ax, ctx, w):
         if facing:                 # المثلث مواجه لنا: حشوة + سقفه + شباك
             ta, tc, tb = (tt(*P_(g["wall"], g["c"] + d_)) for d_ in (-g["hw"], 0, g["hw"]))
             ta, tb = min(ta, tb), max(ta, tb)
-            ax.add_patch(Polygon([(ta, H), (tc, g["zr"]), (tb, H)], closed=True, fc="white", ec="k", lw=1, zorder=3))
+            cgd = P.roof.cross_gables[g["i"]]
+            glass = cgd.get("glass")
+            ax.add_patch(Polygon([(ta, H), (tc, g["zr"]), (tb, H)], closed=True, fc="#e3f0fb" if glass else "white",
+                                 ec="k", lw=1, zorder=3))
+            if glass:                # مثلث زجاج كامل بقواطع خشب (شاليه)
+                n_m = max(2, round((tb - ta) / 110))
+                for k in range(1, n_m):
+                    xm = ta + (tb - ta) * k / n_m
+                    ax.plot([xm, xm], [H, g["zr"] - abs(xm - tc) * g["t"]], color="#6b4f3a", lw=1.2, zorder=3.2)
+                zt = H + (g["zr"] - H) * 0.45
+                dxt = (g["zr"] - zt) / g["t"]
+                ax.plot([tc - dxt, tc + dxt], [zt, zt], color="#6b4f3a", lw=1.2, zorder=3.2)
+                ax.text(tc, H + 25, "زجاج", ha="center", fontsize=6, color=C_WIN, zorder=4)
+            nb = cgd.get("beams", 0)
+            for k in range(-nb, nb + 1):           # أطراف الجسور الحاملة بارزة تحت سقف المثلث
+                d_ = k * g["hw"] / (nb + 1) if nb else 0
+                zb_ = g["zr"] - abs(d_) * g["t"]
+                if nb:
+                    ax.add_patch(Rectangle((tc + d_ - 10, zb_ - 30), 20, 30, fc="#c9a27a", ec="k", lw=0.6, zorder=3.6))
             yy = H + cover
-            while yy < g["zr"] - 5:
+            while not glass and yy < g["zr"] - 5:
                 dxg = (g["zr"] - yy) / g["t"]
                 ax.plot([tc - dxg, tc + dxg], [yy, yy], color="#999", lw=0.4, zorder=3)
                 yy += cover
@@ -665,12 +683,12 @@ def elevation(ax, ctx, w):
             lower = [(ta - g["ov"], H - e2), (tc, g["zr"]), (tb + g["ov"], H - e2)]
             ax.add_patch(Polygon(lower + [(x, z + kd) for x, z in lower][::-1], closed=True, fc="#fff3e0",
                                  ec=C_ROOF, lw=0.9, zorder=3))
-            cgd = P.roof.cross_gables[g["i"]]
-            ww = cgd.get("window_width", 110)
+            ww = 0 if glass else cgd.get("window_width", 110)
             wz1 = min(H + cgd.get("window_height", 140), g["zr"] - ww / 2 * g["t"] - 25)
             if ww > 0:
                 ax.add_patch(Rectangle((tc - ww / 2, H + 15), ww, wz1 - H - 15, fc="white", ec=C_WIN, lw=1, zorder=3))
-            ax.text(tc, H + 18 + (wz1 - H) / 2, "مثلث بارز", ha="center", fontsize=6, color=C_WIN, zorder=4)
+            if not glass:
+                ax.text(tc, H + 18 + (wz1 - H) / 2, "مثلث بارز", ha="center", fontsize=6, color=C_WIN, zorder=4)
             level(ax, L + g["ov"] + 30 + ext_r, g["zr"], g["zr"] / 100, "قمة المثلث")
         elif (abs(uy) < 1e-6) == (g["axis"] == "y"):   # واجهة الجملون: بروز المثلث من الجنب
             xo = g["wall"] + g["sg"] * g["ov"]

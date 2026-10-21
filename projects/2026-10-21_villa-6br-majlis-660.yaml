@@ -5,9 +5,9 @@
 #         جلسة أمامية، وفتحة (فراغ) بين الصالة العلوية والأرضية — اللي فوق يشوف تحت.
 #  الخصوصية: مدخل الضيوف للمجلس (ركن الواجهة الغربي) منفصل عن مدخل العائلة (الصالة الصغيرة).
 #  المسقط 22.00 × 15.00 لكل دور = 330 × 2 = 660 م² (البلكونات 2 × 22.00 × 1.80 = 79.2 م²).
-#  السقف: شاليه مثل صورة العميل — جملون واحد عريض على الواجهة بميل 22°، مثلث زجاج أمامي، رفرف 1.20 م
-#         + امتداد 1.00 م قدام وورا فوق البلكونات، على جسور حاملة طولية بارزة (3 بكل جهة + جسر القمة)
-#         عشان المداد يكون قطع ≤ طبلية 520 (المداد الواحد 8.8 م بدونها).
+#  السقف: شاليه مثل صورة العميل — سقف رئيسي 22° رفرفه 1.20 م على الواجهة والخلف، وجملون أمامي كبير بالنص
+#         (10 م، 31° — قمته بمستوى القمة الرئيسية) بمثلث زجاج كامل ورفرف 1.50 م على جسور خشب بارزة بكوابيل.
+#         المدادات قطع ≤ طبلية 520 فوق الجسور الحاملة الطولية.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: villa-6br-majlis-660
 title: فيلا دورين — مجلس ومقلط + 6 غرف — 22.00 × 15.00
@@ -25,7 +25,14 @@ floors:
   - {name: الدور الأرضي, level: 0, height: 280}
   - {name: الدور الأول, level: 305, height: 280}
 slab_height: 45
-roof: {ridge_axis: y, pitch_deg: 22, overhang: 120, ext_start: 100, ext_end: 100, purlins: 3, purlin: {w: 20, h: 30}}   # شاليه مثل صورة العميل
+roof:      # شاليه مثل صورة العميل: سقف رئيسي رفرفه على الواجهة + جملون أمامي كبير بالنص بزجاج كامل وجسور بارزة بكوابيل
+  ridge_axis: x
+  pitch_deg: 22
+  overhang: 120
+  purlins: 2                # جسور حاملة طولية (2 بكل جهة + القمة) — المداد قطع ≤ طبلية 520
+  purlin: {w: 20, h: 30}
+  cross_gables:
+    - {side: S, center: 1094, width: 1000, pitch: 31, overhang: 150, glass: true, beams: 2}
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -117,13 +124,16 @@ walls:
   - name: ب-جنوب
     floor: 1
     title: الواجهة الأمامية
-    gable_glass: true
     start: [0, 0]
     end: [2188, 0]
     openings:
       - {kind: door, code: ب8, name: ب8 بلكونة غرفة 1, offset: 150, width: 140, height: 220, leaves: 2, grid: [2, 5]}
-      - {kind: door, code: ب9, name: ب9 سحاب الجلسة على البلكونة, offset: 750, width: 300, height: 220, style: sliding, leaves: 3}
-      - {kind: window, code: ش1, name: ش1 الجلسة, offset: 1150, width: 160, height: 140, sill: 80, grid: [2, 3]}
+      # تحت المثلث الزجاج: واجهة زجاج من الأرضية للسقف (مثل الشاليه) + سحاب على البلكونة
+      - {kind: window, code: ز1, name: زجاج ثابت الجلسة, offset: 600, width: 140, height: 260, sill: 10, style: fixed}
+      - {kind: door, code: ب9, name: ب9 سحاب الجلسة على البلكونة, offset: 750, width: 300, height: 260, style: sliding, leaves: 3}
+      - {kind: window, code: ز1, name: زجاج ثابت الجلسة, offset: 1060, width: 180, height: 260, sill: 10, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت الجلسة, offset: 1250, width: 180, height: 260, sill: 10, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت الجلسة, offset: 1440, width: 150, height: 260, sill: 10, style: fixed}
       - {kind: door, code: ب8, name: ب8 بلكونة غرفة 3, offset: 1900, width: 140, height: 220, leaves: 2, grid: [2, 5]}
   - name: ب-شرق
     floor: 1

@@ -305,14 +305,28 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                     pts.append((*to_xy(a, b), zb(a, side) + zo * kv))
             S.hexa(mat, pts)
 
+        from .roof import cross_gables as _cgs
         for side, eave in gable_sides:
             aa, ab = (eave, ac) if side < 0 else (ac, eave)
-            slope_hexa("sheathing", side, aa, ab, B0, B1, rafter_d, rafter_d + 2.5)     # تطبيق
-            slope_hexa("roof_tiles", side, aa, ab, B0, B1, rafter_d + 2.5, rafter_d + 6.5)
+            # الرفرف الرئيسي ينقطع خلف المثلث البارز (واجهة المثلث تنزل بدون شريط رفرف قدامها — مثل الشاليه)
+            wall_a = a_lo if side < 0 else a_hi
+            cuts = sorted((g["c"] - g["hw"], g["c"] + g["hw"]) for g in _cgs(project, rules)
+                          if abs(g["wall"] - wall_a) < 1)
+            spans, b_at = [], B0
+            for c0, c1 in cuts:
+                if c0 > b_at:
+                    spans.append((b_at, c0, aa, ab))
+                spans.append((c0, c1) + ((wall_a, ab) if side < 0 else (aa, wall_a)))
+                b_at = c1
+            spans.append((b_at, B1, aa, ab))
+            for s0, s1, sa, sb in spans:
+                slope_hexa("sheathing", side, sa, sb, s0, s1, rafter_d, rafter_d + 2.5)     # تطبيق
+                slope_hexa("roof_tiles", side, sa, sb, s0, s1, rafter_d + 2.5, rafter_d + 6.5)
             for pos in rafter_positions(project, rules):
                 b0 = max(pos - rafter_t / 2, B0)
                 b1 = min(pos + rafter_t / 2, B1)
-                slope_hexa("rafters", side, aa, ab, b0, b1, 0, rafter_d)
+                sa, sb = next(((sa, sb) for s0, s1, sa, sb in spans if s0 <= pos <= s1), (aa, ab))
+                slope_hexa("rafters", side, sa, sb, b0, b1, 0, rafter_d)
             if not style["exposed_rafter_tails"]:     # لوح واجهة المداد
                 fa, fb = sorted((eave, eave + side * tr["fascia"]["t"]))
                 ztop = zb(eave, side) + (rafter_d + 6.5) * kv
@@ -387,9 +401,38 @@ def _cross_gables(S, project, rules, half):
         P = (lambda a, b, z: (a, b, z)) if ax_y else (lambda a, b, z: (b, a, z))
         tri = [P(wall, c - hw, H), P(wall, c, zr), P(wall, c + hw, H)]
         inner = [P(wall - sg * 2 * half, c - hw, H), P(wall - sg * 2 * half, c, zr), P(wall - sg * 2 * half, c + hw, H)]
-        S.poly("wood", tri + inner, [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)])
         cg = project.roof.cross_gables[g["i"]]
-        ww = cg.get("window_width", 110)
+        tface = [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)]
+        if cg.get("glass"):         # مثلث زجاج كامل بقواطع خشب (شاليه)
+            gl = [P(wall - sg * 1, c - hw, H), P(wall - sg * 1, c, zr), P(wall - sg * 1, c + hw, H)]
+            gi = [P(wall - sg * 3, c - hw, H), P(wall - sg * 3, c, zr), P(wall - sg * 3, c + hw, H)]
+            S.poly("glass", gl + gi, tface)
+            n_m = max(2, round(2 * hw / 110))
+            for k in range(1, n_m):
+                d_ = -hw + 2 * hw * k / n_m
+                zt_ = zr - abs(d_) * g["t"]
+                a0, a1 = P(wall + sg * 4, c + d_ - 3, 0), P(wall - sg * 6, c + d_ + 3, 0)
+                S.box("frame", min(a0[0], a1[0]), min(a0[1], a1[1]), H, max(a0[0], a1[0]), max(a0[1], a1[1]), zt_)
+            zt_ = H + (zr - H) * 0.45
+            dxt = (zr - zt_) / g["t"]
+            a0, a1 = P(wall + sg * 4, c - dxt, 0), P(wall - sg * 6, c + dxt, 0)
+            S.box("frame", min(a0[0], a1[0]), min(a0[1], a1[1]), zt_ - 3, max(a0[0], a1[0]), max(a0[1], a1[1]), zt_ + 3)
+        else:
+            S.poly("wood", tri + inner, tface)
+        nb = cg.get("beams", 0)     # جسور حاملة بارزة (شاليه): جسر القمة + nb بكل جهة، أطرافها برا الرفرف بكوابيل
+        for k in range(-nb, nb + 1) if nb else ():
+            d_ = k * hw / (nb + 1)
+            ztop = zr - abs(d_) * g["t"]
+            a0, a1 = P(wall - sg * g["reach"] * 0.5, c + d_ - 10, 0), P(wall + sg * (g["ov"] + 20), c + d_ + 10, 0)
+            S.box("trim", min(a0[0], a1[0]), min(a0[1], a1[1]), ztop - 30, max(a0[0], a1[0]), max(a0[1], a1[1]), ztop)
+            b0, b1 = P(wall, c + d_ - 8, 0), P(wall + sg * 90, c + d_ + 8, 0)      # كابول تحت طرف الجسر
+            zb0 = ztop - 30
+            S.hexa("trim", [(b0[0], b0[1], zb0 - 70), (b1[0], b0[1], zb0), (b1[0], b1[1], zb0), (b0[0], b1[1], zb0 - 70),
+                            (b0[0], b0[1], zb0 - 55), (b1[0], b0[1], zb0 + 1), (b1[0], b1[1], zb0 + 1), (b0[0], b1[1], zb0 - 55)]
+                   if ax_y else
+                   [(b0[0], b0[1], zb0 - 70), (b0[0], b1[1], zb0), (b1[0], b1[1], zb0), (b1[0], b0[1], zb0 - 70),
+                    (b0[0], b0[1], zb0 - 55), (b0[0], b1[1], zb0 + 1), (b1[0], b1[1], zb0 + 1), (b1[0], b0[1], zb0 - 55)])
+        ww = 0 if cg.get("glass") else cg.get("window_width", 110)
         wz0 = H + 15
         wz1 = min(H + cg.get("window_height", 140), zr - (ww / 2) * g["t"] - 25)
         if wz1 - wz0 > 40 and ww > 0:

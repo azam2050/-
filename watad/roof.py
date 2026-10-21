@@ -113,7 +113,9 @@ def cross_gables(project, rules):
             wall = y0 if side == "S" else y1
             sg = -1 if side == "S" else 1
             c = cg.get("center", (x0 + x1) / 2)
-        rafter_len = (hw + ov) / math.cos(math.radians(pitch))
+        nb = cg.get("beams", 0)              # جسور حاملة (شاليه): المداد قطع فوقها
+        seg = hw / (nb + 1)
+        rafter_len = (max(seg + ov + 30, seg + 60) if nb else hw + ov) / math.cos(math.radians(pitch))
         n_side = math.floor((reach + ov) / rules["roof"]["rafter_spacing"]) + 1
         valley = math.sqrt((reach + ov) ** 2 + (hw + ov) ** 2 + (rise + ov * t) ** 2)
         out.append({"i": i, "side": side, "axis": r.ridge_axis, "wall": wall, "sg": sg, "c": c, "hw": hw, "ov": ov,
