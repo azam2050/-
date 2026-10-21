@@ -1323,7 +1323,8 @@ def build_client_pdf(ctx, path, with_perspective=True):
         ([(mezz_sheet(ctx), "1:50")] if ctx["project"].mezzanines else []) + \
         [(e, "1:50") for e in elevation_sheets(ctx)] + \
         [(roof_sheet(ctx), "1:50"), (schedule_sheet(ctx), "—"), (areas_sheet(ctx), "—")]
-    if (ctx["project"].site or {}).get("costs"):
+    # site.cost_pages: false ← صفحات التكلفة التقديرية ما تطلع بنسخة العميل (التسعير بعرض سعر منفصل — ملاحظة المصنع)
+    if (ctx["project"].site or {}).get("costs") and ctx["project"].site.get("cost_pages", True):
         from .site import cost_sheet, fitout_sheet
         pages.append((cost_sheet(ctx), "—"))
         if ctx["project"].site.get("fitout"):
