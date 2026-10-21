@@ -354,6 +354,31 @@ def draw_stairs_plan(ax, P_full, f):
                 f"{n} قائمة × {r:.1f} سم", ha="center", va="center", fontsize=6.5, color="#6b4f3a")
 
 
+def draw_voids_plan(ax, P_full, f):
+    """الفراغ المزدوج: بالدور العلوي فتحة بالأرضية عليها X ودربزين، وبالدور اللي تحته خط متقطع (فوقه مفتوح)."""
+    for v in P_full.voids:
+        vf = v.get("floor", 1)
+        if f not in (vf, vf - 1):
+            continue
+        x0, y0, x1, y1 = v["rect"]
+        if f == vf:
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a", lw=0.6))
+            ax.plot([x0, x1], [y0, y1], color="#6b4f3a", lw=0.4)
+            ax.plot([x0, x1], [y1, y0], color="#6b4f3a", lw=0.4)
+            segs = {"S": ([x0, x1], [y0, y0]), "N": ([x0, x1], [y1, y1]), "W": ([x0, x0], [y0, y1]),
+                    "E": ([x1, x1], [y0, y1])}
+            for sd in v.get("railing", ["S", "E", "W", "N"]):
+                ax.plot(*segs[sd], color="#3a2a1e", lw=2.0, solid_capstyle="butt")
+            ax.text((x0 + x1) / 2, (y0 + y1) / 2 + 22, "فراغ مزدوج الارتفاع", ha="center", va="center",
+                    fontsize=7.5, color="#6b4f3a", bbox=dict(fc="white", ec="none", pad=1))
+            ax.text((x0 + x1) / 2, (y0 + y1) / 2 - 22, f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f} + دربزين",
+                    ha="center", va="center", fontsize=6.5, color="#6b4f3a", bbox=dict(fc="white", ec="none", pad=1))
+        else:
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a", lw=0.5, ls=(0, (6, 4))))
+            ax.text((x0 + x1) / 2, y0 + 25, "فوقه فراغ مفتوح على الدور الأول", ha="center", va="bottom",
+                    fontsize=6.5, color="#6b4f3a", bbox=dict(fc="white", ec="none", pad=1))
+
+
 def plan_sheet(ctx, floor=0):
     P_full = ctx["project"]
     P, rules = floor_view(P_full, floor), ctx["rules"]
@@ -397,6 +422,7 @@ def plan_sheet(ctx, floor=0):
     draw_openings_plan(ax, P, rules)
     draw_furniture(ax, P)
     draw_stairs_plan(ax, P_full, floor)
+    draw_voids_plan(ax, P_full, floor)
     from .features import draw_plan as _feat_plan
     _feat_plan(ax, P_full, rules, floor)
     if floor == 0:

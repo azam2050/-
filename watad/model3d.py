@@ -202,7 +202,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         lev = project.level(f)
         if cut and cut <= lev:
             continue
-        holes = [st["rect"] for st in project.stairs if st.get("from", 0) == f - 1]
+        holes = [st["rect"] for st in project.stairs if st.get("from", 0) == f - 1] + \
+            [v["rect"] for v in project.voids if v.get("floor", 1) == f]
         pieces = [(x0, y0, x1, y1)]
         for hx0, hy0, hx1, hy1 in holes:
             nxt = []
@@ -235,6 +236,20 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             t_lo, t_hi = (-half, w.length + half) if w.exterior else (0, w.length)
             S.wbox("wood" if w.exterior else "joist", w, t_lo, t_hi, -half, half, 0, 25 - deck_t)
         S.zoff = 0
+    for v in project.voids:          # دربزين حول فراغ الدور العلوي (ارتفاع 100)
+        lev = project.level(v.get("floor", 1))
+        if cut and cut <= lev:
+            continue
+        vx0, vy0, vx1, vy1 = v["rect"]
+        sides = v.get("railing", ["S", "E", "W", "N"])
+        segs = {"S": (vx0, vy0, vx1, vy0), "N": (vx0, vy1, vx1, vy1), "W": (vx0, vy0, vx0, vy1), "E": (vx1, vy0, vx1, vy1)}
+        for sd in sides:
+            a0, b0, a1, b1 = segs[sd]
+            S.box("trim", min(a0, a1) - 3, min(b0, b1) - 3, lev + 95, max(a0, a1) + 3, max(b0, b1) + 3, lev + 100)
+            n = max(2, int(max(abs(a1 - a0), abs(b1 - b0)) / 12))
+            for k in range(n + 1):
+                px, py = a0 + (a1 - a0) * k / n, b0 + (b1 - b0) * k / n
+                S.box("trim", px - 1.5, py - 1.5, lev, px + 1.5, py + 1.5, lev + 95)
     for st in project.stairs:
         add_stair(S, project, st, cut)
     if furniture:      # "floors" = أرضيات فقط (الفرش الحقيقي يضيفه Blender)

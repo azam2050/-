@@ -160,6 +160,7 @@ class Project:
     mezzanines: list = field(default_factory=list)  # نص دور (ميزانين) داخل المبنى — watad/features.py
     straight_stairs: list = field(default_factory=list)  # درج مستقيم (للميزانين)
     spiral_stairs: list = field(default_factory=list)    # درج حلزوني (للميزانين) — watad/features.py
+    voids: list = field(default_factory=list)   # فراغ مزدوج الارتفاع بأرضية دور علوي: [{floor: 1, rect, railing: [S,E,W,N]}]
     site: dict = None                            # الموقع العام (الأرض، السور، المسبح، الجلسات، الحديقة) — watad/site.py
     bumps: list = field(default_factory=list)   # بروز مقفل خارج الجدار (دورة مياه الميزانين + غرفة تفتيش تحت)
     meta: dict = field(default_factory=dict)
@@ -226,6 +227,7 @@ def load_project(path, rules):
         mezzanines=d.get("mezzanines", []),
         straight_stairs=d.get("straight_stairs", []),
         spiral_stairs=d.get("spiral_stairs", []),
+        voids=d.get("voids", []),
         bumps=d.get("bumps", []),
         site=d.get("site"),
         meta=d.get("meta", {}),
