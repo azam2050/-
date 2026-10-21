@@ -47,9 +47,10 @@ walls:
       - {kind: door, code: ب1, name: ب1 مدخل الضيوف (المجلس), offset: 80, width: 100, height: 225, leaves: 1, grid: [2, 5]}
       - {kind: window, code: ش1, name: ش1 المجلس, offset: 330, width: 200, height: 160, sill: 70, grid: [3, 3]}
       - {kind: door, code: ب2, name: ب2 مدخل العائلة, offset: 790, width: 120, height: 225, leaves: 2, grid: [2, 5]}
-      - {kind: window, code: ش1, name: ش1 الصالة, offset: 1150, width: 200, height: 160, sill: 70, grid: [3, 3]}
-      - {kind: window, code: ش1, name: ش1 الصالة, offset: 1550, width: 200, height: 160, sill: 70, grid: [3, 3]}
-      - {kind: window, code: ش1, name: ش1 الصالة, offset: 1900, width: 200, height: 160, sill: 70, grid: [3, 3]}
+      # الصالة: سحابات زجاج كبيرة على التراس المسقوف (مثل الصورة)
+      - {kind: door, code: ب12, name: ب12 سحاب زجاج الصالة, offset: 1080, width: 300, height: 240, style: sliding, leaves: 3}
+      - {kind: door, code: ب12, name: ب12 سحاب زجاج الصالة, offset: 1480, width: 300, height: 240, style: sliding, leaves: 3}
+      - {kind: door, code: ب12, name: ب12 سحاب زجاج الصالة, offset: 1860, width: 300, height: 240, style: sliding, leaves: 3}
   - name: أ-شرق
     title: الواجهة الشرقية
     start: [2188, 0]
@@ -262,21 +263,27 @@ rooms:
 
 decks:
   - {name: عتبة مدخل الضيوف, rect: [40, -126, 220, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 180}}
-  - {name: عتبة مدخل العائلة, rect: [760, -126, 940, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 180}}
-  - {name: البلكونة الأمامية, rect: [-6, -186, 2194, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+  # تراس العائلة المسقوف تحت البلكونة (مدخل العائلة + سحابات الصالة) — مدخل الضيوف منفصل بعتبته
+  - {name: تراس العائلة المسقوف, rect: [700, -246, 2194, -6], height: 45, railing: [], stairs: {side: S, offset: 60, width: 300}}
+  # بلكونة الدور الأول عميقة 2.40 وتلف على الجنبين (مثل الصورة)
+  - {name: البلكونة الأمامية, rect: [-6, -246, 2194, -6], level: 305, railing: [S], railing_style: vertical_balusters}
+  - {name: البلكونة الجانبية الشرقية, rect: [2194, -246, 2434, 600], level: 305, railing: [S, E, N], railing_style: vertical_balusters}
+  - {name: البلكونة الجانبية الغربية, rect: [-246, -246, -6, 600], level: 305, railing: [S, W, N], railing_style: vertical_balusters}
   - {name: البلكونة الخلفية, rect: [-6, 1494, 2194, 1674], level: 305, railing: [N, E, W], railing_style: vertical_balusters}
 
 posts:   # أعمدة خشب تحمل البلكونات
-  - {at: [3, -177], size: 18}
-  - {at: [550, -177], size: 18}
-  - {at: [1094, -177], size: 18}
-  - {at: [1638, -177], size: 18}
-  - {at: [2185, -177], size: 18}
-  - {at: [3, 1665], size: 18}
-  - {at: [550, 1665], size: 18}
-  - {at: [1094, 1665], size: 18}
-  - {at: [1638, 1665], size: 18}
-  - {at: [2185, 1665], size: 18}
+  - {at: [-237, -237], size: 22, top: 305}
+  - {at: [550, -237], size: 22, top: 305}
+  - {at: [1094, -237], size: 22, top: 305}
+  - {at: [1638, -237], size: 22, top: 305}
+  - {at: [2425, -237], size: 22, top: 305}
+  - {at: [-237, 591], size: 22, top: 305}
+  - {at: [2425, 591], size: 22, top: 305}
+  - {at: [3, 1665], size: 18, top: 305}
+  - {at: [550, 1665], size: 18, top: 305}
+  - {at: [1094, 1665], size: 18, top: 305}
+  - {at: [1638, 1665], size: 18, top: 305}
+  - {at: [2185, 1665], size: 18, top: 305}
 
 furniture:
   # ---------- الأرضي ----------
@@ -348,5 +355,6 @@ notes:
   - "المغاسل ودورة مياه الضيوف بين المجلس والمقلط، والمقلط بابه من المطبخ للتقديم."
   - "الصالة الداخلية تحت فراغ مزدوج 5.00 × 3.00 م عليه دربزين بالدور الأول — اللي فوق يشوف تحت."
   - "كل غرفتين يشتركون بدورة مياه ببابين، والثلاث دورات مياه على جدار خارجي بشباك."
-  - "بلكونة أمامية وخلفية بطول الفيلا (2 × 22.00 × 1.80 م) على أعمدة خشب."
+  - "مثل صورة الشاليه: بلكونة أمامية عميقة 2.40 م تلف على الجنبين + خلفية 1.80، وتحتها تراس العائلة المسقوف على أعمدة خشب 22×22، وسحابات زجاج كبيرة للصالة."
+  - "واجهة الزجاج الكبيرة يُفضّل تكون على الحوش الداخلي/المسبح (مو على الشارع) للخصوصية."
   - "السقف شاليه مثل صورة العميل: جملون عريض على الواجهة بمثلث زجاج، رفرف 1.20 م على جسور خشب بارزة، والمداد قطع فوق الجسور."
