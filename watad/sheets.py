@@ -886,6 +886,19 @@ def roof_sheet(ctx):
             ax.annotate("", (cx, cy + s * (y1 - y0) * 0.35), (cx, cy + s * 40),
                         arrowprops=dict(arrowstyle="->", color="red"))
             ax.text(cx + 15, cy + s * (y1 - y0) * 0.22, f"ميل {P.roof.pitch_deg}°", fontsize=9, color="red")
+    from .roof import purlin_positions
+    for a in purlin_positions(P, rules):         # الجسور الحاملة الطولية (شاليه)
+        pw = P.roof.purlin["w"]
+        if ridge_y:
+            ax.add_patch(Rectangle((a - pw / 2, ry0 - 10), pw, ry1 - ry0 + 20, fc="#c9a27a", ec="#6b4f3a", lw=0.5,
+                                   alpha=0.8))
+        else:
+            ax.add_patch(Rectangle((rx0 - 10, a - pw / 2), rx1 - rx0 + 20, pw, fc="#c9a27a", ec="#6b4f3a", lw=0.5,
+                                   alpha=0.8))
+    if P.roof.purlins:
+        ax.text(cx, y0 + 60, f"جسور حاملة طولية {P.roof.purlin['w']:.0f}×{P.roof.purlin['h']:.0f} — "
+                f"{P.roof.purlins} بكل جهة + جسر القمة", ha="center", fontsize=8, color="#6b4f3a",
+                bbox=dict(fc="white", ec="none"))
     ax.text(cx, y0 + 30, f"مدادات 5×15 كل 60 سم — {R['rafter_count']} مداد", ha="center", fontsize=9,
             bbox=dict(fc="white", ec="none"))
     dim(ax, (rx0, ry1), (rx1, ry1), 40)
@@ -948,6 +961,11 @@ def roof_sheet(ctx):
         lower = [(-ov, zz(-ov)), (S + ov, zz(S + ov))]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+    for a in purlin_positions(P, rules):            # مقطع الجسور الحاملة تحت المدادات
+        xa = a - lo
+        za = H + min(xa, S - xa) * math.tan(p)
+        pw, ph = P.roof.purlin["w"], P.roof.purlin["h"]
+        ax2.add_patch(Rectangle((xa - pw / 2, za - ph), pw, ph, fc="#c9a27a", ec="k", lw=0.7))
     for gc in cross_gables(P, rules):               # المثلث البارز إذا القطاع يمر فيه
         if ridge_y == (gc["axis"] == "y") and abs(cut - gc["c"]) < gc["hw"] + gc["ov"]:
             zc = gc["zr"] - abs(cut - gc["c"]) * gc["t"]

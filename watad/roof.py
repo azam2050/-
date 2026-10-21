@@ -33,6 +33,12 @@ def gable_rafters(project, rules):
         parts = [r.splice - lo + r.overhang + lap / 2, hi - r.splice + r.overhang + lap / 2]
         length = max(parts) / math.cos(g["pitch"])
         pieces = 2
+    if not shed and r.purlins:            # شاليه: المداد قطع فوق الجسور الحاملة (تراكب 60 سم فوق كل جسر)
+        n = r.purlins + 1
+        seg = g["span"] / 2 / n
+        lap = 60
+        length = max(seg + r.overhang + lap / 2, seg + lap) / math.cos(g["pitch"])
+        pieces = n
     stock = next((s for s in sorted(rules["roof"]["rafter_lengths"]) if s >= length), None)
     return {
         "ridge_length": round(g["ridge_len"], 1),
@@ -43,7 +49,8 @@ def gable_rafters(project, rules):
         "rise": round(g["rise"], 1),
         "ridge_level": round(project.roof_base + g["rise"], 1),
         "rafters_per_side": per_side,
-        "rafter_count": per_side * (pieces if shed else 2),
+        "rafter_count": per_side * pieces * (1 if shed else 2),
+        "purlins": purlin_positions(project, rules),
         "pieces": pieces,
         "rafter_length": round(length, 1),
         "stock_length": stock,
@@ -135,3 +142,15 @@ def shed_z(project, rules, x, y):
     else:
         d = (x1 - x) if r.high_side == "W" else (x - x0)
     return H + d * t
+
+
+def purlin_positions(project, rules):
+    """مواقع الجسور الحاملة (على المحور العرضي للجملون): n بكل جهة + جسر القمة."""
+    r = project.roof
+    if r.type == "shed" or not r.purlins:
+        return []
+    x0, y0, x1, y1 = outer_bbox(project, rules)
+    lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+    ac, n = (lo + hi) / 2, r.purlins + 1
+    pos = [lo + (ac - lo) * k / n for k in range(1, n)]
+    return pos + [ac] + [hi - (p - lo) for p in reversed(pos)]
