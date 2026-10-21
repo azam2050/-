@@ -1,0 +1,155 @@
+# تصميم رقم 5 — تعديل 2 (عميل الرياض): تصغير الكوخ من 144.5 إلى 110.5 م² للتكلفة (رسالة المصنع الصوتية + الإيميل):
+#  - العرض 13.00 م بدل 17.00 (العمق 8.50 نفسه) = 110.5 م².
+#  - الماستر: الضلع الخلفي 4 م (× 5 م عمق) مع حمامه.
+#  - غرفة 2 تصير ماستر: الحمام اللي جنبها بابه من داخل الغرفة.
+#  - غرفة 2 وغرفة 3: الضلع الخلفي 3 م (بدل 4) — السرير 160 بممر 64 سم من الجهتين.
+#  - حمام ثالث جنب المطبخ 1.50 م على الجدار الأيسر (الغربي) × 2.00 م لداخل الكوخ — يخدم الصالة وغرفة 3.
+# السقف مائل باتجاه واحد 10° صاج يرتفع للواجهة (نفس التصميم المعتمد)، المداد قطعتين موصولة فوق جدار الغرف (y=418).
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: cabin-3br-riyadh-110
+title: كوخ 3 غرف بواجهة زجاج — 13.00 × 8.50 = 110.5 م²
+client: "عميل — الرياض"
+meta:
+  location: الرياض
+  usage: سكن
+  date: 2026-10-21
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none}
+wall_height: 260
+slab_height: 45
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 10, overhang: 50, low_pitch_approved: true, splice: 418}
+insulation: false
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [1288, 0]
+    openings:   # زجاج من الأرض للسقف بعارضة على 2.50: المطبخ (2) | الطعام (2) | سحاب 3 ضلف | الجلسة (2)
+      - {kind: window, code: ز1, name: زجاج ثابت المطبخ, offset: 24, width: 160, height: 340, sill: 10, style: fixed, transom: 250}
+      - {kind: window, code: ز1, name: زجاج ثابت المطبخ, offset: 198, width: 160, height: 340, sill: 10, style: fixed, transom: 250}
+      - {kind: window, code: ز1, name: زجاج ثابت الطعام, offset: 372, width: 160, height: 340, sill: 10, style: fixed, transom: 250}
+      - {kind: window, code: ز1, name: زجاج ثابت الطعام, offset: 546, width: 160, height: 340, sill: 10, style: fixed, transom: 250}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج 3 ضلف, offset: 720, width: 300, height: 350, style: sliding, leaves: 3, transom: 250}
+      - {kind: window, code: ز2, name: زجاج ثابت الجلسة, offset: 1034, width: 113, height: 340, sill: 10, style: fixed, transom: 250}
+      - {kind: window, code: ز2, name: زجاج ثابت الجلسة, offset: 1161, width: 113, height: 340, sill: 10, style: fixed, transom: 250}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [1288, 0]
+    end: [1288, 838]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الماستر, offset: 400, width: 120, height: 110, sill: 100}
+      - {kind: window, code: ش1, name: ش1 الماستر, offset: 660, width: 120, height: 110, sill: 100}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [1288, 838]
+    end: [0, 838]
+    openings:
+      - {kind: window, code: ش3, name: ش3 حمام الماستر, offset: 433, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش3, name: ش3 حمام غرفة 2, offset: 583, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش1, name: ش1 غرفة نوم 2, offset: 788, width: 120, height: 110, sill: 100}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 838]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 غرفة نوم 3, offset: 198, width: 120, height: 110, sill: 100}
+      - {kind: window, code: ش3, name: ش3 حمام الصالة, offset: 478, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش4, name: ش4 المطبخ, offset: 648, width: 110, height: 110, sill: 100}
+  - name: جدار الغرف
+    exterior: false
+    start: [0, 418]
+    end: [900, 418]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة نوم 3, offset: 215, width: 70, height: 210}
+      - {kind: door, code: ب2, name: ب2 غرفة نوم 2, offset: 316, width: 80, height: 210}
+  - {name: فاصل غرفة 3 و2, exterior: false, start: [300, 418], end: [300, 838]}
+  - name: فاصل حمام غرفة 2
+    exterior: false
+    start: [600, 418]
+    end: [600, 838]
+    openings:   # باب الحمام من داخل غرفة 2 (صارت ماستر)
+      - {kind: door, code: ب3, name: ب3 حمام غرفة 2, offset: 302, width: 70, height: 210}
+  - {name: فاصل الحمامين, exterior: false, start: [750, 418], end: [750, 838]}
+  - name: فاصل الماستر
+    exterior: false
+    start: [900, 326]
+    end: [900, 838]
+    openings:
+      - {kind: door, code: ب3, name: ب3 حمام الماستر, offset: 374, width: 70, height: 210}
+  - name: جدار الماستر
+    exterior: false
+    start: [900, 326]
+    end: [1288, 326]
+    openings:
+      - {kind: door, code: ب2, name: ب2 الماستر, offset: 22, width: 80, height: 210}
+  # حمام الصالة جنب المطبخ: 1.50 على الجدار الغربي × 2.00 لداخل الكوخ — بابه على ممر صغير يخدم الصالة وغرفة 3
+  - {name: جدار حمام الصالة, exterior: false, start: [0, 268], end: [200, 268]}
+  - name: فاصل حمام الصالة
+    exterior: false
+    start: [200, 268]
+    end: [200, 418]
+    openings:
+      - {kind: door, code: ب3, name: ب3 حمام الصالة, offset: 70, width: 60, height: 210}
+
+rooms:
+  - {name: المطبخ, rect: [6, 6, 406, 412], cut: [[0, 262, 206, 418]], label: [300, 225]}
+  - {name: حمام الصالة, rect: [6, 274, 194, 412], wet: true, label: [100, 300]}
+  - {name: الصالة (طعام + جلسة), rect: [406, 6, 1282, 412], cut: [[894, 320, 1288, 418]], label: [700, 330]}
+  - {name: غرفة نوم 3, rect: [6, 424, 294, 832], label: [150, 560]}
+  - {name: غرفة نوم 2 (ماستر), rect: [306, 424, 594, 832], label: [450, 780]}
+  - {name: حمام غ2, rect: [606, 424, 744, 832], wet: true, label: [675, 720]}
+  - {name: حمام م, rect: [756, 424, 894, 832], wet: true, label: [825, 560]}
+  - {name: غرفة الماستر, rect: [906, 332, 1282, 832], label: [1100, 480]}
+
+decks:
+  - name: التراس
+    rect: [-6, -186, 1294, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 0, width: 1300}     # درج بعرض التراس كامل
+
+furniture:
+  # المطبخ: كاونتر على الجدار الغربي + ثلاجة بالركن جنب الحمام + كاونتر على الجدار الغربي وعلى جدار الحمام + جزيرة، والممر لحمام الصالة وغرفة 3 فاضي
+  - {name: كاونتر, rect: [6, 60, 66, 197]}
+  - {name: ثلاجة, rect: [6, 197, 71, 262]}
+  - {name: كاونتر, rect: [71, 202, 194, 262]}
+  - {name: كاونتر, rect: [200, 100, 350, 170]}
+  # حمام الصالة
+  - {name: دش, rect: [6, 332, 86, 412], shape: shower}
+  - {name: "", rect: [6, 274, 46, 324], shape: wc}
+  - {name: "", rect: [90, 274, 136, 320], shape: basin}
+  # الطعام جنب المطبخ
+  - {name: طاولة 6, rect: [470, 170, 630, 260]}
+  - {name: "", rect: [485, 125, 530, 165]}
+  - {name: "", rect: [570, 125, 615, 165]}
+  - {name: "", rect: [485, 265, 530, 305]}
+  - {name: "", rect: [570, 265, 615, 305]}
+  # الجلسة: التلفزيون على جدار الماستر المصمت والكنبة مقابلة له
+  - {name: تلفزيون, rect: [1030, 306, 1210, 326]}
+  - {name: كنبة 3 مقاعد, rect: [1000, 40, 1240, 130]}
+  - {name: طاولة, rect: [1060, 170, 1180, 240]}
+  - {name: كرسي, rect: [860, 140, 930, 210]}
+  # غرفة نوم 3 (3.00 × 4.20): رأس السرير على الجدار الخلفي، ممر 64 سم من الجهتين
+  - {name: سرير 160×200, rect: [70, 632, 230, 832]}
+  - {name: دولاب, rect: [6, 424, 196, 484]}
+  # غرفة نوم 2 ماستر (3.00 × 4.20): رأس السرير على جدار الحمام، الشباك على الجدار الخلفي، باب الحمام من الغرفة
+  - {name: سرير 160×200, rect: [394, 540, 594, 700]}
+  - {name: دولاب, rect: [420, 424, 594, 484]}
+  # حمام غرفة 2
+  - {name: دش, rect: [606, 424, 744, 514], shape: shower}
+  - {name: "", rect: [704, 780, 744, 832], shape: wc}
+  - {name: "", rect: [698, 620, 744, 666], shape: basin}
+  # حمام الماستر
+  - {name: دش, rect: [756, 424, 894, 514], shape: shower}
+  - {name: "", rect: [756, 600, 796, 650], shape: wc}
+  - {name: "", rect: [756, 700, 802, 746], shape: basin}
+  # الماستر (4.00 × 5.00): رأس السرير على الجدار الخلفي، الشبابيك على الجدار الشرقي
+  - {name: سرير 180×200, rect: [1010, 632, 1190, 832]}
+  - {name: "", rect: [960, 792, 1005, 832]}
+  - {name: "", rect: [1195, 792, 1240, 832]}
+  - {name: دولاب, rect: [906, 420, 966, 680]}
