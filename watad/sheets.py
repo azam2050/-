@@ -1068,7 +1068,10 @@ def areas_sheet(ctx):
     P, rules = ctx["project"], ctx["rules"]
     x0, y0, x1, y1 = outer_bbox(P, rules)
     nfl = len(P.floor_list)
-    gross = (x1 - x0) * (y1 - y0) / 1e4 * nfl
+    from .model import floor_bbox
+    fbs = [floor_bbox(P, rules, f) for f in range(nfl)]
+    gross = sum((b[2] - b[0]) * (b[3] - b[1]) for b in fbs) / 1e4      # كل دور بمقاسه (العلوي ممكن أصغر)
+    same = all(abs(b[k] - fbs[0][k]) < 1 for b in fbs for k in range(4))
     net = sum(r.area_m2 for r in P.rooms if r.kind != "stair" or r.floor == 0)
     terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
     fig = new_page()
@@ -1091,13 +1094,18 @@ def areas_sheet(ctx):
         lbl = P.decks[0].name if "تراس" not in P.decks[0].name else "التراس المسقوف"
         rows.append(["", lbl + free, " × ".join(f"{(P.decks[0].rect[k + 2] - P.decks[0].rect[k]) / 100:.2f}"
                                                 for k in (0, 1)), f"{terrace:.2f}"])
+    if not same:             # دور علوي أصغر: سطر لكل دور
+        for f, b in enumerate(fbs):
+            rows.append(["", "مسطح " + P.floor_list[f]["name"], f"{(b[2] - b[0]) / 100:.2f} × {(b[3] - b[1]) / 100:.2f}",
+                         f"{(b[2] - b[0]) * (b[3] - b[1]) / 1e4:.2f}"])
     rows.append(["", "المساحة الإجمالية المبنية",
-                 f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""), f"{gross:.2f}"])
-    if terrace:
+                 (f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""))
+                 if same else "مجموع الأدوار", f"{gross:.2f}"])
+    if terrace and P.meta.get("price_scope") != "built":
         rows.append(["", "المساحة الكلية (المبنية + " + ("التراس والبلكونة" if len(P.decks) > 1 else "التراس") + ")",
                      "", f"{gross + terrace:.2f}"])
     table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5 if len(rows) < 12 else 9,
-          bold_last=4 if terrace else 2)
+          bold_last=4 if terrace and P.meta.get("price_scope") != "built" else 2)
     ax.set_title("جدول المساحات", fontsize=14, weight="bold", color=BRAND, loc="right")
     # بيانات المشروع
     m = P.meta

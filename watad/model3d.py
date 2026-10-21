@@ -258,6 +258,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     if not cut:
         # السقف: مدادات + تطبيق خشب + قرميد
         H = project.roof_base
+        from .model import roof_bbox
+        x0, y0, x1, y1 = roof_bbox(project, rules)     # السقف فوق الدور الأخير (الباقي سطح)
         rafter_d = rules["members"]["rafter"]["w"]
         rafter_t = rules["members"]["rafter"]["t"]
         if ridge_y:
@@ -349,6 +351,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 aa, ab = (eave, ac) if side < 0 else (ac, eave)
                 slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
+    x0, y0, x1, y1 = outer_bbox(project, rules)        # رجوع لحدود المبنى كامل (بعد السقف)
     if not cut:
         _cross_gables(S, project, rules, half)
     for d in project.decks:

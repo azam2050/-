@@ -1,0 +1,197 @@
+# عميل (3 خيارات بمساحات مختلفة — رسالة واتساب) — الخيار 1:
+#  الأرضي: مجلس 5×5 + صالة 5×5 + مطبخ مفتوح على الصالة (4×4) + دورتين مياه (ضيوف + عائلة) + درج.
+#  العلوي: غرفتين نوم 4×4 + دورتين مياه، والباقي سطح (حوش علوي) قدام الدور العلوي.
+# الأرضي 10.92 × 9.24 — العلوي 10.92 × 6.24 فوق الجزء الخلفي، والسطح 10.92 × 3.00 على الواجهة.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: option1-2br-majlis
+title: الخيار 1 — مجلس وصالة + غرفتين — دورين بسطح علوي
+client: "عميل — 3 خيارات"
+meta:
+  location: "—"
+  usage: سكن
+  date: 2026-10-21
+  price_note: ""
+  price_scope: built            # السعر على المساحة المبنية (الدورين) — السطح يُسعّر منفصل
+  terms:
+    - "السعر على المساحة المبنية للدورين بسعر المصنع 1,096 ريال/م²."
+    - "السطح العلوي (حوش) 33 م² يُسعّر منفصل (أرضية + عزل مائي + دربزين)."
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: x, pitch_deg: 30, overhang: 50}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ---------- الأرضي ----------
+  - name: أ-جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [1092, 0]
+    openings:
+      - {kind: door, code: ب1, name: ب1 مدخل الضيوف (المجلس), offset: 40, width: 100, height: 225, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 250, width: 200, height: 150, sill: 80, grid: [3, 3]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 650, width: 200, height: 150, sill: 80, grid: [3, 3]}
+      - {kind: door, code: ب2, name: ب2 مدخل العائلة, offset: 960, width: 100, height: 225, leaves: 1, grid: [2, 5]}
+  - name: أ-شرق
+    title: الواجهة الشرقية
+    start: [1092, 0]
+    end: [1092, 924]
+    openings:
+      - {kind: window, code: ش2, name: ش2 الصالة, offset: 150, width: 140, height: 140, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 المطبخ, offset: 620, width: 120, height: 100, sill: 110, grid: [2, 2]}
+  - name: أ-شمال
+    title: الواجهة الخلفية
+    start: [1092, 924]
+    end: [0, 924]
+    openings:
+      - {kind: window, code: ش3, name: ش3 المطبخ, offset: 142, width: 150, height: 100, sill: 110, grid: [2, 2]}
+      - {kind: window, code: ش4, name: ش4 دورة مياه, offset: 932, width: 60, height: 60, sill: 150}
+  - name: أ-غرب
+    title: الواجهة الغربية
+    start: [0, 924]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش4, name: ش4 دورة مياه الضيوف, offset: 264, width: 60, height: 60, sill: 150}
+      - {kind: window, code: ش2, name: ش2 المجلس, offset: 574, width: 200, height: 140, sill: 80, grid: [3, 3]}
+  - {name: أ-فاصل المجلس والصالة, exterior: false, start: [546, 0], end: [546, 512]}
+  - name: أ-فاصل خلفي
+    exterior: false
+    start: [0, 512]
+    end: [680, 512]
+    openings:
+      - {kind: door, code: ب3, name: ب3 المجلس — الموزع, offset: 420, width: 90, height: 210}
+      - {kind: door, code: ب4, name: ب4 فتحة الصالة — الموزع, offset: 560, width: 100, height: 210, leaves: 0}
+  - name: أ-فاصل دورات المياه
+    exterior: false
+    start: [262, 512]
+    end: [262, 924]
+    openings:
+      - {kind: door, code: ب5, name: ب5 دورة مياه الضيوف, offset: 30, width: 70, height: 210}
+      - {kind: door, code: ب5, name: ب5 دورة مياه, offset: 300, width: 70, height: 210}
+  - {name: أ-بين الدورتين, exterior: false, start: [0, 712], end: [262, 712]}
+  - {name: أ-فاصل المطبخ, exterior: false, start: [680, 512], end: [680, 924]}
+  # ---------- الأول ----------
+  - name: ب-جنوب
+    floor: 1
+    title: الواجهة الأمامية (على السطح)
+    start: [0, 300]
+    end: [1092, 300]
+    openings:
+      - {kind: door, code: ب6, name: ب6 باب السطح, offset: 486, width: 120, height: 220, leaves: 2, grid: [2, 5]}
+  - name: ب-شرق
+    floor: 1
+    title: الواجهة الشرقية
+    start: [1092, 300]
+    end: [1092, 924]
+    openings:
+      - {kind: window, code: ش4, name: ش4 دورة مياه 2, offset: 80, width: 60, height: 60, sill: 150}
+  - name: ب-شمال
+    floor: 1
+    title: الواجهة الخلفية
+    start: [1092, 924]
+    end: [0, 924]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة نوم 2, offset: 152, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش5, name: ش5 غرفة نوم 1, offset: 822, width: 120, height: 120, sill: 90, grid: [2, 3]}
+  - name: ب-غرب
+    floor: 1
+    title: الواجهة الغربية
+    start: [0, 924]
+    end: [0, 300]
+    openings:
+      - {kind: window, code: ش4, name: ش4 دورة مياه 1, offset: 484, width: 60, height: 60, sill: 150}
+  - name: ب-دورة مياه 1
+    floor: 1
+    exterior: false
+    start: [262, 300]
+    end: [262, 512]
+    openings:
+      - {kind: door, code: ب5, name: ب5 دورة مياه 1, offset: 30, width: 70, height: 210}
+  - name: ب-دورة مياه 2
+    floor: 1
+    exterior: false
+    start: [830, 300]
+    end: [830, 512]
+    openings:
+      - {kind: door, code: ب5, name: ب5 دورة مياه 2, offset: 30, width: 70, height: 210, swing: right}
+  - name: ب-غرفة 1 أمامي
+    floor: 1
+    exterior: false
+    start: [0, 512]
+    end: [412, 512]
+    openings:
+      - {kind: door, code: ب7, name: ب7 غرفة نوم 1, offset: 300, width: 80, height: 210}
+  - name: ب-غرفة 2 أمامي
+    floor: 1
+    exterior: false
+    start: [680, 512]
+    end: [1092, 512]
+    openings:
+      - {kind: door, code: ب7, name: ب7 غرفة نوم 2, offset: 20, width: 80, height: 210}
+  - {name: ب-فاصل غرفة 1, floor: 1, exterior: false, start: [412, 512], end: [412, 924]}
+  - {name: ب-فاصل غرفة 2, floor: 1, exterior: false, start: [680, 512], end: [680, 924]}
+
+stairs:   # درج U بالموزع — يطلع للصالة العلوية قدام الغرفتين
+  - {from: 0, rect: [424, 560, 658, 860], flight_w: 100, first: east, tread: 26, landing: 100}
+
+rooms:
+  - {name: المجلس, rect: [6, 6, 540, 506], label: [270, 120]}
+  - {name: الصالة, rect: [552, 6, 1086, 506], label: [820, 420]}
+  - {name: دورة مياه الضيوف, rect: [6, 518, 256, 706], wet: true, label: [130, 600]}
+  - {name: دورة مياه, rect: [6, 718, 256, 918], wet: true, label: [150, 860]}
+  - {name: الموزع والدرج, rect: [268, 518, 674, 918], kind: corridor, label: [340, 880]}
+  - {name: المطبخ (مفتوح على الصالة), rect: [686, 518, 1086, 918], label: [880, 560]}
+  - {name: دورة مياه 1, floor: 1, rect: [6, 306, 256, 506], wet: true, label: [130, 350]}
+  - {name: الصالة العلوية, floor: 1, rect: [268, 306, 824, 506], kind: corridor, label: [700, 400]}
+  - {name: دورة مياه 2, floor: 1, rect: [836, 306, 1086, 506], wet: true, label: [960, 350]}
+  - {name: غرفة نوم 1, floor: 1, rect: [6, 518, 406, 918], label: [200, 870]}
+  - {name: غرفة نوم 2, floor: 1, rect: [686, 518, 1086, 918], label: [880, 870]}
+
+decks:
+  - {name: عتبة مدخل الضيوف, rect: [30, -126, 160, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 130}}
+  - {name: عتبة مدخل العائلة, rect: [950, -126, 1080, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 130}}
+  - {name: السطح العلوي (حوش), rect: [-6, -6, 1098, 294], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+
+furniture:
+  # المجلس 5×5: جلسة U متصلة — باب الضيوف على ركن الواجهة والباب الداخلي على الركن الخلفي
+  - {name: كنبة, rect: [6, 150, 86, 506]}
+  - {name: كنبة, rect: [86, 426, 410, 506]}
+  - {name: كنبة, rect: [460, 60, 540, 410]}
+  - {name: طاولة, rect: [200, 200, 340, 300]}
+  # الصالة: التلفزيون على جدار المجلس والكنبة على الجدار الشرقي
+  - {name: تلفزيون, rect: [552, 180, 572, 360]}
+  - {name: كنبة, rect: [1006, 110, 1086, 400]}
+  - {name: طاولة, rect: [760, 200, 880, 320]}
+  # المطبخ المفتوح
+  - {name: كاونتر, rect: [1026, 518, 1086, 918]}
+  - {name: كاونتر, rect: [751, 858, 1026, 918]}
+  - {name: ثلاجة, rect: [686, 853, 751, 918]}
+  - {name: كاونتر جزيرة, rect: [800, 640, 960, 720]}
+  # دورات المياه الأرضية
+  - {name: "", rect: [6, 518, 46, 568], shape: wc}
+  - {name: "", rect: [150, 660, 196, 706], shape: basin}
+  - {name: دش, rect: [6, 828, 96, 918], shape: shower}
+  - {name: "", rect: [6, 718, 46, 768], shape: wc}
+  - {name: "", rect: [150, 718, 196, 764], shape: basin}
+  # العلوي
+  - {name: سرير 160×200, rect: [6, 640, 206, 800], floor: 1}
+  - {name: دولاب, rect: [346, 600, 406, 860], floor: 1}
+  - {name: سرير 160×200, rect: [886, 640, 1086, 800], floor: 1}
+  - {name: دولاب, rect: [686, 600, 746, 860], floor: 1}
+  - {name: دش, rect: [6, 416, 96, 506], shape: shower, floor: 1}
+  - {name: "", rect: [6, 306, 46, 356], shape: wc, floor: 1}
+  - {name: "", rect: [200, 450, 246, 496], shape: basin, floor: 1}
+  - {name: دش, rect: [996, 416, 1086, 506], shape: shower, floor: 1}
+  - {name: "", rect: [1046, 306, 1086, 356], shape: wc, floor: 1}
+  - {name: "", rect: [840, 450, 886, 496], shape: basin, floor: 1}
+
+notes:
+  - "مدخل الضيوف للمجلس منفصل عن مدخل العائلة للصالة، ودورة مياه الضيوف قريبة من المجلس وبعيدة عن الجلسة."
+  - "المطبخ مفتوح على الصالة، والدرج بالموزع ما يقطع الحركة."
+  - "الدور العلوي فوق الجزء الخلفي، وقدامه سطح (حوش علوي) 10.92 × 3.00 م بدربزين وبابه من الصالة العلوية."

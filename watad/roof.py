@@ -1,7 +1,7 @@
 """(8) سقف جملون: مدادات 5×15 كل 60، مخلّعة على العلوي ومثبتة ببراغي."""
 import math
 
-from .model import outer_bbox
+from .model import roof_bbox as outer_bbox   # السقف فوق الدور الأخير فقط
 
 
 def roof_geometry(project, rules):

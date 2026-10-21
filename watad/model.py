@@ -243,6 +243,29 @@ def wall_thickness(rules):
     return rules["members"]["stud"]["w"] + 2 * rules["cladding"]["thickness"]
 
 
+def floor_bbox(project, rules, floor):
+    """حدود الدور (وجه التلبيس الخارجي) من جدرانه الخارجية — للأدوار المختلفة المقاس."""
+    walls = [w for w in project.exterior_walls if w.floor == floor]
+    if not walls:
+        return outer_bbox(project, rules)
+    t = wall_thickness(rules) / 2
+    xs = [p[0] for w in walls for p in (w.start, w.end)]
+    ys = [p[1] for w in walls for p in (w.start, w.end)]
+    return min(xs) - t, min(ys) - t, max(xs) + t, max(ys) + t
+
+
+def roof_bbox(project, rules):
+    """حدود السقف: جدران الدور الأخير الخارجية — إذا الدور العلوي أصغر من الأرضي، الباقي سطح (تراس علوي)."""
+    top = len(project.floor_list) - 1
+    walls = [w for w in project.exterior_walls if w.floor == top] if top > 0 else []
+    if not walls:
+        return outer_bbox(project, rules)
+    t = wall_thickness(rules) / 2
+    xs = [p[0] for w in walls for p in (w.start, w.end)]
+    ys = [p[1] for w in walls for p in (w.start, w.end)]
+    return min(xs) - t, min(ys) - t, max(xs) + t, max(ys) + t
+
+
 def outer_bbox(project, rules):
     """حدود المبنى الخارجية (وجه التلبيس الخارجي)."""
     t = wall_thickness(rules) / 2
