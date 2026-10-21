@@ -1020,16 +1020,22 @@ def areas_sheet(ctx):
     rows = [[i + 1, (f"{short.get(r.floor, r.floor)} — " if nfl > 1 else "") + r.name,
              f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
-    if terrace:
-        lbl = P.decks[0].name if len(P.decks) == 1 and "تراس" not in P.decks[0].name else "التراس المسقوف"
-        rows.append(["", lbl + (" + تراس الدور الأول" if len(P.decks) > 1 else "")
-                     + (" (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price else ""),
-                     " × ".join(f"{(d.rect[k + 2] - d.rect[k]) / 100:.2f}" for d in P.decks[:1] for k in (0, 1))
-                     + (f" × {len(P.decks)}" if len(P.decks) > 1 else ""), f"{terrace:.2f}"])
+    free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price else ""
+    if terrace and len(P.decks) > 1:          # كل دكة/بلكونة بسطر بأبعادها (مقاساتها تختلف)
+        for d in P.decks:
+            dw, dh = (d.rect[2] - d.rect[0]) / 100, (d.rect[3] - d.rect[1]) / 100
+            rows.append(["", d.name + free, f"{dw:.2f} × {dh:.2f}", f"{dw * dh:.2f}"])
+    elif terrace:
+        lbl = P.decks[0].name if "تراس" not in P.decks[0].name else "التراس المسقوف"
+        rows.append(["", lbl + free, " × ".join(f"{(P.decks[0].rect[k + 2] - P.decks[0].rect[k]) / 100:.2f}"
+                                                for k in (0, 1)), f"{terrace:.2f}"])
     rows.append(["", "المساحة الإجمالية المبنية",
                  f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""), f"{gross:.2f}"])
+    if terrace:
+        rows.append(["", "المساحة الكلية (المبنية + " + ("التراس والبلكونة" if len(P.decks) > 1 else "التراس") + ")",
+                     "", f"{gross + terrace:.2f}"])
     table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5 if len(rows) < 12 else 9,
-          bold_last=3 if terrace else 2)
+          bold_last=4 if terrace else 2)
     ax.set_title("جدول المساحات", fontsize=14, weight="bold", color=BRAND, loc="right")
     # بيانات المشروع
     m = P.meta
@@ -1049,7 +1055,8 @@ def areas_sheet(ctx):
     note = P.meta.get("price_note", "")
     all_in = P.meta.get("price_scope") == "all" and terrace
     area_p = gross + terrace if all_in else gross
-    area_lbl = "المساحة الكلية — الكوخ + التراس (م2)" if all_in else "المساحة المبنية (م2)"
+    area_lbl = ("المساحة الكلية — الكوخ + " + ("التراس والبلكونة" if len(P.decks) > 1 else "التراس") + " (م2)"
+                if all_in else "المساحة المبنية (م2)")
     if price:
         total = round(area_p, 2) * price
         prow = [[area_lbl, f"{area_p:.2f}"],

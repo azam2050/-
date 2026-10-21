@@ -377,6 +377,9 @@ def _cabin_cost(P, rules):
     from .model import outer_bbox
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
     area = (bx1 - bx0) * (by1 - by0) / 1e4 * len(P.floor_list)
+    if P.meta.get("price_scope") == "all":     # السعر على المساحة الكلية شاملة التراس والبلكونة
+        area += sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
+    area = round(area, 2)
     return area, (round(area * P.price_per_m2) if P.price_per_m2 else 0)
 
 
