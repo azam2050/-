@@ -320,3 +320,36 @@ for name, elev, azim, k in cfg["views"]:
     scene.render.filepath = f"{cfg['out_dir']}/{name}.jpg"
     bpy.ops.render.render(write_still=True)
     print("RENDERED", name)
+
+
+# فيديو جولة واقعية: كاميرا تمشي على مسار (نقاط + نقاط نظر) بحركة ناعمة، تُرندر صور ثم تُجمع فيديو
+vid = cfg.get("video")
+if vid:
+    cam_data.type = "PERSP"
+    cam_data.lens = vid.get("lens", 18)
+    cam_data.shift_y = 0.0
+    cam.constraints.clear()
+    tr = cam.constraints.new("TRACK_TO")
+    tr.target = target
+    tr.track_axis = "TRACK_NEGATIVE_Z"
+    tr.up_axis = "UP_Y"
+    pts, looks = vid["path"], vid["look"]
+    dist = [0.0]
+    for a_, b_ in zip(pts, pts[1:]):
+        dist.append(dist[-1] + math.dist(a_, b_))
+    nfr = vid.get("frames", 288)
+    for (p_, l_, d_) in zip(pts, looks, dist):
+        f_ = 1 + round((nfr - 1) * d_ / dist[-1])
+        cam.location = Vector(p_)
+        cam.keyframe_insert("location", frame=f_)
+        target.location = Vector(l_)
+        target.keyframe_insert("location", frame=f_)
+    scene.frame_start, scene.frame_end = 1, nfr
+    scene.render.fps = vid.get("fps", 12)
+    scene.render.use_persistent_data = True
+    scene.cycles.samples = vid.get("samples", 12)
+    scene.render.resolution_x, scene.render.resolution_y = vid.get("res", [960, 540])
+    scene.view_settings.exposure = vid.get("exposure", 0.3)
+    scene.render.filepath = f"{cfg['out_dir']}/walk/f_"
+    bpy.ops.render.render(animation=True)
+    print("RENDERED video frames", nfr)
