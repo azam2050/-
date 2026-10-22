@@ -1325,7 +1325,8 @@ def areas_sheet(ctx):
     rows = [[i + 1, (f"{short.get(r.floor, r.floor)} — " if nfl > 1 else "") + r.name,
              f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
-    free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price else ""
+    free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price and \
+        not P.meta.get("price_items") else ""
     if terrace and len(P.decks) > 1:          # كل دكة/بلكونة بسطر بأبعادها (مقاساتها تختلف)
         for d in P.decks:
             dw, dh = (d.rect[2] - d.rect[0]) / 100, (d.rect[3] - d.rect[1]) / 100
@@ -1342,7 +1343,9 @@ def areas_sheet(ctx):
                  (f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""))
                  if same else "مجموع الأدوار", f"{gross:.2f}"])
     if terrace and P.meta.get("price_scope") != "built":
-        rows.append(["", "المساحة الكلية (المبنية + " + ("التراس والبلكونة" if len(P.decks) > 1 else "التراس") + ")",
+        dk = ("التراس والبلكونة" if any("بلكون" in d.name for d in P.decks) else "التراسات") if len(P.decks) > 1 \
+            else "التراس"
+        rows.append(["", "المساحة الكلية (المبنية + " + dk + ")",
                      "", f"{gross + terrace:.2f}"])
     table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5 if len(rows) < 12 else 9,
           bold_last=4 if terrace and P.meta.get("price_scope") != "built" else 2)
@@ -1352,10 +1355,12 @@ def areas_sheet(ctx):
     info = [["المشروع", P.title], ["العميل", P.client], ["الموقع", m.get("location", "")],
             ["الاستخدام", m.get("usage", "")], ["التاريخ", str(m.get("date", ""))],
             ["نظام البناء", "هيكل خشب 7×5 + تلبيس 2.5 سم من الجهتين"],
-            ["السقف", ("مائل باتجاه واحد" if P.roof.type == "shed" else "جملون") + f" {P.roof.pitch_deg}° — قرميد معدني"
+            ["السقف", ("مائل باتجاه واحد" if P.roof.type == "shed" else "هرمي منساب (خيمة) بدون وديان — 20°/"
+                      if P.roof.type == "tent_hip" else "جملون") + f" {P.roof.pitch_deg}° — قرميد معدني"
              + (f" + {len(P.roof.cross_gables)} مثلث بارز" if P.roof.cross_gables else "")]]
-    ax2 = fig.add_axes([0.58, 0.52, 0.38, 0.36])
-    table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=10)
+    items = [] if hide_price else (P.meta.get("price_items") or [])
+    ax2 = fig.add_axes([0.58, 0.62, 0.38, 0.26] if items else [0.58, 0.52, 0.38, 0.36])
+    table(ax2, ["البند", "البيان"], info, [1.5, 4.0], fs=8.5 if items else 10)
     ax2.set_title("بيانات المشروع", fontsize=14, weight="bold", color=BRAND, loc="right")
     if hide_price:           # بدون تسعير لهذا العميل
         return fig, "المساحات وبيانات المشروع"
@@ -1367,7 +1372,21 @@ def areas_sheet(ctx):
     area_p = gross + terrace if all_in else gross
     area_lbl = ("المساحة الكلية — الكوخ + " + ("التراس والبلكونة" if len(P.decks) > 1 else "التراس") + " (م2)"
                 if all_in else "المساحة المبنية (م2)")
-    if price:
+    if price and items:      # تسعير مفصّل: الكوخ + كل بند إضافي بكميته وسعره — لا شيء مجاني
+        total = round(area_p, 2) * price
+        prow = [[f"الكوخ المبني {area_p:.2f} م² × {price:,.0f}", f"{total:,.0f}"]]
+        for it in items:
+            amt = it["qty"] * it["rate"]
+            total += amt
+            q = f"{it['qty']:g}" if float(it["qty"]).is_integer() else f"{it['qty']:.2f}"
+            prow.append([f"{it['name']} — {q} {it.get('unit', '')} × {it['rate']:,.0f}", f"{amt:,.0f}"])
+        prow.append(["الإجمالي (ريال)", f"{round(total):,.0f}"])
+        ax3.remove()
+        ax3 = fig.add_axes([0.565, 0.2, 0.395, 0.38])
+        table(ax3, ["البند", "المبلغ (ريال)"], prow, [4.6, 1.4], fs=8.2, bold_last=1, row_h=1.0)
+        ax3.set_title("التسعير المفصّل", fontsize=14, weight="bold", color=BRAND, loc="right")
+        prow = None
+    elif price:
         total = round(area_p, 2) * price
         prow = [[area_lbl, f"{area_p:.2f}"],
                 ["سعر المتر المربع" + (f" — {note}" if note else ""), f"{price:,.0f} ريال"],
@@ -1375,8 +1394,9 @@ def areas_sheet(ctx):
     else:
         prow = [[area_lbl, f"{area_p:.2f}"], ["سعر المتر المربع", "يُحدد بعد الاعتماد"],
                 ["الإجمالي", "—"]]
-    table(ax3, ["البند", "القيمة"], prow, [3.2, 2.3], fs=11, bold_last=1, row_h=1.15)
-    ax3.set_title("التسعير", fontsize=14, weight="bold", color=BRAND, loc="right")
+    if prow is not None:
+        table(ax3, ["البند", "القيمة"], prow, [3.2, 2.3], fs=11, bold_last=1, row_h=1.15)
+        ax3.set_title("التسعير", fontsize=14, weight="bold", color=BRAND, loc="right")
     if price and note:
         ax3.text(0.0, 1.035, f"  {note}  ", transform=ax3.transAxes, ha="left", va="bottom", fontsize=11,
                  weight="bold", color="white",
