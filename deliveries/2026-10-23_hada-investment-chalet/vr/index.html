@@ -17,6 +17,7 @@
   --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
   --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark }
 * { box-sizing: border-box }
+[hidden] { display: none !important }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.7; direction: rtl;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 20px 48px }
@@ -77,6 +78,27 @@ footer { color: var(--muted); font-size: .85rem }
     </div>
   </header>
 
+  <section aria-labelledby="t-model">
+    <div class="sec-head">
+      <h2 id="t-model">الجولة داخل المشروع</h2>
+      <span class="hint" id="model-hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+    </div>
+    <div class="walkbar" id="walkbar">
+      <button type="button" data-mode="tour" aria-pressed="true">جولة تلقائية كاملة</button>
+      <button type="button" data-mode="orbit" aria-pressed="false">لف حول المشروع</button>
+      <button type="button" data-spot="gate" aria-pressed="false">امشِ: من البوابة والحوش</button>
+      <button type="button" data-spot="living" aria-pressed="false">امشِ: الدور الأرضي</button>
+      <button type="button" data-spot="upper" aria-pressed="false">امشِ: الدور الأول</button>
+      <button type="button" data-spot="unit2" aria-pressed="false">امشِ: الوحدة الثانية</button>
+    </div>
+    <div class="stage" id="model-stage">
+      <canvas id="model"></canvas>
+      <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
+      <div class="joy" id="joy" hidden><i id="joy-knob"></i></div>
+      <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
+    </div>
+  </section>
+
   <section aria-labelledby="t-tour">
     <div class="sec-head">
       <h2 id="t-tour">الجولة 360°</h2>
@@ -88,26 +110,6 @@ footer { color: var(--muted); font-size: .85rem }
       <div class="badge" id="pano-name"></div>
       <div class="loading" id="pano-loading">جاري التحميل…</div>
       <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
-    </div>
-  </section>
-
-  <section aria-labelledby="t-model">
-    <div class="sec-head">
-      <h2 id="t-model">المجسم ثلاثي الأبعاد</h2>
-      <span class="hint" id="model-hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
-    </div>
-    <div class="walkbar" id="walkbar">
-      <button type="button" data-mode="orbit" aria-pressed="true">لف حول المشروع</button>
-      <button type="button" data-spot="gate" aria-pressed="false">امشِ: من البوابة والحوش</button>
-      <button type="button" data-spot="living" aria-pressed="false">امشِ: الدور الأرضي</button>
-      <button type="button" data-spot="upper" aria-pressed="false">امشِ: الدور الأول</button>
-      <button type="button" data-spot="unit2" aria-pressed="false">امشِ: الوحدة الثانية</button>
-    </div>
-    <div class="stage" id="model-stage">
-      <canvas id="model"></canvas>
-      <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
-      <div class="joy" id="joy" hidden><i id="joy-knob"></i></div>
-      <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
     </div>
   </section>
 
@@ -216,9 +218,14 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6ea);
   const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 500);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9a7a, 0.9));
-  const sun = new THREE.DirectionalLight(0xfff1df, 0.9); sun.position.set(-20, 30, 25); scene.add(sun);
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 64), new THREE.MeshLambertMaterial({ color: 0x9fb57f }));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+  scene.add(new THREE.HemisphereLight(0xf4f7ff, 0x6f7f5a, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff1df, 0.75); sun.position.set(-20, 30, 25); scene.add(sun);
+  const HOLES = [[470, -1240, 700, -760], [-46, -740, 274, -400], [1310, -1240, 1540, -760], [794, -740, 1114, -400]];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
+  const gs = new THREE.Shape(); gs.absarc(0, 0, 60, 0, Math.PI * 2, false);
+  HOLES.forEach(([x0, y0, x1, y1]) => { const h = new THREE.Path(); h.moveTo(x0 / 100, y0 / 100); h.lineTo(x1 / 100, y0 / 100);
+    h.lineTo(x1 / 100, y1 / 100); h.lineTo(x0 / 100, y1 / 100); h.lineTo(x0 / 100, y0 / 100); gs.holes.push(h); });
+  const ground = new THREE.Mesh(new THREE.ShapeGeometry(gs, 48), new THREE.MeshLambertMaterial({ color: 0x8fa86c, side: THREE.DoubleSide }));
   ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; scene.add(ground);
   const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   let home = null;
@@ -229,6 +236,7 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) startTour();
   }, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
   /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
   const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
@@ -249,7 +257,20 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     else if (home) { camera.fov = 40; camera.position.copy(home.p); controls.target.copy(home.t); }
     camera.updateProjectionMatrix();
   }
-  document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.spot || null)));
+  /* الجولة التلقائية: نفس مسار فيديو الجولة — درون فوق السور، الحوش، الجلسة المدفونة، المسبح، الصالة، الدرج، الدور الأول، البلكونة */
+  const TOUR_P = [[340, -2000, 520], [340, -1450, 330], [340, -1150, 125], [340, -900, 115], [380, -600, 115], [600, -560, 115], [410, -330, 125], [410, -150, 160], [410, 60, 160], [450, 250, 160], [330, 420, 160], [180, 520, 160], [184, 760, 312], [120, 830, 315], [56, 760, 335], [56, 600, 465], [160, 512, 465], [390, 512, 465], [390, 380, 465], [520, 120, 465], [520, -130, 465], [560, -700, 760], [764, -1700, 950]], TOUR_L = [[344, -200, 200], [344, 0, 220], [344, 0, 260], [90, -570, -40], [90, -570, -60], [585, -1000, -20], [344, 100, 200], [410, 200, 160], [300, 350, 140], [100, 300, 120], [120, 650, 200], [184, 870, 330], [184, 900, 340], [0, 830, 360], [56, 500, 480], [56, 450, 470], [400, 512, 465], [390, 300, 450], [442, 220, 410], [520, -200, 450], [344, -900, 150], [764, 0, 300], [764, 300, 300]];
+  const curP = new THREE.CatmullRomCurve3(TOUR_P.map(q => P(...q)), false, "centripetal");
+  const curL = new THREE.CatmullRomCurve3(TOUR_L.map(q => P(...q)), false, "centripetal");
+  let tour = false, tourT = 0;
+  const TOUR_SEC = 75;
+  function startTour() { tour = true; tourT = 0; walk = false; controls.enabled = false; joy.hidden = true; camera.fov = 62; camera.updateProjectionMatrix();
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === "tour")));
+    hint.textContent = "الجولة شغالة — اضغط أي زر تحت عشان تمشي بنفسك"; }
+  function tourStep(dt) { tourT = (tourT + dt / TOUR_SEC) % 1; camera.position.copy(curP.getPointAt(tourT)); camera.lookAt(curL.getPointAt(tourT)); }
+  document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.mode === "tour") return startTour();
+    tour = false; setMode(b.dataset.spot || null);
+  }));
   canvas.addEventListener("pointerdown", e => { if (walk) { look = { x: e.clientX, y: e.clientY, yaw, pitch }; canvas.setPointerCapture(e.pointerId); } });
   canvas.addEventListener("pointermove", e => { if (walk && look) { yaw = look.yaw + (e.clientX - look.x) * 0.005; pitch = Math.max(-1.2, Math.min(1.2, look.pitch + (e.clientY - look.y) * 0.004)); } });
   canvas.addEventListener("pointerup", () => { look = null; });
@@ -269,7 +290,7 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
   let last = performance.now();
   function walkStep(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
     if (!walk) return;
     let f = move.f + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0);
     let st = move.s + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0);
@@ -278,10 +299,15 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     const t = camera.position.clone().add(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)));
     camera.lookAt(t);
   }
-  document.getElementById("model-reset").addEventListener("click", () => { setMode(null); });
+  document.getElementById("model-reset").addEventListener("click", () => { tour = false; setMode(null); });
   document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
   new ResizeObserver(size).observe(stage); size();
-  (function tick(now) { if (walk) walkStep(now || performance.now()); else { last = now || performance.now(); controls.update(); } renderer.render(scene, camera); requestAnimationFrame(tick); })();
+  (function tick(now) {
+    now = now || performance.now();
+    if (tour) { tourStep(Math.max(0, Math.min(0.05, (now - last) / 1000))); last = now; }
+    else if (walk) walkStep(now); else { last = now; controls.update(); }
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  })();
 })();
 
 /* ---------- لوحات الأوتوكاد ---------- */

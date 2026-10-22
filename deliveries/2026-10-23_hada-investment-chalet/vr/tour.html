@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="مصنع وتد الأخشاب — جولة افتراضية">
+</head>
+<body>
+<title>شاليهات الهدا الافتراضية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: عمود واحد — جولة 360° كبيرة، ثم المجسم التفاعلي، ثم لقطات الرندر. ألوان خشب صنوبر وغابات الهدا. */
+:root {
+  --bg: #F1F2EE; --panel: #FFFFFF; --ink: #1C2420; --muted: #5E6B63; --line: #D9DDD5;
+  --pine: #2F5D4A; --cedar: #A3653A; --chip: #E4E8E1;
+  --display: "Reem Kufi", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.7; direction: rtl;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 36px }
+header { display: grid; gap: 6px }
+.eyebrow { color: var(--cedar); font-weight: 600; letter-spacing: .02em; font-size: .95rem }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4.5vw, 2.8rem); line-height: 1.25; margin: 0; text-wrap: balance }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.45rem; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); max-width: 65ch; margin: 0 }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px }
+.facts span { background: var(--chip); border-radius: 999px; padding: 3px 12px; font-size: .9rem; font-variant-numeric: tabular-nums }
+section { display: grid; gap: 14px; min-width: 0 }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px }
+.hint { color: var(--muted); font-size: .9rem }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 78vh; background: #0c0f0d; border-radius: 10px; overflow: hidden; touch-action: none }
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab }
+.stage canvas:active { cursor: grabbing }
+.stage .badge { position: absolute; top: 12px; right: 12px; background: rgba(12,15,13,.72); color: #F0F2EE; padding: 4px 12px; border-radius: 6px; font-size: .92rem; pointer-events: none }
+.stage .tools { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 8px }
+.stage .tools button { background: rgba(12,15,13,.72); color: #F0F2EE; border: 1px solid rgba(255,255,255,.18); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: .88rem; cursor: pointer }
+.stage .loading { position: absolute; inset: 0; display: grid; place-items: center; color: #cfd6d1; font-size: .95rem; pointer-events: none }
+.spots { display: flex; flex-wrap: wrap; gap: 8px }
+.spots button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.spots button[aria-pressed="true"] { background: var(--pine); border-color: var(--pine); color: var(--bg) }
+.spots button:focus-visible, .stage button:focus-visible { outline: 2px solid var(--cedar); outline-offset: 2px }
+.spots .night { border-style: dashed }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0 }
+figure img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: var(--chip) }
+figcaption { font-size: .92rem; color: var(--muted) }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 14px }
+.spec div { border-top: 2px solid var(--pine); padding-top: 8px; min-width: 0 }
+.spec b { font-family: var(--display); font-weight: 500; font-size: 1.05rem; display: block }
+.spec p { margin: 4px 0 0; color: var(--muted); font-size: .93rem }
+footer { color: var(--muted); font-size: .85rem }
+.walkbar { display: flex; flex-wrap: wrap; gap: 8px }
+.walkbar button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.walkbar button[aria-pressed="true"] { background: var(--cedar); border-color: var(--cedar); color: var(--bg) }
+.joy { position: absolute; bottom: 16px; right: 16px; width: 120px; height: 120px; border-radius: 50%; background: rgba(12,15,13,.45); border: 1px solid rgba(255,255,255,.25); touch-action: none }
+.joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(240,242,238,.85) }
+.sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px }
+.sheets a { display: grid; gap: 6px; color: inherit; text-decoration: none; min-width: 0 }
+.sheets img { width: 100%; aspect-ratio: 1.414 / 1; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 6px }
+.pdf { display: inline-block; justify-self: start; background: var(--pine); color: var(--bg); text-decoration: none; padding: 8px 18px; border-radius: 8px; font-weight: 600 }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">مصنع وتد الأخشاب · الهدا — الطائف</div>
+    <h1>شاليهين الهدا الاستثماري — جولة افتراضية</h1>
+    <p class="lead">كل التصميم في صفحة وحدة: جولة 360°، والمشي داخل المجسم في الحوش والدورين، وفيديو الجولة، ولقطات الرندر، وملف الأوتوكاد كامل.</p>
+    <div class="facts">
+      <span>أرض ≈ 500 م² (24.27 / 16.23 × 25.00)</span>
+      <span>شاليهين × دورين</span>
+      <span>كل شاليه 7.00 × 9.00 م</span>
+      <span>جلسة شتوية مدفونة −0.70 م</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-model">
+    <div class="sec-head">
+      <h2 id="t-model">الجولة داخل المشروع</h2>
+      <span class="hint" id="model-hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+    </div>
+    <div class="walkbar" id="walkbar">
+      <button type="button" data-mode="tour" aria-pressed="true">جولة تلقائية كاملة</button>
+      <button type="button" data-mode="orbit" aria-pressed="false">لف حول المشروع</button>
+      <button type="button" data-spot="gate" aria-pressed="false">امشِ: من البوابة والحوش</button>
+      <button type="button" data-spot="living" aria-pressed="false">امشِ: الدور الأرضي</button>
+      <button type="button" data-spot="upper" aria-pressed="false">امشِ: الدور الأول</button>
+      <button type="button" data-spot="unit2" aria-pressed="false">امشِ: الوحدة الثانية</button>
+    </div>
+    <div class="stage" id="model-stage">
+      <canvas id="model"></canvas>
+      <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
+      <div class="joy" id="joy" hidden><i id="joy-knob"></i></div>
+      <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-tour">
+    <div class="sec-head">
+      <h2 id="t-tour">الجولة 360°</h2>
+      <span class="hint">الأزرار المنقّطة = بالليل والإنارة شغالة</span>
+    </div>
+    <div class="spots" id="spots"></div>
+    <div class="stage" id="pano-stage">
+      <canvas id="pano"></canvas>
+      <div class="badge" id="pano-name"></div>
+      <div class="loading" id="pano-loading">جاري التحميل…</div>
+      <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-shots">
+    <div class="sec-head"><h2 id="t-shots">لقطات التصميم الواقعي</h2></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section aria-labelledby="t-files">
+    <div class="sec-head"><h2 id="t-files">ملف التصميم كامل (الأوتوكاد)</h2><span class="hint">اضغط على أي لوحة لتكبيرها</span></div>
+    <a class="pdf" href="hada-chalet-autocad.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
+    <div class="sheets" id="sheets"></div>
+  </section>
+
+  <section aria-labelledby="t-spec">
+    <div class="sec-head"><h2 id="t-spec">التصميم باختصار</h2></div>
+    <div class="spec">
+      <div><b>الأرضي</b><p>صالة 6.76 × 4.48 م بسحابات زجاج، يقسمها بارتشن خشب حامل للدور الثاني: جلسة وتلفزيون غربه، وطعام ومدخل شرقه. مطبخ مفتوح، حمام يخدم الصالة، ودرج خشب.</p></div>
+      <div><b>الأول</b><p>ماستر 3.40 × 4.48 م بغرفة ملابس وحمام خاص، وغرفة 2 بمقاس 3.24 × 4.48 م وحمامها، والغرفتين على بلكونة 7.00 × 2.40 م ومثلث زجاج بالجملون.</p></div>
+      <div><b>الحوش</b><p>كل وحدة مستقلة بسور: موقف، ممر من باب المشاة للدرج، مسبح غطس 2.30 × 4.80 م، وجلسة شتوية مدفونة بمشب نار تحت برجولة خشب.</p></div>
+    </div>
+  </section>
+
+  <footer>تصميم مبدئي للمراجعة — مصنع وتد الأخشاب. الصور مرسومة بالحاسب (رندر) وتوضّح الفكرة؛ الأبعاد المعتمدة في مخطط الأوتوكاد.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="model.js"></script>
+<script>
+const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "file": "pano/yard.jpg"}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "file": "pano/sunken.jpg"}, {"id": "living", "name": "الصالة", "file": "pano/living.jpg"}]/*END*/;
+const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file": "shots/x1.jpg"}, {"name": "حوش الوحدة — الجلسة المدفونة والمسبح", "file": "shots/x2.jpg"}, {"name": "الجلسة الشتوية المدفونة", "file": "shots/x3.jpg"}, {"name": "منظر علوي خلفي", "file": "shots/x4.jpg"}, {"name": "الصالة — الجلسة والبارتشن", "file": "shots/i1.jpg"}, {"name": "الصالة — من الجلسة", "file": "shots/i2.jpg"}, {"name": "الماستر", "file": "shots/i3.jpg"}]/*END*/;
+
+/* ---------- جولة 360° ---------- */
+(function () {
+  const canvas = document.getElementById("pano"), stage = document.getElementById("pano-stage");
+  const nameEl = document.getElementById("pano-name"), loadEl = document.getElementById("pano-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 16 / 9, 1, 1100);
+  const geo = new THREE.SphereGeometry(500, 64, 40); geo.scale(-1, 1, 1);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+  scene.add(new THREE.Mesh(geo, mat));
+  const loader = new THREE.TextureLoader();
+  let lon = 90, lat = 0, spin = !matchMedia("(prefers-reduced-motion: reduce)").matches, dragging = null;
+  const pointers = new Map(); let pinch0 = 0, fov0 = 75;
+
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  function load(p) {
+    loadEl.hidden = false; nameEl.textContent = p.name;
+    document.querySelectorAll("#spots button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === p.id)));
+    loader.load(p.file, tex => {
+      if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+      mat.map && mat.map.dispose(); mat.map = tex; mat.color.set(0xffffff); mat.needsUpdate = true; loadEl.hidden = true;
+    }, undefined, () => { loadEl.textContent = "تعذر تحميل الصورة"; });
+  }
+  const spots = document.getElementById("spots");
+  PANOS.forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = p.name; b.dataset.id = p.id;
+    if (p.night) b.classList.add("night");
+    b.addEventListener("click", () => load(p)); spots.appendChild(b);
+  });
+  canvas.addEventListener("pointerdown", e => {
+    canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, e);
+    if (pointers.size === 1) dragging = { x: e.clientX, y: e.clientY, lon, lat };
+    if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); fov0 = camera.fov; }
+  });
+  canvas.addEventListener("pointermove", e => {
+    if (!pointers.has(e.pointerId)) return; pointers.set(e.pointerId, e);
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      camera.fov = Math.max(35, Math.min(95, fov0 * pinch0 / d)); camera.updateProjectionMatrix(); return;
+    }
+    if (dragging) {
+      const k = camera.fov / stage.clientHeight;
+      lon = dragging.lon + (dragging.x - e.clientX) * k; lat = Math.max(-85, Math.min(85, dragging.lat + (e.clientY - dragging.y) * k));
+    }
+  });
+  const up = e => { pointers.delete(e.pointerId); if (!pointers.size) dragging = null; };
+  canvas.addEventListener("pointerup", up); canvas.addEventListener("pointercancel", up);
+  canvas.addEventListener("wheel", e => { e.preventDefault(); camera.fov = Math.max(35, Math.min(95, camera.fov + e.deltaY * 0.04)); camera.updateProjectionMatrix(); }, { passive: false });
+  const spinBtn = document.getElementById("pano-spin");
+  spinBtn.setAttribute("aria-pressed", String(spin));
+  spinBtn.addEventListener("click", () => { spin = !spin; spinBtn.setAttribute("aria-pressed", String(spin)); });
+  document.getElementById("pano-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  function tick() {
+    if (spin && !dragging) lon += 0.03;
+    const phi = THREE.MathUtils.degToRad(90 - lat), th = THREE.MathUtils.degToRad(lon);
+    camera.lookAt(500 * Math.sin(phi) * Math.cos(th), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(th));
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  }
+  if (!PANOS.length) { loadEl.textContent = "صور الجولة 360° تحت التجهيز — تنزل هنا قريب"; nameEl.hidden = true; return; }
+  new ResizeObserver(size).observe(stage); size(); load(PANOS[0]); tick();
+})();
+
+/* ---------- المجسم ---------- */
+(function () {
+  const canvas = document.getElementById("model"), stage = document.getElementById("model-stage"), loadEl = document.getElementById("model-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6ea);
+  const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 500);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+  scene.add(new THREE.HemisphereLight(0xf4f7ff, 0x6f7f5a, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff1df, 0.75); sun.position.set(-20, 30, 25); scene.add(sun);
+  const HOLES = [[470, -1240, 700, -760], [-46, -740, 274, -400], [1310, -1240, 1540, -760], [794, -740, 1114, -400]];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
+  const gs = new THREE.Shape(); gs.absarc(0, 0, 60, 0, Math.PI * 2, false);
+  HOLES.forEach(([x0, y0, x1, y1]) => { const h = new THREE.Path(); h.moveTo(x0 / 100, y0 / 100); h.lineTo(x1 / 100, y0 / 100);
+    h.lineTo(x1 / 100, y1 / 100); h.lineTo(x0 / 100, y1 / 100); h.lineTo(x0 / 100, y0 / 100); gs.holes.push(h); });
+  const ground = new THREE.Mesh(new THREE.ShapeGeometry(gs, 48), new THREE.MeshLambertMaterial({ color: 0x8fa86c, side: THREE.DoubleSide }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; scene.add(ground);
+  const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
+  let home = null;
+  function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  const bin = Uint8Array.from(atob(window.MODEL_GLB || ""), c => c.charCodeAt(0)).buffer;
+  new THREE.GLTFLoader().parse(bin, "", g => {
+    scene.add(g.scene);
+    const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
+    controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
+    home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) startTour();
+  }, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
+  /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
+  const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
+  const SPOTS = {
+    gate: { p: P(340, -1250, 115), yaw: 0 },
+    living: { p: P(410, 40, 160), yaw: 0 },
+    upper: { p: P(160, 512, 465), yaw: -Math.PI / 2 },
+    unit2: { p: P(1180, -1250, 115), yaw: 0 },
+  };
+  let walk = false, yaw = 0, pitch = -0.05, look = null;
+  const move = { f: 0, s: 0 }, keys = {};
+  const joy = document.getElementById("joy"), knob = document.getElementById("joy-knob"), hint = document.getElementById("model-hint");
+  function setMode(spot) {
+    walk = !!spot; controls.enabled = !walk; joy.hidden = !walk;
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(spot ? b.dataset.spot === spot : b.dataset.mode === "orbit")));
+    hint.textContent = walk ? "اسحب على الصورة للالتفات · العصا أو W/A/S/D للمشي" : "اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك";
+    if (walk) { camera.position.copy(SPOTS[spot].p); yaw = SPOTS[spot].yaw; pitch = -0.05; camera.fov = 70; }
+    else if (home) { camera.fov = 40; camera.position.copy(home.p); controls.target.copy(home.t); }
+    camera.updateProjectionMatrix();
+  }
+  /* الجولة التلقائية: نفس مسار فيديو الجولة — درون فوق السور، الحوش، الجلسة المدفونة، المسبح، الصالة، الدرج، الدور الأول، البلكونة */
+  const TOUR_P = [[340, -2000, 520], [340, -1450, 330], [340, -1150, 125], [340, -900, 115], [380, -600, 115], [600, -560, 115], [410, -330, 125], [410, -150, 160], [410, 60, 160], [450, 250, 160], [330, 420, 160], [180, 520, 160], [184, 760, 312], [120, 830, 315], [56, 760, 335], [56, 600, 465], [160, 512, 465], [390, 512, 465], [390, 380, 465], [520, 120, 465], [520, -130, 465], [560, -700, 760], [764, -1700, 950]], TOUR_L = [[344, -200, 200], [344, 0, 220], [344, 0, 260], [90, -570, -40], [90, -570, -60], [585, -1000, -20], [344, 100, 200], [410, 200, 160], [300, 350, 140], [100, 300, 120], [120, 650, 200], [184, 870, 330], [184, 900, 340], [0, 830, 360], [56, 500, 480], [56, 450, 470], [400, 512, 465], [390, 300, 450], [442, 220, 410], [520, -200, 450], [344, -900, 150], [764, 0, 300], [764, 300, 300]];
+  const curP = new THREE.CatmullRomCurve3(TOUR_P.map(q => P(...q)), false, "centripetal");
+  const curL = new THREE.CatmullRomCurve3(TOUR_L.map(q => P(...q)), false, "centripetal");
+  let tour = false, tourT = 0;
+  const TOUR_SEC = 75;
+  function startTour() { tour = true; tourT = 0; walk = false; controls.enabled = false; joy.hidden = true; camera.fov = 62; camera.updateProjectionMatrix();
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === "tour")));
+    hint.textContent = "الجولة شغالة — اضغط أي زر تحت عشان تمشي بنفسك"; }
+  function tourStep(dt) { tourT = (tourT + dt / TOUR_SEC) % 1; camera.position.copy(curP.getPointAt(tourT)); camera.lookAt(curL.getPointAt(tourT)); }
+  document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.mode === "tour") return startTour();
+    tour = false; setMode(b.dataset.spot || null);
+  }));
+  canvas.addEventListener("pointerdown", e => { if (walk) { look = { x: e.clientX, y: e.clientY, yaw, pitch }; canvas.setPointerCapture(e.pointerId); } });
+  canvas.addEventListener("pointermove", e => { if (walk && look) { yaw = look.yaw + (e.clientX - look.x) * 0.005; pitch = Math.max(-1.2, Math.min(1.2, look.pitch + (e.clientY - look.y) * 0.004)); } });
+  canvas.addEventListener("pointerup", () => { look = null; });
+  canvas.addEventListener("pointercancel", () => { look = null; });
+  let jid = null;
+  function joyAt(e) {
+    const r = joy.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const m = Math.min(1, Math.hypot(dx, dy) / (r.width / 2)), a = Math.atan2(dy, dx);
+    knob.style.transform = `translate(${Math.cos(a) * m * 36}px, ${Math.sin(a) * m * 36}px)`;
+    move.f = -Math.sin(a) * m; move.s = Math.cos(a) * m;
+  }
+  joy.addEventListener("pointerdown", e => { jid = e.pointerId; joy.setPointerCapture(jid); joyAt(e); e.stopPropagation(); });
+  joy.addEventListener("pointermove", e => { if (e.pointerId === jid) joyAt(e); });
+  const joyEnd = () => { jid = null; move.f = move.s = 0; knob.style.transform = ""; };
+  joy.addEventListener("pointerup", joyEnd); joy.addEventListener("pointercancel", joyEnd);
+  addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
+  addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+  let last = performance.now();
+  function walkStep(now) {
+    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+    if (!walk) return;
+    let f = move.f + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0);
+    let st = move.s + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0);
+    const sp = 1.6 * dt, dir = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    camera.position.addScaledVector(dir, f * sp).addScaledVector(side, st * sp);
+    const t = camera.position.clone().add(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)));
+    camera.lookAt(t);
+  }
+  document.getElementById("model-reset").addEventListener("click", () => { tour = false; setMode(null); });
+  document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  new ResizeObserver(size).observe(stage); size();
+  (function tick(now) {
+    now = now || performance.now();
+    if (tour) { tourStep(Math.max(0, Math.min(0.05, (now - last) / 1000))); last = now; }
+    else if (walk) walkStep(now); else { last = now; controls.update(); }
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------- لوحات الأوتوكاد ---------- */
+(function () {
+  const names = ["الموقع العام واللاندسكيب", "المسقط الأرضي", "مسقط الدور الأول", "الواجهة الأمامية والشرقية",
+    "الواجهة الخلفية والغربية", "مسقط السقف والقطاع", "جدول الأبواب والشبابيك", "المساحات والتسعير",
+    "لقطات المنظور", "الفرش — الدور الأرضي", "الفرش — الدور الأول", "نماذج الدرابزين"];
+  const g = document.getElementById("sheets");
+  names.forEach((n, k) => {
+    const f = `sheets/sheet-${String(k + 1).padStart(2, "0")}.jpg`, a = document.createElement("a");
+    a.href = f; a.target = "_blank"; a.rel = "noopener";
+    const i = document.createElement("img"); i.src = f; i.alt = n; i.loading = "lazy";
+    const c = document.createElement("span"); c.className = "hint"; c.textContent = `A-${String(k + 1).padStart(2, "0")} · ${n}`;
+    a.append(i, c); g.appendChild(a);
+  });
+})();
+
+/* ---------- اللقطات ---------- */
+(function () {
+  const g = document.getElementById("gallery");
+  SHOTS.forEach(s => {
+    const f = document.createElement("figure"), i = document.createElement("img"), c = document.createElement("figcaption");
+    i.src = s.file; i.alt = s.name; i.loading = "lazy"; c.textContent = s.name; f.append(i, c); g.appendChild(f);
+  });
+})();
+</script>
+
+</body>
+</html>
