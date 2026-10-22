@@ -114,17 +114,10 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="model.js"></script>
 <script>
-const PANOS = [
-  { id: "yard", name: "حوش الوحدة", file: "pano/yard.jpg" },
-  { id: "sunken", name: "الجلسة الشتوية المدفونة", file: "pano/sunken.jpg" },
-  { id: "living", name: "الصالة", file: "pano/living.jpg" },
-  { id: "master", name: "غرفة الماستر", file: "pano/master.jpg" },
-  { id: "balcony", name: "البلكونة", file: "pano/balcony.jpg" },
-  { id: "sunken-night", name: "الجلسة المدفونة بالليل", file: "pano/sunken-night.jpg", night: true },
-  { id: "living-night", name: "الصالة بالليل", file: "pano/living-night.jpg", night: true },
-];
-const SHOTS = window.__SHOTS__ || [];
+const PANOS = /*PANOS*/[]/*END*/;
+const SHOTS = /*SHOTS*/[{"name": "منظور خارجي", "file": "shots/x1.jpg"}, {"name": "منظور خارجي", "file": "shots/x2.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
 (function () {
@@ -188,6 +181,7 @@ const SHOTS = window.__SHOTS__ || [];
     camera.lookAt(500 * Math.sin(phi) * Math.cos(th), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(th));
     renderer.render(scene, camera); requestAnimationFrame(tick);
   }
+  if (!PANOS.length) { loadEl.textContent = "صور الجولة 360° تحت التجهيز — تنزل هنا قريب"; nameEl.hidden = true; return; }
   new ResizeObserver(size).observe(stage); size(); load(PANOS[0]); tick();
 })();
 
@@ -206,12 +200,13 @@ const SHOTS = window.__SHOTS__ || [];
   const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   let home = null;
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-  new THREE.GLTFLoader().load("model.glb", g => {
+  const bin = Uint8Array.from(atob(window.MODEL_GLB || ""), c => c.charCodeAt(0)).buffer;
+  new THREE.GLTFLoader().parse(bin, "", g => {
     scene.add(g.scene);
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
-  }, undefined, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
+  }, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
   document.getElementById("model-reset").addEventListener("click", () => { if (home) { camera.position.copy(home.p); controls.target.copy(home.t); } });
   document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
   new ResizeObserver(size).observe(stage); size();
