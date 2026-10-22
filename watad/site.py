@@ -31,6 +31,19 @@ def _mv(r, dx, dy):
     return [r[0] + dx, r[1] + dy, r[2] + dx, r[3] + dy]
 
 
+def boundary(st):
+    """حدود الأرض كمضلع (أرض غير مستطيلة: site.boundary) — وإلا مستطيل plot."""
+    if st.get("boundary"):
+        return [tuple(p) for p in st["boundary"]]
+    x0, y0, x1, y1 = st["plot"]
+    return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+
+
+def poly_area(pts):
+    return abs(sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
+                   for i in range(len(pts)))) / 2 / 1e4
+
+
 def units_of(st):
     return st.get("units") or [[0, 0]]
 
@@ -39,6 +52,9 @@ def expand(st):
     """site.units: [[dx, dy], ...] — مشروع استثماري بأكثر من وحدة: تقسيم الوحدة الأولى (المناطق، البرجولات،
     الفرش، الأشجار، البوابات) يتكرر بالإزاحات، والكوخ نفسه يتكرر في المسقط والـ3D."""
     units = st.get("units")
+    if st.get("boundary") and not st.get("plot"):
+        xs, ys = zip(*st["boundary"])
+        st = dict(st, plot=[min(xs), min(ys), max(xs), max(ys)])
     if not units:
         return st
     out = dict(st)
@@ -63,7 +79,8 @@ def site_rows(P, rules):
     st = expand(P.site)
     n_u = len(units_of(P.site))
     x0, y0, x1, y1 = st["plot"]
-    plot = _area(st["plot"])
+    bpts = boundary(st)
+    plot = poly_area(bpts)
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
     fp = (bx1 - bx0) * (by1 - by0) / 1e4 * n_u
     sums = {}
@@ -82,7 +99,13 @@ def site_rows(P, rules):
         sums[z["kind"]] += a
     deck = sum(_area(d.rect) for d in P.decks if not d.level) * n_u
     used = fp + deck + sum(v for k, v in sums.items() if k != "lawn")
-    rows = [["مساحة الأرض", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f} م", f"{plot:.1f}"]]
+    if st.get("boundary"):
+        el = [math.dist(bpts[i], bpts[(i + 1) % len(bpts)]) / 100 for i in range(len(bpts))]
+        rows = [["مساحة الأرض (" + ("شبه منحرف" if len(bpts) == 4 else "مضلع") + ")",
+                 (f"{el[0]:.2f}/{el[2]:.2f} × {el[1]:.2f}" if len(el) == 4 else " / ".join(f"{e:.1f}" for e in el))
+                 + " م", f"{plot:.1f}"]]
+    else:
+        rows = [["مساحة الأرض", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f} م", f"{plot:.1f}"]]
     xn = f" × {n_u}" if n_u > 1 else ""
     if n_u > 1 and st.get("unit_rect"):
         u = st["unit_rect"]
@@ -135,9 +158,13 @@ def site_sheet(ctx):
     t = st.get("wall", {}).get("t", 20)
     fig = new_page((A3[1], A3[0]))
     ax = drawing_ax(fig, [0.05, 0.06, 0.58, 0.86])
+    bpts = boundary(st)
+    poly = bool(st.get("boundary"))
     title(ax, "الموقع العام وتنسيق الحديقة (لاندسكيب)",
-          f"الأرض {(x1 - x0) / 100:.0f} × {(y1 - y0) / 100:.0f} م = {_area(st['plot']):.0f} م²  |  الأبعاد بالسنتيمتر")
-    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="#e8f2dc", ec="none", zorder=0))
+          (f"الأرض {poly_area(bpts):.0f} م²" if poly else
+           f"الأرض {(x1 - x0) / 100:.0f} × {(y1 - y0) / 100:.0f} م = {_area(st['plot']):.0f} م²")
+          + "  |  الأبعاد بالسنتيمتر")
+    ax.add_patch(Polygon(bpts, closed=True, fc="#e8f2dc", ec="none", zorder=0))
     for z in st.get("zones", []):                              # المناطق
         r = z["rect"]
         fc, ec = COL.get(z["kind"], ("#eee", "#999"))
@@ -230,9 +257,24 @@ def site_sheet(ctx):
     # السور والبوابات
     side = st.get("street", "S")
     gates = st.get("gates", [])
-    ax.add_patch(Rectangle((x0 - t, y0 - t), x1 - x0 + 2 * t, y1 - y0 + 2 * t, fill=False, ec="#444", lw=0, zorder=9))
-    for (ax0, ay0, ax1, ay1, edge) in ((x0 - t, y0 - t, x1 + t, y0, "S"), (x0 - t, y1, x1 + t, y1 + t, "N"),
-                                        (x0 - t, y0, x0, y1, "W"), (x1, y0, x1 + t, y1, "E")):
+    if poly:                    # أرض غير مستطيلة: السور على أضلاع المضلع (البوابات على ضلع الشارع y0)
+        from shapely.geometry import LineString
+        for i in range(len(bpts)):
+            p, q = bpts[i], bpts[(i + 1) % len(bpts)]
+            segs = [(p, q)]
+            if abs(p[1] - y0) < 1 and abs(q[1] - y0) < 1:
+                a, b = sorted((p[0], q[0]))
+                cuts = sorted((g["x"], g["x"] + g["width"]) for g in gates)
+                segs, at = [], a
+                for c0, c1 in cuts + [(b, b)]:
+                    if c0 > at:
+                        segs.append(((at, y0), (c0, y0)))
+                    at = c1
+            for a_, b_ in segs:
+                shp = LineString([a_, b_]).buffer(t / 2, cap_style=2)
+                ax.add_patch(Polygon(list(shp.exterior.coords), closed=True, fc="#6e6e6e", ec="k", lw=0.5, zorder=9))
+    for (ax0, ay0, ax1, ay1, edge) in ([] if poly else ((x0 - t, y0 - t, x1 + t, y0, "S"), (x0 - t, y1, x1 + t, y1 + t, "N"),
+                                        (x0 - t, y0, x0, y1, "W"), (x1, y0, x1 + t, y1, "E"))):
         cuts = sorted((g["x"], g["x"] + g["width"]) for g in gates) if edge == side else []
         a = ax0
         for c0, c1 in cuts + [(ax1, ax1)]:
@@ -252,6 +294,21 @@ def site_sheet(ctx):
     ax.text((x0 + x1) / 2, y0 - t - 200, f"شارع عرض {sw / 100:.0f} م", ha="center", va="center", fontsize=9,
             color="#333", zorder=1)
     # الأبعاد: الإجمالي ثم التقسيمات (قاعدة المصنع)
+    if poly:                    # طول كل ضلع من أضلاع الأرض
+        cx_, cy_ = sum(p[0] for p in bpts) / len(bpts), sum(p[1] for p in bpts) / len(bpts)
+        for i in range(len(bpts)):
+            p, q = bpts[i], bpts[(i + 1) % len(bpts)]
+            mx, my = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
+            L = math.dist(p, q)
+            nx_, ny_ = (q[1] - p[1]) / L, -(q[0] - p[0]) / L
+            if (mx - cx_) * nx_ + (my - cy_) * ny_ < 0:
+                nx_, ny_ = -nx_, -ny_
+            ang = math.degrees(math.atan2(q[1] - p[1], q[0] - p[0]))
+            ang = ang - 180 if ang > 90 else ang + 180 if ang < -90 else ang
+            ax.text(mx + nx_ * 70, my + ny_ * 70, f"{L / 100:.2f} م", ha="center", va="center", rotation=ang,
+                    fontsize=10, weight="bold", color="#b22", zorder=11)
+        dim(ax, (x1 + 60, y0), (x1 + 60, y1), 120, fs=9, text=f"العمق {(y1 - y0) / 100:.2f}")
+        x0 = min(p[0] for p in bpts if abs(p[1] - y1) < 1)
     dim(ax, (x0, y0), (x0, y1), 120, fs=9)
     ys = sorted({y0, y1, by0, by1} | {r for z in st.get("zones", []) if z["kind"] in ("pool",)
                                       for r in (z["rect"][1], z["rect"][3])})
@@ -266,7 +323,7 @@ def site_sheet(ctx):
     nx, ny = x1 + 160, y1 - 200
     ax.add_patch(Polygon([(nx, ny), (nx - 25, ny - 90), (nx, ny - 65), (nx + 25, ny - 90)], closed=True, fc="k"))
     ax.text(nx, ny + 15, "ش", ha="center", va="bottom", fontsize=12)
-    ax.set_xlim(x0 - 330, x1 + 260)
+    ax.set_xlim(min(p[0] for p in bpts) - 330, x1 + 260 + (200 if poly else 0))
     ax.set_ylim(y0 - 330, y1 + 200)
     # جدول المساحات + ملاحظات
     rows, plot, green = site_rows(P, rules)
@@ -282,6 +339,20 @@ def site_sheet(ctx):
 
 
 # ---------------------------------------------------------------- 3D
+def _slab_wall(S, mat, p, q, t, z0, z1):
+    """جدار مستقيم بسماكة t بين نقطتين (للأضلاع المائلة) — يمتد t/2 عند الطرفين ليقفل الأركان."""
+    dx, dy = q[0] - p[0], q[1] - p[1]
+    L = math.hypot(dx, dy) or 1.0
+    ux, uy = dx / L * t / 2, dy / L * t / 2
+    nx, ny = -uy, ux
+    a, b = (p[0] - ux, p[1] - uy), (q[0] + ux, q[1] + uy)
+    pts = []
+    for z in (z0, z1):
+        for (c, sgn) in ((a, -1), (b, -1), (b, 1), (a, 1)):
+            pts.append((c[0] + sgn * nx, c[1] + sgn * ny, z))
+    S.hexa(mat, pts)
+
+
 def add_site_3d(S, P, rules, style, cut=None):
     st = P.site
     if not st or cut:
@@ -307,6 +378,16 @@ def add_site_3d(S, P, rules, style, cut=None):
     S.zoff = 0
     side = st.get("street", "S")
     gates = sorted((g["x"], g["x"] + g["width"], g) for g in st.get("gates", []))
+    if st.get("boundary"):        # أرض غير مستطيلة: أضلاع السور الأخرى مائلة (قطع بوكس مدوّرة)
+        bp = boundary(st)
+        for i in range(len(bp)):
+            p, q = bp[i], bp[(i + 1) % len(bp)]
+            if abs(p[1] - y0) < 1 and abs(q[1] - y0) < 1:
+                continue
+            _slab_wall(S, "site_wall", p, q, t, gz, gz + h)
+            _slab_wall(S, "trim", p, q, t + 4, gz + h - 12, gz + h)
+        fx = sorted(p[0] for p in bp if abs(p[1] - y0) < 1)
+        x0, x1 = fx[0] + t, fx[-1] - t
     a = x0 - t
     for g0, g1, g in gates + [(x1 + t, x1 + t, None)]:          # السور الأمامي مع البوابات
         if g0 > a:
@@ -319,9 +400,10 @@ def add_site_3d(S, P, rules, style, cut=None):
                 S.box("trim", xa + 1, y0 - t / 2 - 3, gz + 5, xa + (g1 - g0) / n - 2, y0 - t / 2 + 3, gz + h - 20)
             S.box("gate", g0, y0 - t / 2 - 4, gz + h - 20, g1, y0 - t / 2 + 4, gz + h - 12)
         a = g1
-    S.box("site_wall", x0 - t, y1, gz, x1 + t, y1 + t, gz + h)
-    S.box("site_wall", x0 - t, y0, gz, x0, y1, gz + h)
-    S.box("site_wall", x1, y0, gz, x1 + t, y1, gz + h)
+    if not st.get("boundary"):
+        S.box("site_wall", x0 - t, y1, gz, x1 + t, y1 + t, gz + h)
+        S.box("site_wall", x0 - t, y0, gz, x0, y1, gz + h)
+        S.box("site_wall", x1, y0, gz, x1 + t, y1, gz + h)
     for dv in st.get("dividers", []):
         S.box("site_wall", dv["x"], y0, gz, dv["x"] + dv.get("t", t), y1, gz + h)
         S.box("trim", dv["x"] - 2, y0, gz + h - 12, dv["x"] + dv.get("t", t) + 2, y1, gz + h)
