@@ -356,6 +356,28 @@ def site_sheet(ctx):
 
 
 # ---------------------------------------------------------------- 3D
+def _minus(r, holes):
+    """مستطيل ناقص مستطيلات (تقسيم شرائح) — للبلاط حول المسبح."""
+    parts = [r]
+    for h in holes:
+        out = []
+        for a in parts:
+            if h[0] >= a[2] or h[2] <= a[0] or h[1] >= a[3] or h[3] <= a[1]:
+                out.append(a)
+                continue
+            if h[1] > a[1]:
+                out.append([a[0], a[1], a[2], h[1]])
+            if h[3] < a[3]:
+                out.append([a[0], h[3], a[2], a[3]])
+            y0_, y1_ = max(a[1], h[1]), min(a[3], h[3])
+            if h[0] > a[0]:
+                out.append([a[0], y0_, h[0], y1_])
+            if h[2] < a[2]:
+                out.append([h[2], y0_, a[2], y1_])
+        parts = out
+    return parts
+
+
 def _slab_wall(S, mat, p, q, t, z0, z1):
     """جدار مستقيم بسماكة t بين نقطتين (للأضلاع المائلة) — يمتد t/2 عند الطرفين ليقفل الأركان."""
     dx, dy = q[0] - p[0], q[1] - p[1]
@@ -439,7 +461,9 @@ def add_site_3d(S, P, rules, style, cut=None):
                        (r[2] - 15, r[1], r[2], r[3])):     # جدران المسبح (تبان من فتحة الأرض بالرندر)
                 S.box("pool_edge", w0[0], w0[1], gz - d - 10, w0[2], w0[3], gz)
         elif k in ("paving", "parking", "path", "seating"):
-            S.box("paver", r[0], r[1], gz, r[2], r[3], gz + 3)
+            holes = [o["rect"] for o in st.get("zones", []) if o["kind"] in ("pool", "sunken") and o is not z]
+            for q in _minus(r, holes):           # البلاط ما يغطي المسبح والجلسة المدفونة
+                S.box("paver", q[0], q[1], gz, q[2], q[3], gz + 3)
         elif k == "sunken":           # جلسة مدفونة: أرضية تحت مستوى الأرض + جدران ساندة + جلسة U + درج + مشب
             d = z.get("depth", 70)
             b = z.get("bench", 45)

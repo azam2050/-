@@ -127,6 +127,13 @@ MATS = {
     "glass": flat_material("W_glass", "#A7B6BE", rough=0.02, transmission=0.93, ior=1.52),
 }
 MATS["joist"] = MATS["ceiling"]
+# الموقع العام: بلاط، سور، مسبح، مساند الجلسات
+MATS["paver"] = tex_material("W_paver", "Concrete034", 1.2, "#9C8F7A", 0.85, rough=0.85, bump=0.3)
+MATS["site_wall"] = tex_material("W_site_wall", "Concrete034", 2.0, "#DCD4C6", 0.55, rough=0.9, bump=0.2)
+MATS["pool_edge"] = flat_material("W_pool_edge", "#E8E4DC", rough=0.45)
+MATS["water"] = flat_material("W_water", "#1E7FA6", rough=0.03, transmission=0.55, ior=1.33)
+MATS["cushion"] = flat_material("W_cushion", "#7B5B44", rough=0.95)
+MATS["lawn_bed"] = tex_material("W_lawn_bed", "Grass004", 0.9, None, rough=1.0, bump=0.6)
 MATS["metal_roof"] = flat_material("W_metal_roof", "#2E3235", rough=0.38, metal=0.7)
 MATS["green_roof"] = tex_material("W_green_roof", "Grass004", 0.9, None, rough=1.0, bump=0.9)
 # زجاج معماري: انعكاس سماء خفيف (طبقة لامعة) عشان يبان زجاج مركّب مو فتحة فاضية
@@ -164,12 +171,18 @@ center = (lo + hi) / 2
 size = (hi - lo).length
 
 # الأرض: عشب
-bpy.ops.mesh.primitive_plane_add(size=120, location=(center.x, center.y, cfg["ground_z"] - 0.005))
-ground = bpy.context.active_object
+if cfg.get("ground_holes"):      # أرضية صلبة رقيقة (Boolean يحتاج مجسم مقفل) بفتحات للمسابح والجلسات المدفونة
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(center.x, center.y, cfg["ground_z"] - 0.005 - 0.05))
+    ground = bpy.context.active_object
+    ground.scale = (120, 120, 0.1)
+    bpy.ops.object.transform_apply(scale=True)
+else:
+    bpy.ops.mesh.primitive_plane_add(size=120, location=(center.x, center.y, cfg["ground_z"] - 0.005))
+    ground = bpy.context.active_object
 for i, (hx0, hy0, hx1, hy1) in enumerate(cfg.get("ground_holes", [])):    # فتحات المسابح والجلسات المدفونة
     bpy.ops.mesh.primitive_cube_add(size=1, location=((hx0 + hx1) / 2, (hy0 + hy1) / 2, cfg["ground_z"]))
     cut = bpy.context.active_object
-    cut.scale = (hx1 - hx0 + 0.3, hy1 - hy0 + 0.3, 0.5)
+    cut.scale = (hx1 - hx0 + 0.3, hy1 - hy0 + 0.3, 0.6)
     md = ground.modifiers.new(f"hole{i}", "BOOLEAN")
     md.operation = "DIFFERENCE"
     md.object = cut

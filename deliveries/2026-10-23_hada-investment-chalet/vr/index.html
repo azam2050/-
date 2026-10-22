@@ -1,0 +1,229 @@
+<title>شاليهات الهدا الافتراضية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: عمود واحد — جولة 360° كبيرة، ثم المجسم التفاعلي، ثم لقطات الرندر. ألوان خشب صنوبر وغابات الهدا. */
+:root {
+  --bg: #F1F2EE; --panel: #FFFFFF; --ink: #1C2420; --muted: #5E6B63; --line: #D9DDD5;
+  --pine: #2F5D4A; --cedar: #A3653A; --chip: #E4E8E1;
+  --display: "Reem Kufi", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.7; direction: rtl;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 36px }
+header { display: grid; gap: 6px }
+.eyebrow { color: var(--cedar); font-weight: 600; letter-spacing: .02em; font-size: .95rem }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4.5vw, 2.8rem); line-height: 1.25; margin: 0; text-wrap: balance }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.45rem; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); max-width: 65ch; margin: 0 }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px }
+.facts span { background: var(--chip); border-radius: 999px; padding: 3px 12px; font-size: .9rem; font-variant-numeric: tabular-nums }
+section { display: grid; gap: 14px; min-width: 0 }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px }
+.hint { color: var(--muted); font-size: .9rem }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 78vh; background: #0c0f0d; border-radius: 10px; overflow: hidden; touch-action: none }
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab }
+.stage canvas:active { cursor: grabbing }
+.stage .badge { position: absolute; top: 12px; right: 12px; background: rgba(12,15,13,.72); color: #F0F2EE; padding: 4px 12px; border-radius: 6px; font-size: .92rem; pointer-events: none }
+.stage .tools { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 8px }
+.stage .tools button { background: rgba(12,15,13,.72); color: #F0F2EE; border: 1px solid rgba(255,255,255,.18); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: .88rem; cursor: pointer }
+.stage .loading { position: absolute; inset: 0; display: grid; place-items: center; color: #cfd6d1; font-size: .95rem; pointer-events: none }
+.spots { display: flex; flex-wrap: wrap; gap: 8px }
+.spots button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.spots button[aria-pressed="true"] { background: var(--pine); border-color: var(--pine); color: var(--bg) }
+.spots button:focus-visible, .stage button:focus-visible { outline: 2px solid var(--cedar); outline-offset: 2px }
+.spots .night { border-style: dashed }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0 }
+figure img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: var(--chip) }
+figcaption { font-size: .92rem; color: var(--muted) }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 14px }
+.spec div { border-top: 2px solid var(--pine); padding-top: 8px; min-width: 0 }
+.spec b { font-family: var(--display); font-weight: 500; font-size: 1.05rem; display: block }
+.spec p { margin: 4px 0 0; color: var(--muted); font-size: .93rem }
+footer { color: var(--muted); font-size: .85rem }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">مصنع وتد الأخشاب · الهدا — الطائف</div>
+    <h1>شاليهين الهدا الاستثماري — جولة افتراضية</h1>
+    <p class="lead">تجوّل داخل التصميم كأنك واقف فيه: اسحب بإصبعك أو بالماوس لتلف 360°، وقرّب بإصبعين أو بعجلة الماوس. اختر المكان من الأزرار تحت.</p>
+    <div class="facts">
+      <span>أرض ≈ 500 م² (24.27 / 16.23 × 25.00)</span>
+      <span>شاليهين × دورين</span>
+      <span>كل شاليه 7.00 × 9.00 م</span>
+      <span>جلسة شتوية مدفونة −0.70 م</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-tour">
+    <div class="sec-head">
+      <h2 id="t-tour">الجولة 360°</h2>
+      <span class="hint">الأزرار المنقّطة = بالليل والإنارة شغالة</span>
+    </div>
+    <div class="spots" id="spots"></div>
+    <div class="stage" id="pano-stage">
+      <canvas id="pano"></canvas>
+      <div class="badge" id="pano-name"></div>
+      <div class="loading" id="pano-loading">جاري التحميل…</div>
+      <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-model">
+    <div class="sec-head">
+      <h2 id="t-model">المجسم ثلاثي الأبعاد</h2>
+      <span class="hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+    </div>
+    <div class="stage" id="model-stage">
+      <canvas id="model"></canvas>
+      <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
+      <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-shots">
+    <div class="sec-head"><h2 id="t-shots">لقطات التصميم الواقعي</h2></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section aria-labelledby="t-spec">
+    <div class="sec-head"><h2 id="t-spec">التصميم باختصار</h2></div>
+    <div class="spec">
+      <div><b>الأرضي</b><p>صالة 6.76 × 4.48 م بسحابات زجاج، يقسمها بارتشن خشب حامل للدور الثاني: جلسة وتلفزيون غربه، وطعام ومدخل شرقه. مطبخ مفتوح، حمام يخدم الصالة، ودرج خشب.</p></div>
+      <div><b>الأول</b><p>ماستر 3.40 × 4.48 م بغرفة ملابس وحمام خاص، وغرفة 2 بمقاس 3.24 × 4.48 م وحمامها، والغرفتين على بلكونة 7.00 × 2.40 م ومثلث زجاج بالجملون.</p></div>
+      <div><b>الحوش</b><p>كل وحدة مستقلة بسور: موقف، ممر من باب المشاة للدرج، مسبح غطس 2.30 × 4.80 م، وجلسة شتوية مدفونة بمشب نار تحت برجولة خشب.</p></div>
+    </div>
+  </section>
+
+  <footer>تصميم مبدئي للمراجعة — مصنع وتد الأخشاب. الصور مرسومة بالحاسب (رندر) وتوضّح الفكرة؛ الأبعاد المعتمدة في مخطط الأوتوكاد.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const PANOS = [
+  { id: "yard", name: "حوش الوحدة", file: "pano/yard.jpg" },
+  { id: "sunken", name: "الجلسة الشتوية المدفونة", file: "pano/sunken.jpg" },
+  { id: "living", name: "الصالة", file: "pano/living.jpg" },
+  { id: "master", name: "غرفة الماستر", file: "pano/master.jpg" },
+  { id: "balcony", name: "البلكونة", file: "pano/balcony.jpg" },
+  { id: "sunken-night", name: "الجلسة المدفونة بالليل", file: "pano/sunken-night.jpg", night: true },
+  { id: "living-night", name: "الصالة بالليل", file: "pano/living-night.jpg", night: true },
+];
+const SHOTS = window.__SHOTS__ || [];
+
+/* ---------- جولة 360° ---------- */
+(function () {
+  const canvas = document.getElementById("pano"), stage = document.getElementById("pano-stage");
+  const nameEl = document.getElementById("pano-name"), loadEl = document.getElementById("pano-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 16 / 9, 1, 1100);
+  const geo = new THREE.SphereGeometry(500, 64, 40); geo.scale(-1, 1, 1);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+  scene.add(new THREE.Mesh(geo, mat));
+  const loader = new THREE.TextureLoader();
+  let lon = 90, lat = 0, spin = !matchMedia("(prefers-reduced-motion: reduce)").matches, dragging = null;
+  const pointers = new Map(); let pinch0 = 0, fov0 = 75;
+
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  function load(p) {
+    loadEl.hidden = false; nameEl.textContent = p.name;
+    document.querySelectorAll("#spots button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === p.id)));
+    loader.load(p.file, tex => {
+      if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+      mat.map && mat.map.dispose(); mat.map = tex; mat.color.set(0xffffff); mat.needsUpdate = true; loadEl.hidden = true;
+    }, undefined, () => { loadEl.textContent = "تعذر تحميل الصورة"; });
+  }
+  const spots = document.getElementById("spots");
+  PANOS.forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = p.name; b.dataset.id = p.id;
+    if (p.night) b.classList.add("night");
+    b.addEventListener("click", () => load(p)); spots.appendChild(b);
+  });
+  canvas.addEventListener("pointerdown", e => {
+    canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, e);
+    if (pointers.size === 1) dragging = { x: e.clientX, y: e.clientY, lon, lat };
+    if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); fov0 = camera.fov; }
+  });
+  canvas.addEventListener("pointermove", e => {
+    if (!pointers.has(e.pointerId)) return; pointers.set(e.pointerId, e);
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      camera.fov = Math.max(35, Math.min(95, fov0 * pinch0 / d)); camera.updateProjectionMatrix(); return;
+    }
+    if (dragging) {
+      const k = camera.fov / stage.clientHeight;
+      lon = dragging.lon + (dragging.x - e.clientX) * k; lat = Math.max(-85, Math.min(85, dragging.lat + (e.clientY - dragging.y) * k));
+    }
+  });
+  const up = e => { pointers.delete(e.pointerId); if (!pointers.size) dragging = null; };
+  canvas.addEventListener("pointerup", up); canvas.addEventListener("pointercancel", up);
+  canvas.addEventListener("wheel", e => { e.preventDefault(); camera.fov = Math.max(35, Math.min(95, camera.fov + e.deltaY * 0.04)); camera.updateProjectionMatrix(); }, { passive: false });
+  const spinBtn = document.getElementById("pano-spin");
+  spinBtn.setAttribute("aria-pressed", String(spin));
+  spinBtn.addEventListener("click", () => { spin = !spin; spinBtn.setAttribute("aria-pressed", String(spin)); });
+  document.getElementById("pano-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  function tick() {
+    if (spin && !dragging) lon += 0.03;
+    const phi = THREE.MathUtils.degToRad(90 - lat), th = THREE.MathUtils.degToRad(lon);
+    camera.lookAt(500 * Math.sin(phi) * Math.cos(th), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(th));
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  }
+  new ResizeObserver(size).observe(stage); size(); load(PANOS[0]); tick();
+})();
+
+/* ---------- المجسم ---------- */
+(function () {
+  const canvas = document.getElementById("model"), stage = document.getElementById("model-stage"), loadEl = document.getElementById("model-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6ea);
+  const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 500);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9a7a, 0.9));
+  const sun = new THREE.DirectionalLight(0xfff1df, 0.9); sun.position.set(-20, 30, 25); scene.add(sun);
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 64), new THREE.MeshLambertMaterial({ color: 0x9fb57f }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; scene.add(ground);
+  const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
+  let home = null;
+  function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  new THREE.GLTFLoader().load("model.glb", g => {
+    scene.add(g.scene);
+    const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
+    controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
+    home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
+  }, undefined, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
+  document.getElementById("model-reset").addEventListener("click", () => { if (home) { camera.position.copy(home.p); controls.target.copy(home.t); } });
+  document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  new ResizeObserver(size).observe(stage); size();
+  (function tick() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick); })();
+})();
+
+/* ---------- اللقطات ---------- */
+(function () {
+  const g = document.getElementById("gallery");
+  SHOTS.forEach(s => {
+    const f = document.createElement("figure"), i = document.createElement("img"), c = document.createElement("figcaption");
+    i.src = s.file; i.alt = s.name; i.loading = "lazy"; c.textContent = s.name; f.append(i, c); g.appendChild(f);
+  });
+})();
+</script>
