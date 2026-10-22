@@ -282,10 +282,10 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
     night_in = [["n" + s[0][1:], s[2], s[3], s[4], s[5], rs.get("night_exposure", 0.4)] for s in inn[:rs.get("night_interior", 0)]]
     dusk += night_in
-    if "dusk" in parts:
-        _run({**base, **DUSK, "tag": "dusk", "night": True, "shots": dusk,
-              "panos": pano("night") if "pano" in parts else [],
-              "area_lights": [] if project.decor else _areas(project, 40),
+    if "dusk" in parts or "nightpano" in parts:
+        _run({**base, **DUSK, "tag": "dusk", "night": True, "shots": dusk if "dusk" in parts else [],
+              "panos": pano("night") if "pano" in parts or "nightpano" in parts else [], "pano_exposure": 1.3,
+              "area_lights": _areas(project, 10 if project.decor else 40),
               "ext_lights": ext_lights(project, rules)}, out)
     glb.unlink(missing_ok=True)
     meta = {"exterior": [[f"{s[0]}.jpg", s[1]] for s in ext],

@@ -43,7 +43,11 @@ section { display: grid; gap: 14px; min-width: 0 }
 .spots button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
 .spots button[aria-pressed="true"] { background: var(--pine); border-color: var(--pine); color: var(--bg) }
 .spots button:focus-visible, .stage button:focus-visible { outline: 2px solid var(--cedar); outline-offset: 2px }
-.spots .night { border-style: dashed }
+.dn { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; justify-self: start; margin-top: 4px }
+.dn button { font: inherit; font-weight: 600; border: 0; background: var(--panel); color: var(--ink); padding: 7px 22px; cursor: pointer }
+.dn button[aria-pressed="true"] { background: var(--ink); color: var(--bg) }
+.dn button:focus-visible { outline: 2px solid var(--cedar); outline-offset: -2px }
+video { width: 100%; border-radius: 10px; background: #000; max-height: 78vh }
 .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px }
 figure { margin: 0; display: grid; gap: 6px; min-width: 0 }
 figure img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: var(--chip) }
@@ -70,6 +74,10 @@ footer { color: var(--muted); font-size: .85rem }
     <div class="eyebrow">مصنع وتد الأخشاب · الهدا — الطائف</div>
     <h1>شاليهين الهدا الاستثماري — جولة افتراضية</h1>
     <p class="lead">كل التصميم في صفحة وحدة: جولة 360°، والمشي داخل المجسم في الحوش والدورين، وفيديو الجولة، ولقطات الرندر، وملف الأوتوكاد كامل.</p>
+    <div class="dn" role="group" aria-label="وقت المشاهدة">
+      <button type="button" id="dn-day" aria-pressed="true">بالنهار</button>
+      <button type="button" id="dn-night" aria-pressed="false">بالليل</button>
+    </div>
     <div class="facts">
       <span>أرض ≈ 500 م² (24.27 / 16.23 × 25.00)</span>
       <span>شاليهين × دورين</span>
@@ -102,7 +110,7 @@ footer { color: var(--muted); font-size: .85rem }
   <section aria-labelledby="t-tour">
     <div class="sec-head">
       <h2 id="t-tour">الجولة 360°</h2>
-      <span class="hint">الأزرار المنقّطة = بالليل والإنارة شغالة</span>
+      <span class="hint">بدّل بين النهار والليل من الزر فوق</span>
     </div>
     <div class="spots" id="spots"></div>
     <div class="stage" id="pano-stage">
@@ -111,6 +119,11 @@ footer { color: var(--muted); font-size: .85rem }
       <div class="loading" id="pano-loading">جاري التحميل…</div>
       <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
     </div>
+  </section>
+
+  <section aria-labelledby="t-video" id="video-sec" hidden>
+    <div class="sec-head"><h2 id="t-video">فيديو الجولة</h2></div>
+    <video id="walk" controls playsinline preload="metadata"></video>
   </section>
 
   <section aria-labelledby="t-shots">
@@ -141,7 +154,20 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="model.js"></script>
 <script>
-const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "file": "pano/yard.jpg"}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "file": "pano/sunken.jpg"}, {"id": "living", "name": "الصالة", "file": "pano/living.jpg"}, {"id": "master", "name": "غرفة الماستر", "file": "pano/master.jpg"}, {"id": "balcony", "name": "البلكونة", "file": "pano/balcony.jpg"}, {"id": "sunken-night", "name": "الجلسة الشتوية المدفونة بالليل", "file": "pano/sunken-night.jpg", "night": true}]/*END*/;
+const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "day": "pano/yard.jpg", "night": null}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "day": "pano/sunken.jpg", "night": "pano/sunken-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": null}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": null}, {"id": "balcony", "name": "البلكونة", "day": "pano/balcony.jpg", "night": null}]/*END*/;
+const HAS_VIDEO = /*VIDEO*/false/*END*/;
+let NIGHT = location.hash === "#night";
+const modeHooks = [];
+function setNight(n) {
+  NIGHT = n;
+  document.getElementById("dn-day").setAttribute("aria-pressed", String(!n));
+  document.getElementById("dn-night").setAttribute("aria-pressed", String(n));
+  try { history.replaceState(null, "", n ? "#night" : "#day"); } catch (e) {}
+  modeHooks.forEach(f => f(n));
+}
+document.getElementById("dn-day").addEventListener("click", () => setNight(false));
+document.getElementById("dn-night").addEventListener("click", () => setNight(true));
+if (HAS_VIDEO) { document.getElementById("video-sec").hidden = false; document.getElementById("walk").src = "walk.mp4"; }
 const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file": "shots/x1.jpg"}, {"name": "حوش الوحدة — الجلسة المدفونة والمسبح", "file": "shots/x2.jpg"}, {"name": "الجلسة الشتوية المدفونة", "file": "shots/x3.jpg"}, {"name": "منظر علوي خلفي", "file": "shots/x4.jpg"}, {"name": "الشاليهين من الشارع — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "حوش الوحدة — الجلسة المدفونة والمسبح — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — الجلسة والبارتشن — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الصالة — من الجلسة — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة — الجلسة والبارتشن", "file": "shots/i1.jpg"}, {"name": "الصالة — من الجلسة", "file": "shots/i2.jpg"}, {"name": "الماستر", "file": "shots/i3.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
@@ -163,10 +189,14 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
   }
+  let cur = null;
   function load(p) {
-    loadEl.hidden = false; nameEl.textContent = p.name;
+    cur = p;
+    const file = (NIGHT ? p.night : p.day) || p.day || p.night;
+    const note = NIGHT && !p.night ? " (النسخة الليلية تحت التجهيز)" : (!NIGHT && !p.day ? " (بالليل)" : (NIGHT ? " — بالليل" : ""));
+    loadEl.hidden = false; nameEl.textContent = p.name + note;
     document.querySelectorAll("#spots button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === p.id)));
-    loader.load(p.file, tex => {
+    loader.load(file, tex => {
       if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
       mat.map && mat.map.dispose(); mat.map = tex; mat.color.set(0xffffff); mat.needsUpdate = true; loadEl.hidden = true;
     }, undefined, () => { loadEl.textContent = "تعذر تحميل الصورة"; });
@@ -174,7 +204,6 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   const spots = document.getElementById("spots");
   PANOS.forEach(p => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = p.name; b.dataset.id = p.id;
-    if (p.night) b.classList.add("night");
     b.addEventListener("click", () => load(p)); spots.appendChild(b);
   });
   canvas.addEventListener("pointerdown", e => {
@@ -206,6 +235,7 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     camera.lookAt(500 * Math.sin(phi) * Math.cos(th), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(th));
     renderer.render(scene, camera); requestAnimationFrame(tick);
   }
+  modeHooks.push(() => { if (cur) load(cur); });
   if (!PANOS.length) { loadEl.textContent = "صور الجولة 360° تحت التجهيز — تنزل هنا قريب"; nameEl.hidden = true; return; }
   new ResizeObserver(size).observe(stage); size(); load(PANOS[0]); tick();
 })();
@@ -221,6 +251,17 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
   scene.add(new THREE.HemisphereLight(0xf4f7ff, 0x6f7f5a, 0.55));
   const sun = new THREE.DirectionalLight(0xfff1df, 0.75); sun.position.set(-20, 30, 25); scene.add(sun);
+  const hemi = scene.children.find(o => o.isHemisphereLight);
+  /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
+  const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
+  const LAMPS = [[340, 230, 200, 16762250, 2.2, 9], [570, 670, 200, 16762250, 1.4, 6], [170, 230, 500, 16762250, 1.6, 6], [510, 230, 500, 16762250, 1.6, 6], [344, -120, 280, 16766624, 1.6, 6], [344, -120, 560, 16766624, 1.4, 6], [91, -570, -60, 16742954, 3.0, 6], [585, -1000, -80, 6737151, 1.2, 5], [340, -1300, 150, 16766624, 0.8, 5], [1180, 230, 200, 16762250, 2.2, 9], [1410, 670, 200, 16762250, 1.4, 6], [1010, 230, 500, 16762250, 1.6, 6], [1350, 230, 500, 16762250, 1.6, 6], [1184, -120, 280, 16766624, 1.6, 6], [1184, -120, 560, 16766624, 1.4, 6], [931, -570, -60, 16742954, 3.0, 6], [1425, -1000, -80, 6737151, 1.2, 5], [1180, -1300, 150, 16766624, 0.8, 5]];
+  LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); lamps.add(L); });
+  function night(n) {
+    scene.background = new THREE.Color(n ? 0x0b1424 : 0xdfe6ea);
+    hemi.intensity = n ? 0.08 : 0.55; sun.intensity = n ? 0.04 : 0.75; lamps.visible = n;
+    ground.material.color.set(n ? 0x2e3a26 : 0x8fa86c); renderer.toneMappingExposure = n ? 1.25 : 0.9;
+  }
+  modeHooks.push(night);
   const HOLES = [[470, -1240, 700, -760], [-46, -740, 274, -400], [1310, -1240, 1540, -760], [794, -740, 1114, -400]];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
   const gs = new THREE.Shape(); gs.absarc(0, 0, 60, 0, Math.PI * 2, false);
   HOLES.forEach(([x0, y0, x1, y1]) => { const h = new THREE.Path(); h.moveTo(x0 / 100, y0 / 100); h.lineTo(x1 / 100, y0 / 100);
@@ -333,4 +374,5 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     i.src = s.file; i.alt = s.name; i.loading = "lazy"; c.textContent = s.name; f.append(i, c); g.appendChild(f);
   });
 })();
+setNight(NIGHT);
 </script>

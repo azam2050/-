@@ -249,11 +249,11 @@ render:
            [764, 300, 300]]
   pano_res: [2400, 1200]
   panos:    # صور 360° للواقع الافتراضي
-    - {name: yard, at: [560, -560, 165], day: true}
+    - {name: yard, at: [560, -560, 165], day: true, night: true}
     - {name: sunken, at: [60, -570, -10], day: true, night: true}
     - {name: living, at: [460, 300, 140], day: true, night: true}
-    - {name: master, at: [520, 300, 445], day: true}
-    - {name: balcony, at: [344, -120, 445], day: true}
+    - {name: master, at: [520, 300, 445], day: true, night: true}
+    - {name: balcony, at: [344, -120, 445], day: true, night: true}
 
 site:
   # أرض شبه منحرف: الواجهة 24.27 (الشارع) — الجنبين 25.00 — الخلف 16.23 (عمق 24.67)

@@ -1,4 +1,4 @@
-"""ملف PDF كامل للعميل: غلاف برابط ورمز QR للجولة الافتراضية + لوحات الأوتوكاد + صور الرندر الواقعي + صور 360°.
+"""ملف PDF كامل للعميل: لوحات الأوتوكاد ← صور الرندر الواقعي ← صور 360° ← آخر صفحة: تجربة الواقع الافتراضي (نهار/ليل برمز QR وزر).
 
 python tools/full_pdf.py <autocad.pdf> <مجلد realistic> <رابط الجولة> <الإخراج.pdf> [عنوان] [سطر_الحقائق]
 """
@@ -29,27 +29,6 @@ def qr_png(url):
 def main(autocad, real, url, out, title="", facts=""):
     real = Path(real)
     doc = pymupdf.open()
-    # ---- الغلاف
-    p = doc.new_page(width=W, height=H)
-    p.draw_rect(pymupdf.Rect(0, 0, W, 110), color=None, fill=pymupdf.utils.getColor("white"))
-    p.draw_rect(pymupdf.Rect(0, 0, W, 14), color=None, fill=(0.23, 0.14, 0.09))
-    html(p, (60, 40, W - 60, 90), "مصنع وتد الأخشاب", 22, CEDAR, weight="bold")
-    html(p, (60, 95, W - 60, 190), title, 40, BRAND, weight="bold")
-    html(p, (60, 190, W - 60, 240), facts, 17, MUTED)
-    cover = sorted(real.glob("x1.jpg")) or sorted(real.glob("*.jpg"))
-    if cover:
-        p.insert_image(pymupdf.Rect(60, 260, 760, 700), filename=str(cover[0]), keep_proportion=True)
-    q = pymupdf.Rect(830, 270, 1130, 570)
-    p.insert_image(q, stream=qr_png(url))
-    p.insert_link({"kind": pymupdf.LINK_URI, "from": q, "uri": url})
-    html(p, (790, 580, 1150, 650), "امسح الرمز بكاميرا الجوال — أو اضغط عليه<br>"
-         "<b>الجولة الافتراضية: يتحرك بالمشروع كامل</b>", 16, INK, "center")
-    btn = pymupdf.Rect(840, 660, 1120, 705)
-    p.draw_rect(btn, color=None, fill=(0.18, 0.36, 0.29), radius=0.2)
-    html(p, (btn.x0, btn.y0 + 9, btn.x1, btn.y1), "افتح الجولة الافتراضية", 18, "#FFFFFF", "center", "bold")
-    p.insert_link({"kind": pymupdf.LINK_URI, "from": btn, "uri": url})
-    html(p, (60, 730, W - 60, 800), "محتوى الملف: لوحات الأوتوكاد (الموقع واللاندسكيب، المساقط، الواجهات، السقف والقطاع، الجداول، "
-         "المساحات والتسعير، الفرش) — ثم صور الرندر الواقعي نهار وليل وداخلي — وصور 360°.", 13, MUTED)
     # ---- لوحات الأوتوكاد
     doc.insert_pdf(pymupdf.open(autocad))
     # ---- الرندر الواقعي
@@ -65,7 +44,7 @@ def main(autocad, real, url, out, title="", facts=""):
             p = doc.new_page(width=W, height=H)
             html(p, (40, 22, W - 40, 60), f"{gtitle} · <b>{name}</b>", 18, BRAND)
             p.insert_image(pymupdf.Rect(40, 66, W - 40, H - 60), filename=str(f), keep_proportion=True)
-            html(p, (40, H - 48, W - 40, H - 18), "مصنع وتد الأخشاب — للجولة الافتراضية اضغط هنا", 12, MUTED, "center")
+            html(p, (40, H - 48, W - 40, H - 18), "مصنع وتد الأخشاب — الواقع الافتراضي في آخر صفحة (أو اضغط هنا)", 12, MUTED, "center")
             p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(300, H - 50, W - 300, H - 16), "uri": url})
     panos = sorted(real.glob("pano-*.jpg"))
     if panos:
@@ -75,6 +54,28 @@ def main(autocad, real, url, out, title="", facts=""):
             p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(40, 22, W - 40, 60), "uri": url})
             for k, f in enumerate(panos[i:i + 2]):
                 p.insert_image(pymupdf.Rect(60, 80 + k * 370, W - 60, 430 + k * 370), filename=str(f), keep_proportion=True)
+    # ---- آخر صفحة: تجربة الواقع الافتراضي (نهار / ليل)
+    p = doc.new_page(width=W, height=H)
+    p.draw_rect(pymupdf.Rect(0, 0, W, 14), color=None, fill=(0.23, 0.14, 0.09))
+    html(p, (60, 40, W - 60, 90), "مصنع وتد الأخشاب", 22, CEDAR, weight="bold")
+    html(p, (60, 95, W - 60, 170), "جرّب الواقع الافتراضي", 42, BRAND, weight="bold")
+    html(p, (60, 172, W - 60, 260), f"{title} — امشِ داخل التصميم: الحوش والجلسات والدورين، ولف 360° بكل غرفة. "
+         "امسح الرمز بكاميرا الجوال أو اضغط على الزر.", 17, MUTED)
+    for k, (lbl, u, col) in enumerate((("بالنهار", url + "#day", (0.18, 0.36, 0.29)),
+                                       ("بالليل والإنارة شغالة", url + "#night", (0.08, 0.12, 0.2)))):
+        x0 = W - 60 - 340 - k * 420
+        q = pymupdf.Rect(x0 + 30, 290, x0 + 310, 570)
+        p.insert_image(q, stream=qr_png(u))
+        p.insert_link({"kind": pymupdf.LINK_URI, "from": q, "uri": u})
+        btn = pymupdf.Rect(x0 + 20, 590, x0 + 320, 640)
+        p.draw_rect(btn, color=None, fill=col, radius=0.2)
+        html(p, (btn.x0, btn.y0 + 10, btn.x1, btn.y1), "افتح الجولة " + lbl, 18, "#FFFFFF", "center", "bold")
+        p.insert_link({"kind": pymupdf.LINK_URI, "from": btn, "uri": u})
+    side = sorted(real.glob("d1.jpg")) or sorted(real.glob("x1.jpg"))
+    if side:
+        p.insert_image(pymupdf.Rect(60, 290, W - 900, 640), filename=str(side[0]), keep_proportion=True)
+    html(p, (60, 680, W - 60, 760), f'الرابط: <span style="color:#2F5D4A">{url}</span>', 14, MUTED)
+    p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(60, 680, W - 60, 710), "uri": url})
     doc.save(out, deflate=True, garbage=3)
     return doc.page_count
 
