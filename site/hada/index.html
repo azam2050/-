@@ -329,14 +329,15 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   let home = null;
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-  new THREE.GLTFLoader().load("web.glb", g => {
+  const GLB_SRC = ["web.glb", "https://raw.githubusercontent.com/azam2050/-/HEAD/site/hada/web.glb"];
+  (function loadGLB(k) { new THREE.GLTFLoader().load(GLB_SRC[k], g => {
     dress(g.scene); scene.add(g.scene);
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) startTour();
   }, x => { if (x.total) loadEl.textContent = `جاري تحميل المجسم… ${Math.round(x.loaded / x.total * 100)}%`; },
-  () => { loadEl.textContent = "تعذر تحميل المجسم"; });
+  () => { if (k + 1 < GLB_SRC.length) loadGLB(k + 1); else loadEl.textContent = "تعذر تحميل المجسم"; }); })(0);
   /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
   const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
   const SPOTS = {
