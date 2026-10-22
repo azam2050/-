@@ -166,6 +166,16 @@ size = (hi - lo).length
 # الأرض: عشب
 bpy.ops.mesh.primitive_plane_add(size=120, location=(center.x, center.y, cfg["ground_z"] - 0.005))
 ground = bpy.context.active_object
+for i, (hx0, hy0, hx1, hy1) in enumerate(cfg.get("ground_holes", [])):    # فتحات المسابح والجلسات المدفونة
+    bpy.ops.mesh.primitive_cube_add(size=1, location=((hx0 + hx1) / 2, (hy0 + hy1) / 2, cfg["ground_z"]))
+    cut = bpy.context.active_object
+    cut.scale = (hx1 - hx0 + 0.3, hy1 - hy0 + 0.3, 0.5)
+    md = ground.modifiers.new(f"hole{i}", "BOOLEAN")
+    md.operation = "DIFFERENCE"
+    md.object = cut
+    md.solver = "EXACT"
+    cut.hide_render = True
+    cut.hide_viewport = True
 ground.data.materials.append(tex_material("W_grass", "Grass004", cfg.get("grass_tile", 2.5), cfg.get("grass_tint"), 0.35, rough=1.0, bump=0.6))
 
 # السماء + الشمس
@@ -268,6 +278,24 @@ for name, cpos, tpos, lens, *rest in cfg.get("shots", []):
 cam_data.lens = cfg.get("lens", 32)
 cam_data.shift_y = 0.0
 target.location = center + Vector((0, 0, -0.6))
+
+# صور 360° (واقع افتراضي): كاميرا بانوراما متساوية المستطيلات — [name, [x,y,z], yaw]
+for name, cpos, yaw in cfg.get("panos", []):
+    cam_data.type = "PANO"
+    try:
+        cam_data.panorama_type = "EQUIRECTANGULAR"
+    except AttributeError:
+        cam_data.cycles.panorama_type = "EQUIRECTANGULAR"
+    cam.constraints.clear()
+    cam.location = Vector(cpos)
+    cam.rotation_euler = (math.pi / 2, 0, math.radians(yaw))
+    scene.view_settings.exposure = cfg.get("pano_exposure", 0.4)
+    rx, ry = scene.render.resolution_x, scene.render.resolution_y
+    scene.render.resolution_x, scene.render.resolution_y = cfg.get("pano_res", [2400, 1200])
+    scene.render.filepath = f"{cfg['out_dir']}/pano-{name}.jpg"
+    bpy.ops.render.render(write_still=True)
+    print("RENDERED pano", name)
+    scene.render.resolution_x, scene.render.resolution_y = rx, ry
 
 for name, elev, azim, k in cfg["views"]:
     e, a = math.radians(elev), math.radians(azim)

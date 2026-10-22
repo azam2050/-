@@ -13,6 +13,8 @@ def plan_landscape(project, seed=7, keep_clear=()):
     for d in project.decks:
         y0 = min(y0, d.rect[1] / 100)
     gz = -project.slab_height / 100
+    if project.site:
+        return _site_landscape(project, rnd, gz)
     out = []
     # حزام أشجار خلف الكوخ وعلى الجانبين (الواجهة الأمامية مفتوحة للكاميرا)
     import math
@@ -74,3 +76,39 @@ def _seg_dist(p, a, b):
     dx, dy = bx - ax, by - ay
     t = max(0.0, min(1.0, ((p[0] - ax) * dx + (p[1] - ay) * dy) / (dx * dx + dy * dy)))
     return ((p[0] - ax - t * dx) ** 2 + (p[1] - ay - t * dy) ** 2) ** 0.5
+
+
+def _site_landscape(project, rnd, gz):
+    """مشروع بموقع عام: أشجار المخطط (لكل وحدة) + أشجار خلفية خارج السور + جلسة التراس ونباتات البلكونة لكل وحدة."""
+    import math
+    from .site import boundary, expand, units_of
+    st = expand(project.site)
+    out = []
+    for t in st.get("trees", []):
+        x, y = t["at"][0] / 100, t["at"][1] / 100
+        if t.get("kind") == "shrub":
+            out.append({"model": "shrub_02", "at": [x, y, gz], "H": rnd.uniform(0.8, 1.1), "rot": rnd.uniform(0, 360)})
+        else:
+            out.append({"model": "tree_small_02", "at": [x, y, gz], "H": t.get("r", 120) / 100 * 2.6,
+                        "rot": rnd.uniform(0, 360)})
+    bp = [(x / 100, y / 100) for x, y in boundary(st)]
+    cx = sum(p[0] for p in bp) / len(bp)
+    cy = sum(p[1] for p in bp) / len(bp)
+    for i in range(26):                                  # خلفية جبلية خضراء خارج السور (ما عدا جهة الشارع)
+        ang = math.radians(rnd.uniform(10, 170))
+        rad = rnd.uniform(17, 32)
+        out.append({"model": "tree_small_02", "at": [cx + rad * math.cos(ang), cy + rad * math.sin(ang), gz],
+                    "H": rnd.uniform(4.5, 8.0), "rot": rnd.uniform(0, 360)})
+    for dx, dy in units_of(project.site):
+        for d in project.decks:
+            dx0, dy0, dx1, dy1 = ((d.rect[0] + dx) / 100, (d.rect[1] + dy) / 100, (d.rect[2] + dx) / 100,
+                                  (d.rect[3] + dy) / 100)
+            z = (d.level or 0) / 100
+            if not d.level:
+                out.append({"model": "outdoor_table_chair_set_01", "at": [dx0 + 1.1, (dy0 + dy1) / 2, z], "H": 0.86,
+                            "rot": 90})
+                out.append({"model": "potted_plant_01", "at": [dx1 - 0.45, dy1 - 0.45, z], "H": 1.2})
+            else:
+                out.append({"model": "planter_box_01", "at": [dx1 - 0.7, dy0 + 0.45, z], "W": 0.9})
+                out.append({"model": "potted_plant_02", "at": [dx0 + 0.5, dy0 + 0.5, z], "H": 0.85})
+    return out

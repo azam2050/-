@@ -185,6 +185,15 @@ CM_KEYS = ("rect", "line", "at", "from", "to", "z", "top", "ceil", "r", "dia", "
            "aw", "ah")
 
 
+def ground_holes(project):
+    """فتحات في أرضية العشب للمسابح والجلسات المدفونة (بالمتر)."""
+    if not project.site:
+        return []
+    from .site import expand
+    return [[v / 100 for v in z["rect"]] for z in expand(project.site).get("zones", [])
+            if z["kind"] in ("pool", "sunken")]
+
+
 def decor_items(project):
     """interior_decor بالمشروع (سم) → بالمتر لـ tools/blender_decor.py."""
     def cm(v):
@@ -234,9 +243,10 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     out = Path(out_dir) / "realistic"
     out.mkdir(parents=True, exist_ok=True)
     # WATAD_REAL_PARTS=exterior,dusk → يعيد الخارج فقط ويحتفظ بصور الداخل السابقة (تعديل سقف/واجهة)
-    parts = set(os.environ.get("WATAD_REAL_PARTS", "exterior,dusk,interior").split(","))
+    parts = set(os.environ.get("WATAD_REAL_PARTS", "exterior,dusk,interior,pano").split(","))
     for old in out.glob("*.jpg"):
-        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] in "dn" and "dusk" not in parts):
+        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] in "dn" and "dusk" not in parts) or \
+                (old.name.startswith("pano") and "pano" not in parts):
             continue
         old.unlink()
     scene = build_scene(project, rules, style, heights, furniture="floors")
@@ -245,6 +255,9 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     ext = exterior_shots(project)
     inn = interior_shots(project)
     rs = project.render or {}
+    if rs.get("exterior"):           # لقطات خارجية محددة بالمشروع (سم) — للمواقع العامة (سور ووحدات)
+        ext = [[f"x{k + 1}", s_["name"], [v / 100 for v in s_["cam"]], [v / 100 for v in s_["target"]],
+                s_.get("lens", 24), s_.get("shift", 0.0)] for k, s_ in enumerate(rs["exterior"])]
     if rs.get("interior"):           # لقطات داخلية محددة بالمشروع (سم)
         inn = [[f"i{k + 1}", s_["name"], [v / 100 for v in s_["cam"]], [v / 100 for v in s_["target"]],
                 s_.get("lens", 17), s_.get("shift", -0.06)] for k, s_ in enumerate(rs["interior"])]
@@ -257,18 +270,21 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "landscape": plan_landscape(project, keep_clear=[tuple(s[2][:2]) for s in ext]),
             "wood_frames": style.get("frame_ar", "").startswith("إطار خشب"),
             "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35,
-            "decor": decor_items(project), "sadu": bool(rs.get("sadu"))}
+            "decor": decor_items(project), "sadu": bool(rs.get("sadu")), "pano_res": rs.get("pano_res", [2400, 1200]), "ground_holes": ground_holes(project)}
+    pano = lambda key: [[p_["name"], [v / 100 for v in p_["at"]], p_.get("yaw", 0)]  # noqa: E731
+                        for p_ in rs.get("panos", []) if p_.get(key, key == "day")]
     lk = rs.get("ext_lens_k", 1.0)       # تقريب اللقطات الخارجية
     ext = [s[:4] + [round(s[4] * lk), round(min(0.3, s[5] * lk), 3)] for s in ext]
     day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
         ([[s[0], s[2], s[3], s[4], s[5], rs.get("day_exposure", 0.6)] for s in inn] if "interior" in parts else [])
     if day:
-        _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 5 if project.decor else 15)}, out)
+        _run({**base, **DAY, "tag": "day", "shots": day, "panos": pano("day") if "pano" in parts else [], "area_lights": _areas(project, 5 if project.decor else 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
     night_in = [["n" + s[0][1:], s[2], s[3], s[4], s[5], rs.get("night_exposure", 0.4)] for s in inn[:rs.get("night_interior", 0)]]
     dusk += night_in
     if "dusk" in parts:
         _run({**base, **DUSK, "tag": "dusk", "night": True, "shots": dusk,
+              "panos": pano("night") if "pano" in parts else [],
               "area_lights": [] if project.decor else _areas(project, 40),
               "ext_lights": ext_lights(project, rules)}, out)
     glb.unlink(missing_ok=True)

@@ -18,9 +18,9 @@ from matplotlib.patches import Circle, Polygon, Rectangle
 
 COL = {"pool": ("#bfe6f5", "#2b8cbe"), "deck": ("#ead2b0", "#8b5a2b"), "paving": ("#e6e1d8", "#8a8478"),
        "parking": ("#dcdcdc", "#777777"), "seating": ("#f1e3cc", "#8b5a2b"), "path": ("#eee8dc", "#8a8478"),
-       "lawn": ("#d6ebc3", "#6a9a3a"), "planter": ("#c9dfb0", "#4f7a2a")}
+       "lawn": ("#d6ebc3", "#6a9a3a"), "planter": ("#c9dfb0", "#4f7a2a"), "sunken": ("#e6d6bd", "#7a5a3a")}
 AR = {"pool": "مسبح", "deck": "ديك خشب", "paving": "بلاط", "parking": "موقف سيارة", "seating": "جلسة خارجية",
-      "path": "ممر", "lawn": "مسطح أخضر", "planter": "أحواض زراعة"}
+      "path": "ممر", "lawn": "مسطح أخضر", "planter": "أحواض زراعة", "sunken": "جلسة مدفونة"}
 
 
 def _area(r):
@@ -117,7 +117,7 @@ def site_rows(P, rules):
         dr = [d.rect for d in P.decks if not d.level]
         dsz = f"{(dr[0][2] - dr[0][0]) / 100:.2f} × {(dr[0][3] - dr[0][1]) / 100:.2f} م{xn}" if len(dr) == 1 else ""
         rows.append(["تراس الكوخ", dsz, f"{deck:.1f}"])
-    for k in ("pool", "deck", "seating", "paving", "parking", "path", "planter"):
+    for k in ("pool", "sunken", "deck", "seating", "paving", "parking", "path", "planter"):
         if k in sums:
             zs = [z["rect"] for z in st.get("zones", []) if z["kind"] == k]
             size = f"{(zs[0][2] - zs[0][0]) / 100:.2f} × {(zs[0][3] - zs[0][1]) / 100:.2f} م{xn}" \
@@ -180,6 +180,23 @@ def site_sheet(ctx):
                                    lw=0.6, zorder=1.1))
             for k in range(1, 4):                              # درج نزول المسبح
                 ax.plot([r[0] + 15, r[0] + 75], [r[1] + 15 + 30 * k] * 2, color="#2b8cbe", lw=0.5, zorder=1.2)
+        if z["kind"] == "sunken":                              # جلسة مدفونة: جلسة U مبنية + درج نزول + مشب بالنص
+            b = z.get("bench", 45)
+            side = z.get("steps", "E")
+            ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fill=False, ec="#5a3a1a", lw=1.6, zorder=1.3))
+            sx0, sx1 = (r[0], r[2] - 90) if side == "E" else (r[0] + 90, r[2])
+            for bx0_, by0_, bx1_, by1_ in ((sx0, r[1], sx1, r[1] + b), (sx0, r[3] - b, sx1, r[3]),
+                                           ((sx0, r[1] + b, sx0 + b, r[3] - b) if side == "E" else
+                                            (sx1 - b, r[1] + b, sx1, r[3] - b))):
+                ax.add_patch(Rectangle((bx0_, by0_), bx1_ - bx0_, by1_ - by0_, fc="#c9a27e", ec="#6b4f3a", lw=0.6,
+                                       zorder=1.4))
+            stx = r[2] - 90 if side == "E" else r[0]
+            for k in range(4):                                  # درجات النزول
+                ax.plot([stx + k * 30, stx + k * 30], [(r[1] + r[3]) / 2 - 60, (r[1] + r[3]) / 2 + 60],
+                        color="#6b4f3a", lw=0.6, zorder=1.4)
+            fx_, fy_ = (sx0 + sx1) / 2 + (b / 2 if side == "E" else -b / 2), (r[1] + r[3]) / 2
+            ax.add_patch(Circle((fx_, fy_), 45, fc="#7a7a7a", ec="#333", lw=0.8, zorder=1.5))
+            ax.add_patch(Circle((fx_, fy_), 28, fc="#f08a3c", ec="none", zorder=1.6))
         if z["kind"] == "deck":
             yy = r[1] + 15
             while yy < r[3]:
@@ -194,7 +211,7 @@ def site_sheet(ctx):
         w, h = r[2] - r[0], r[3] - r[1]
         txt = f"{name}\n{w / 100:.2f} × {h / 100:.2f} م"
         if z.get("depth"):
-            txt += f"\nعمق {z['depth'] / 100:.2f} م"
+            txt += (f"\nمنسوب -{z['depth'] / 100:.2f} م" if z["kind"] == "sunken" else f"\nعمق {z['depth'] / 100:.2f} م")
         lx, ly = z.get("label") or ((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
         ax.text(lx, ly, txt, ha="center", va="center", fontsize=7, color=BROWN, zorder=8.5,
                 rotation=90 if w < 200 and h > 2 * w else 0, linespacing=1.3,
@@ -371,6 +388,7 @@ def add_site_3d(S, P, rules, style, cut=None):
     S.material("water", "#3DA5C9", 0.75)
     S.material("lawn_bed", "#7C9A4A")
     S.material("gate", "#2B2B2B")
+    S.material("cushion", "#B8A48A")
     x0, y0, x1, y1 = st["plot"]
     w = st.get("wall", {})
     t, h = w.get("t", 20), w.get("h", 250)
@@ -417,8 +435,35 @@ def add_site_3d(S, P, rules, style, cut=None):
             S.box("pool_edge", r[0], r[1], gz, r[0] + 15, r[3], gz + 8)
             S.box("pool_edge", r[2] - 15, r[1], gz, r[2], r[3], gz + 8)
             S.box("water", r[0] + 15, r[1] + 15, gz - d, r[2] - 15, r[3] - 15, gz - 6)
+            for w0 in ((r[0], r[1], r[2], r[1] + 15), (r[0], r[3] - 15, r[2], r[3]), (r[0], r[1], r[0] + 15, r[3]),
+                       (r[2] - 15, r[1], r[2], r[3])):     # جدران المسبح (تبان من فتحة الأرض بالرندر)
+                S.box("pool_edge", w0[0], w0[1], gz - d - 10, w0[2], w0[3], gz)
         elif k in ("paving", "parking", "path", "seating"):
             S.box("paver", r[0], r[1], gz, r[2], r[3], gz + 3)
+        elif k == "sunken":           # جلسة مدفونة: أرضية تحت مستوى الأرض + جدران ساندة + جلسة U + درج + مشب
+            d = z.get("depth", 70)
+            b = z.get("bench", 45)
+            zf = gz - d
+            side = z.get("steps", "E")
+            S.box("paver", r[0], r[1], zf, r[2], r[3], zf + 4)
+            for w0 in ((r[0] - 15, r[1] - 15, r[2] + 15, r[1]), (r[0] - 15, r[3], r[2] + 15, r[3] + 15),
+                       (r[0] - 15, r[1], r[0], r[3]), (r[2], r[1], r[2] + 15, r[3])):
+                S.box("site_wall", w0[0], w0[1], zf, w0[2], w0[3], gz + 6)
+            sx0, sx1 = (r[0], r[2] - 90) if side == "E" else (r[0] + 90, r[2])
+            for bb in ((sx0, r[1], sx1, r[1] + b), (sx0, r[3] - b, sx1, r[3]),
+                       ((sx0, r[1] + b, sx0 + b, r[3] - b) if side == "E" else (sx1 - b, r[1] + b, sx1, r[3] - b))):
+                S.box("site_wall", bb[0], bb[1], zf, bb[2], bb[3], zf + 35)
+                S.box("cushion", bb[0] + 2, bb[1] + 2, zf + 35, bb[2] - 2, bb[3] - 2, zf + 47)
+            stx = r[2] - 90 if side == "E" else r[0]
+            n = max(2, round(d / 18))
+            for k in range(n):                    # درج نزول بعرض 1.20
+                h_ = d * (k + 1) / (n + 1)
+                a0, a1 = (stx + k * 90 / n, r[2]) if side == "E" else (r[0], r[0] + 90 - k * 90 / n)
+                cy_ = (r[1] + r[3]) / 2
+                S.box("paver", a0, cy_ - 60, zf, a1, cy_ + 60, zf + h_)
+            fx_, fy_ = (sx0 + sx1) / 2 + (b / 2 if side == "E" else -b / 2), (r[1] + r[3]) / 2
+            S.box("site_wall", fx_ - 45, fy_ - 45, zf, fx_ + 45, fy_ + 45, zf + 30)
+            S.box("gate", fx_ - 30, fy_ - 30, zf + 30, fx_ + 30, fy_ + 30, zf + 31)
         elif k == "deck":
             S.box("wood", r[0], r[1], gz, r[2], r[3], gz + 15)
         elif k == "planter":
