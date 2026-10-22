@@ -528,7 +528,7 @@ def elevation(ax, ctx, w):
     depth = rules["members"]["rafter"]["w"] / math.cos(p)
     cover = rules["cladding"]["effective_cover"]
     ux, uy = w.u
-    gable_end = (P.roof.ridge_axis == "y") == (abs(uy) < 1e-6)
+    gable_end = (P.roof.ridge_axis == "y") == (abs(uy) < 1e-6) and P.roof.type != "peaks"
     sh = P.slab_height
     # امتداد السقف على جانب الجملون (تراس مسقوف) يظهر في واجهات الرفرف
     along = (w.start[1], w.end[1]) if P.roof.ridge_axis == "y" else (w.start[0], w.end[0])
@@ -573,6 +573,46 @@ def elevation(ax, ctx, w):
                     ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
                     yy += 12
                 roof_top = z_hi + depth
+    elif P.roof.type == "peaks":     # بيت شعر خشبي: قمم هرمية — كل قمة بظلها الحقيقي من هذي الجهة
+        from .roof import peak_geometry
+        ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
+        y = cover
+        while y < H - 1:
+            ax.plot([0, L], [y, y], color="#999", lw=0.4)
+            y += cover
+        tt = lambda x_, y_: (x_ - w.start[0]) * ux + (y_ - w.start[1]) * uy + half  # noqa: E731
+        nx_, ny_ = w.n
+        Gs = sorted((peak_geometry(P, pk) for pk in P.roof.peaks),
+                    key=lambda G_: (G_["A"][0] - w.start[0]) * nx_ + (G_["A"][1] - w.start[1]) * ny_)
+        top = H
+        for G_ in Gs:
+            tops = G_.get("T") or [G_["A"]]
+            pts = [(tt(e[0], e[1]), e[2]) for e in G_["E"]] + [(tt(t_[0], t_[1]), t_[2] + depth) for t_ in tops]
+            from math import atan2
+            cx_ = sum(p_[0] for p_ in pts) / len(pts)
+            cz_ = sum(p_[1] for p_ in pts) / len(pts)
+            hull = sorted(pts, key=lambda p_: atan2(p_[1] - cz_, p_[0] - cx_))
+            ax.add_patch(Polygon(hull, closed=True, fc="#fff3e0", ec=C_ROOF, lw=1.0, zorder=2))
+            for e in G_["E"]:                     # الأضلاع الركنية الخشب
+                tgt = min(tops, key=lambda t_: math.dist((t_[0], t_[1]), (e[0], e[1])))
+                ax.plot([tt(e[0], e[1]), tt(tgt[0], tgt[1])], [e[2], tgt[2] + depth / 2], color="#6b4f3a", lw=1.1,
+                        zorder=2.1)
+            if G_.get("T"):                       # المشراق الزجاج + غطاه
+                ts = [tt(t_[0], t_[1]) for t_ in G_["T"]]
+                la, lb, zt_ = min(ts), max(ts), G_["zt"] + depth
+                ax.add_patch(Rectangle((la, zt_), lb - la, 60, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=2.2))
+                ax.add_patch(Polygon([(la - 20, zt_ + 60), ((la + lb) / 2, zt_ + 105), (lb + 20, zt_ + 60)], closed=True,
+                                     fc="#fff3e0", ec=C_ROOF, lw=1, zorder=2.2))
+                ax.text((la + lb) / 2, zt_ + 25, "مشراق", ha="center", fontsize=6, color=C_WIN, zorder=2.3)
+                top = max(top, zt_ + 105)
+            else:
+                top = max(top, G_["A"][2] + depth)
+        for pt in P.posts:   # أعمدة التراس الظاهرة
+            px, py = pt["at"]
+            tpos = (px - w.start[0]) * ux + (py - w.start[1]) * uy + half
+            if tpos < -5 or tpos > L + 5 or (px - w.start[0]) * nx_ + (py - w.start[1]) * ny_ > half + 5:
+                ax.add_patch(Rectangle((tpos - 7, 0), 14, pt.get("top", H), fc="#f3e3d3", ec="k", lw=0.6, zorder=2.5))
+        roof_top = top
     else:
         gfront = gable_end and any(w2.glass_front for w2, _l in stack)
         if not gfront:
@@ -819,7 +859,7 @@ def elevation(ax, ctx, w):
         level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
     if not (shed_flat and top <= H + 5):
         level(ax, lx - ext_l, top, top / 100, "أعلى الجدار" if shed_flat else
-              ("أعلى السقف" if P.roof.type == "shed" else "قمة الجملون"))
+              ("أعلى السقف" if P.roof.type == "shed" else "أعلى القمة" if P.roof.type == "peaks" else "قمة الجملون"))
     # الأبعاد
     ts = [0] + sorted(t + half for o in w.openings for t in (o.offset, o.offset + o.width)) + [L]
     chain(ax, [(t, -sh) for t in ts], -35)
@@ -830,7 +870,13 @@ def elevation(ax, ctx, w):
     for o in w.openings:
         if o.kind == "window":
             dim(ax, (o.offset + half, 0), (o.offset + half, o.sill), 12, fs=6)
-    ax.set_xlim(-170 - ext_l, L + ov + 140 + ext_r)
+    xl, xr = -170 - ext_l, L + ov + 140 + ext_r
+    if P.roof.type == "peaks":           # مظلات القمم البارزة (جلسة النار) داخل حدود اللوحة
+        from .roof import peak_geometry
+        tt_ = lambda x_, y_: (x_ - w.start[0]) * ux + (y_ - w.start[1]) * uy + half  # noqa: E731
+        ts_ = [tt_(e[0], e[1]) for pk in P.roof.peaks for e in peak_geometry(P, pk)["E"]]
+        xl, xr = min(xl, min(ts_) - 60), max(xr, max(ts_) + 60)
+    ax.set_xlim(xl, xr)
     ax.set_ylim(-120 - sh, roof_top + 30)
 
 
@@ -853,8 +899,81 @@ def elevation_sheets(ctx):
 
 
 # ---------------------------------------------------------------- السقف والقطاع
+def peaks_roof_sheet(ctx):
+    """مسقط سقف القمم الهرمية (بيت شعر خشبي) + قطاع طولي يمر بالقمم."""
+    from .roof import peak_geometry, peaks_rafters
+    P, rules = ctx["project"], ctx["rules"]
+    half = wall_thickness(rules) / 2
+    x0, y0, x1, y1 = outer_bbox(P, rules)
+    H = P.roof_base
+    fig = new_page()
+    ax = drawing_ax(fig, [0.04, 0.12, 0.5, 0.76])
+    title(ax, "مسقط السقف — قمم بيت الشعر الخشبي", "أضلاع ركنية خشب ظاهرة + مشراق زجاج  |  مقياس 1:50")
+    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
+    Gs = [peak_geometry(P, pk) for pk in P.roof.peaks]
+    for i, G in enumerate(Gs):
+        E, A = G["E"], G["A"]
+        ax.add_patch(Polygon([(e[0], e[1]) for e in E], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1, alpha=0.9))
+        tops = G.get("T") or [A]
+        for e in E:
+            tgt = min(tops, key=lambda t_: math.dist((t_[0], t_[1]), (e[0], e[1])))
+            ax.plot([e[0], tgt[0]], [e[1], tgt[1]], color="#6b4f3a", lw=1.2)
+        if G.get("T"):
+            T = G["T"]
+            ax.add_patch(Polygon([(t_[0], t_[1]) for t_ in T], closed=True, fc="#e3f0fb", ec=C_WIN, lw=1))
+            ax.text(A[0], A[1], "مشراق", ha="center", va="center", fontsize=7, color=C_WIN)
+        else:
+            ax.plot(A[0], A[1], "o", color="#6b4f3a", ms=3)
+        ax.text(A[0], A[1] - 45, f"قمة {i + 1}\n+{(A[2]) / 100:.2f}", ha="center", va="top", fontsize=7, color="red",
+                bbox=dict(fc="white", ec="none", pad=1))
+    for pt in P.posts:
+        ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
+    ex0 = min(e[0] for G in Gs for e in G["E"])
+    ex1 = max(e[0] for G in Gs for e in G["E"])
+    ey0 = min(e[1] for G in Gs for e in G["E"])
+    ey1 = max(e[1] for G in Gs for e in G["E"])
+    dim(ax, (ex0, ey1), (ex1, ey1), 40)
+    dim(ax, (ex1, ey1), (ex1, ey0), 40)
+    R = peaks_rafters(P, rules)
+    ax.text((x0 + x1) / 2, ey0 - 70, f"المداد العادي حتى {R['rafter_length'] / 100:.2f} م — الركني {R['hip_length'] / 100:.2f} م "
+            "(يُوصل فوق دعامة إذا أطول من 5.20)", ha="center", fontsize=8, color="#6b4f3a")
+    ax.set_xlim(ex0 - 80, ex1 + 120)
+    ax.set_ylim(ey0 - 120, ey1 + 100)
+    # قطاع طولي (على طول المبنى) يمر بقمم السقف
+    ax2 = drawing_ax(fig, [0.57, 0.3, 0.4, 0.5])
+    title(ax2, "قطاع طولي يمر بالقمم", "مقياس 1:50  |  الوحدة: سم")
+    sh = P.slab_height
+    ax2.add_patch(Rectangle((x0 - 10, -sh), x1 - x0 + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
+    cy = (y0 + y1) / 2
+    for w in P.walls:
+        if abs(w.u[0]) < 1e-6 and min(w.start[1], w.end[1]) <= cy <= max(w.start[1], w.end[1]):
+            ax2.add_patch(Rectangle((w.start[0] - half, 0), 2 * half, H, fc="white", ec="k", lw=0.8, hatch="////"))
+    rd = rules["members"]["rafter"]["w"]
+    Gs = [G for G in Gs if x0 <= G["A"][0] <= x1 and y0 <= G["A"][1] <= y1]   # قمم المبنى فقط (مو المظلات)
+    for G in Gs:
+        E, A = G["E"], G["A"]
+        tops = G.get("T")
+        prof = [(E[0][0], E[0][2]), ((tops[0][0], tops[0][2]) if tops else (A[0], A[2])),
+                ((tops[1][0], tops[1][2]) if tops else (A[0], A[2])), (E[1][0], E[1][2])]
+        ax2.add_patch(Polygon(prof + [(x, z + rd) for x, z in prof][::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+        if tops:
+            la, lb, zt_ = tops[0][0], tops[1][0], G["zt"] + rd
+            ax2.add_patch(Rectangle((la, zt_), lb - la, 60, fc="#e3f0fb", ec=C_WIN, lw=1))
+            ax2.add_patch(Polygon([(la - 20, zt_ + 60), ((la + lb) / 2, zt_ + 105), (lb + 20, zt_ + 60)], closed=True,
+                                  fc="#fff3e0", ec=C_ROOF, lw=1))
+    zmax = max(G["A"][2] for G in Gs)
+    level(ax2, x1 + 90, zmax, zmax / 100, "أعلى قمة")
+    level(ax2, x0 - 90, H, H / 100, "أعلى الجدار")
+    level(ax2, x0 - 90, 0, 0, "الأرضية")
+    ax2.set_xlim(x0 - 220, x1 + 220)
+    ax2.set_ylim(-sh - 60, max(G["A"][2] for G in Gs) + 180)
+    return fig, "مسقط السقف والقطاع"
+
+
 def roof_sheet(ctx):
     P, rules, R = ctx["project"], ctx["rules"], ctx["q"]["pallets"]["roof"]
+    if P.roof.type == "peaks":
+        return peaks_roof_sheet(ctx)
     g = roof_geometry(P, rules)
     x0, y0, x1, y1 = g["bbox"]
     ov = P.roof.overhang

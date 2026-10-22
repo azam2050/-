@@ -174,7 +174,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 S.wbox(wm, w, a, b, -half, half, z1, Hc)
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
         ux, uy = w.u
-        gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y)
+        gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y) and \
+            project.roof.type != "peaks"
         if cut:
             pass
         elif gable_end and project.roof.type == "shed":       # حشوة الجدار الجانبي تحت الميل
@@ -273,7 +274,10 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
         kv = 1 / math.cos(p)
         shed = project.roof.type == "shed"
-        gable_sides = [] if shed else [(-1, a_lo - ov), (1, a_hi + ov)]
+        peaks = project.roof.type == "peaks"
+        gable_sides = [] if shed or peaks else [(-1, a_lo - ov), (1, a_hi + ov)]
+        if peaks:
+            _peaks_3d(S, project, rafter_d)
         if shed:            # سقف مائل باتجاه واحد: لوح واحد من الحافة العالية للواطية
             hi_lo = project.roof.high_side in ("S", "W")
             a_low = a_hi if hi_lo else a_lo
@@ -386,6 +390,57 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         c0, c1 = to_xy(a0, b_edge - 8), to_xy(a1, b_edge + 8)
         S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), H - 22, max(c0[0], c1[0]), max(c0[1], c1[1]), H)
     return S
+
+
+def _beam(S, mat, p, q, w):
+    """جسر خشب مربع المقطع بين نقطتين (للأضلاع المائلة)."""
+    dx, dy = q[0] - p[0], q[1] - p[1]
+    L = math.hypot(dx, dy) or 1.0
+    nx, ny = -dy / L * w / 2, dx / L * w / 2
+    pts = []
+    for dz in (-w / 2, w / 2):
+        for (a, sgn) in ((p, -1), (q, -1), (q, 1), (p, 1)):
+            pts.append((a[0] + sgn * nx, a[1] + sgn * ny, a[2] + dz))
+    S.hexa(mat, pts)
+
+
+def _peaks_3d(S, project, rd):
+    """سقف بيت الشعر الخشبي: قمم هرمية متجاورة (وديان بينها) + أضلاع خشب ظاهرة + مشراق زجاج فوق القمة."""
+    from .roof import peak_geometry
+    tri_faces = [(0, 1, 2), (3, 4, 5), (0, 1, 4, 3), (1, 2, 5, 4), (2, 0, 3, 5)]
+    quad_faces = [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    for pk in project.roof.peaks:
+        G = peak_geometry(project, pk)
+        E, A, T = G["E"], G["A"], G.get("T")
+        for i in range(4):
+            e0, e1 = E[i], E[(i + 1) % 4]
+            for mat, z0, z1 in (("sheathing", 0, rd + 2.5), ("roof_tiles", rd + 2.5, rd + 6.5)):
+                if T:
+                    t0, t1 = T[i], T[(i + 1) % 4]
+                    base = [e0, e1, t1, t0]
+                    S.poly(mat, [(x, y, z + z0) for x, y, z in base] + [(x, y, z + z1) for x, y, z in base], quad_faces)
+                else:
+                    base = [e0, e1, A]
+                    S.poly(mat, [(x, y, z + z0) for x, y, z in base] + [(x, y, z + z1) for x, y, z in base], tri_faces)
+            top = T[i] if T else A
+            lift = rd + 10                              # ضلع ركني خشب فوق السطح ظاهر (مثل حبال/أعمدة الخيمة)
+            _beam(S, "trim", (e0[0], e0[1], e0[2] + lift), (top[0], top[1], top[2] + lift), 16)
+            fa = (e0[0], e0[1], e0[2] + rd / 2)
+            fb = (e1[0], e1[1], e1[2] + rd / 2)
+            _beam(S, "trim", fa, fb, 14)                # لوح الرفرف
+        if T:                                            # المشراق: صندوق زجاج + غطاء هرمي صغير
+            zt = G["zt"]
+            xs, ys = [t[0] for t in T], [t[1] for t in T]
+            lx0, lx1, ly0, ly1 = min(xs), max(xs), min(ys), max(ys)
+            S.box("glass", lx0 + 4, ly0 + 4, zt + rd, lx1 - 4, ly1 - 4, zt + rd + 60)
+            for cx_, cy_ in ((lx0, ly0), (lx1, ly0), (lx1, ly1), (lx0, ly1)):
+                S.box("trim", cx_ - 5, cy_ - 5, zt + rd, cx_ + 5, cy_ + 5, zt + rd + 60)
+            zc = zt + rd + 60
+            cap = [(lx0 - 20, ly0 - 20, zc), (lx1 + 20, ly0 - 20, zc), (lx1 + 20, ly1 + 20, zc), (lx0 - 20, ly1 + 20, zc)]
+            apex = ((lx0 + lx1) / 2, (ly0 + ly1) / 2, zc + 45)
+            for i in range(4):
+                base = [cap[i], cap[(i + 1) % 4], apex]
+                S.poly("roof_tiles", base + [(x, y, z + 6) for x, y, z in base], tri_faces)
 
 
 def _cross_gables(S, project, rules, half):

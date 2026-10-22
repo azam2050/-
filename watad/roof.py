@@ -13,6 +13,8 @@ def roof_geometry(project, rules):
         ridge_len, span = y1 - y0, x1 - x0
     pitch = math.radians(r.pitch_deg)
     rise = (span if r.type == "shed" else span / 2) * math.tan(pitch)
+    if r.type == "peaks" and r.peaks:
+        rise = max(pk["h"] + _lantern_extra(pk) for pk in r.peaks)
     return {"bbox": (x0, y0, x1, y1), "ridge_len": ridge_len, "span": span, "rise": rise,
             "pitch": pitch}
 
@@ -20,6 +22,8 @@ def roof_geometry(project, rules):
 def gable_rafters(project, rules):
     g = roof_geometry(project, rules)
     r = project.roof
+    if r.type == "peaks":
+        return peaks_rafters(project, rules)
     spacing = rules["roof"]["rafter_spacing"]
     roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1
@@ -156,3 +160,55 @@ def purlin_positions(project, rules):
     ac, n = (lo + hi) / 2, r.purlins + 1
     pos = [lo + (ac - lo) * k / n for k in range(1, n)]
     return pos + [ac] + [hi - (p - lo) for p in reversed(pos)]
+
+
+def _lantern_extra(pk):
+    """ارتفاع المشراق الزجاج + غطاه فوق القمة المقطوعة (تقريبي للرسم)."""
+    return 60 + 45 if pk.get("lantern") else 0
+
+
+def peak_geometry(project, pk):
+    """قمة هرمية (بيت شعر خشبي): أركان الجدار C، أركان الرفرف E (امتداد الأضلاع المائلة من القمة)،
+    القمة A، وإذا فيه مشراق: أركان القطع T ومنسوبه zt + غطاء المشراق."""
+    H = project.roof_base
+    x0, y0, x1, y1 = pk["rect"]
+    ax, ay = pk.get("apex", ((x0 + x1) / 2, (y0 + y1) / 2))
+    h = pk["h"]
+    ov = pk.get("overhang", project.roof.overhang)
+    dmin = min(ax - x0, x1 - ax, ay - y0, y1 - ay)
+    k = ov / dmin
+    C = [(x0, y0, H), (x1, y0, H), (x1, y1, H), (x0, y1, H)]
+    A = (ax, ay, H + h)
+    E = [(c[0] + k * (c[0] - ax), c[1] + k * (c[1] - ay), H - k * h) for c in C]
+    out = {"C": C, "A": A, "E": E, "k": k, "h": h, "H": H, "ov": ov}
+    if pk.get("lantern"):
+        r = pk["lantern"] / min(x1 - x0, y1 - y0)
+        out["T"] = [(ax + r * (c[0] - ax), ay + r * (c[1] - ay), H + h * (1 - r)) for c in C]
+        out["zt"] = H + h * (1 - r)
+    return out
+
+
+def peaks_rafters(project, rules):
+    """مدادات القمم: مداد ركني (hip) من ركن الرفرف للقمة + مدادات عادية على كل وجه كل 60 سم."""
+    sp = rules["roof"]["rafter_spacing"]
+    lens = sorted(rules["roof"]["rafter_lengths"])
+    count, longest, hip = 0, 0.0, 0.0
+    for pk in project.roof.peaks:
+        G = peak_geometry(project, pk)
+        A, E, T = G["A"], G["E"], G.get("T")
+        for i in range(4):
+            p, q = E[i], E[(i + 1) % 4]
+            hip = max(hip, math.dist(p, T[i] if T else A))
+            mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2, p[2])
+            tgt = ((T[i][0] + T[(i + 1) % 4][0]) / 2, (T[i][1] + T[(i + 1) % 4][1]) / 2, T[i][2]) if T else A
+            longest = max(longest, math.dist(mid, tgt))
+            count += max(1, int(math.dist(p, q) / sp))
+    stock = next((s for s in lens if s >= longest), None)
+    hstock = next((s for s in lens if s >= hip), None)
+    return {"ridge_length": 0, "roof_length": 0, "span": 0, "pitch_deg": project.roof.pitch_deg,
+            "overhang": project.roof.overhang, "rise": round(roof_geometry(project, rules)["rise"], 1),
+            "ridge_level": round(project.roof_base + roof_geometry(project, rules)["rise"], 1),
+            "rafters_per_side": count, "rafter_count": count, "pieces": 1, "rafter_length": round(longest, 1),
+            "stock_length": stock, "purlins": [], "hip_length": round(hip, 1),
+            "warning": None if stock else f"المداد {longest:.0f} سم أطول من الطبلية — يحتاج وصلة فوق جسر",
+            "hip_warning": None if hstock else f"المداد الركني {hip:.0f} سم أطول من الطبلية — يُوصل فوق دعامة"}

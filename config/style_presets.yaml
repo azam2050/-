@@ -13,6 +13,7 @@ materials:
     charcoal:       {ar: قرميد فحمي / أسود مزرق,       color: "#2C313B"}
     burgundy:       {ar: قرميد عنابي,                   color: "#5F2024"}
     graphite:       {ar: قرميد رمادي غامق,             color: "#2B2B2E"}
+    sand:           {ar: صاج معدني رملي فاتح (لون قماش بيت الشعر), color: "#E3D5BC"}
   glass:
     dark_tinted:    {ar: زجاج عاكس غامق,               color: "#1F262C", alpha: 0.85}
     clear:          {ar: زجاج شفاف,                    color: "#9FB7C4", alpha: 0.45}

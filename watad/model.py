@@ -123,7 +123,9 @@ class Deck:
 @dataclass
 class Roof:
     ridge_axis: str = "x"     # اتجاه خط الجملون (x أو y) — للمائل: اتجاه الحافة العالية
-    type: str = "gable"       # gable جملون | shed مائل باتجاه واحد
+    type: str = "gable"       # gable جملون | shed مائل باتجاه واحد | peaks قمم هرمية (بيت شعر خشبي)
+    peaks: list = field(default_factory=list)   # للـ peaks: [{rect: [x0,y0,x1,y1] وجه خارجي، h: ارتفاع القمة فوق الجدار،
+                                                #   apex: [x,y] (اختياري)، overhang، lantern: ضلع المشراق الزجاج (سم)}]
     high_side: str = "S"      # للمائل: الجهة العالية (S/N إذا الحافة على x، W/E إذا على y)
     low_pitch_approved: bool = False   # ميل أقل من الحد الأدنى بموافقة المصنع (صاج معدني + عزل مائي)
     pitch_deg: float = 25
