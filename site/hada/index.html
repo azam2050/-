@@ -329,7 +329,7 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   let home = null;
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-  const GLB_SRC = ["web.glb", "https://raw.githubusercontent.com/azam2050/-/HEAD/site/hada/web.glb"];
+  const GLB_SRC = ["web.glb", "/hada/web.glb"];
   (function loadGLB(k) { new THREE.GLTFLoader().load(GLB_SRC[k], g => {
     dress(g.scene); scene.add(g.scene);
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
