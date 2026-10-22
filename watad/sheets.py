@@ -417,7 +417,10 @@ def plan_sheet(ctx, floor=0):
             y0 = min(y0, dy0 - 30 * n - 30)
         x0, x1, y0 = min(x0, dx0), max(x1, dx1), min(y0, dy0)
     for pt in P.posts:
-        ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k", lw=0.6))
+        if pt.get("inner") and floor != 0:
+            continue
+        h_ = pt.get("size", 16) / 2 if pt.get("inner") else 8
+        ax.add_patch(Rectangle((pt["at"][0] - h_, pt["at"][1] - h_), 2 * h_, 2 * h_, fc="#8b5a2b", ec="k", lw=0.6))
     _draw_shape(ax, wall_shapes(P, rules), fc="white", ec="k", lw=0.9, hatch="////")
     draw_openings_plan(ax, P, rules)
     draw_furniture(ax, P)

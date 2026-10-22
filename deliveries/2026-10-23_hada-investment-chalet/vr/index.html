@@ -152,7 +152,6 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="model.js"></script>
 <script>
 const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "day": "pano/yard.jpg", "night": "pano/yard-night.jpg"}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "day": "pano/sunken.jpg", "night": "pano/sunken-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}, {"id": "balcony", "name": "البلكونة", "day": "pano/balcony.jpg", "night": "pano/balcony-night.jpg"}]/*END*/;
 const HAS_VIDEO = /*VIDEO*/true/*END*/;
@@ -246,48 +245,100 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6ea);
-  const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 500);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
-  scene.add(new THREE.HemisphereLight(0xf4f7ff, 0x6f7f5a, 0.55));
-  const sun = new THREE.DirectionalLight(0xfff1df, 0.75); sun.position.set(-20, 30, 25); scene.add(sun);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfd3e6);
+  const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.05, 500);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  scene.add(new THREE.HemisphereLight(0xf2f6ff, 0x7a6a50, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 1.25); sun.position.set(-14, 22, 18); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 80 });
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; scene.add(sun); scene.add(sun.target);
+  /* خامات واقعية: صور خشب/قرميد/بلاط/عشب تنلبس حسب اسم الخامة بإسقاط صندوقي (نفس الرندر) */
+  const texL = new THREE.TextureLoader(), texC = {};
+  const tex = (f, rep) => { const k = f + rep; if (texC[k]) return texC[k];
+    const t = texL.load("tex/" + f); t.wrapS = t.wrapT = THREE.RepeatWrapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+    t.anisotropy = 8; return (texC[k] = t); };
+  const SKIN = { wood: ["wood.jpg", 1.1], wood_in: ["wood.jpg", 0.9], ceiling: ["wood.jpg", 0.9], sheathing: ["wood.jpg", 0.9],
+    floor: ["wood.jpg", 1.3], joist: ["wood_dark.jpg", 1.0], rafters: ["wood_dark.jpg", 1.0], trim: ["wood_dark.jpg", 1.0],
+    stair: ["wood_dark.jpg", 1.0], door: ["wood_dark.jpg", 1.0], roof_tiles: ["roof.jpg", 1.2], paver: ["paver.jpg", 1.4],
+    site_wall: ["wall.jpg", 2.2], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
+  const PASS = new Set(["glass", "door", "frame", "water"]);    // تقدر تعبر منها بالمشي (الأبواب والزجاج)
+  const solids = [];
+  function boxUV(mesh, tile) {
+    let g = mesh.geometry; if (g.index) g = g.toNonIndexed(); g.computeVertexNormals();
+    const pos = g.attributes.position, nor = g.attributes.normal, uv = new Float32Array(pos.count * 2), v = new THREE.Vector3(), n = new THREE.Vector3();
+    mesh.updateWorldMatrix(true, false); const nm = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld); n.fromBufferAttribute(nor, i).applyMatrix3(nm);
+      const ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z);
+      const [a, b] = ay >= ax && ay >= az ? [v.x, v.z] : ax >= az ? [v.z, v.y] : [v.x, v.y];
+      uv[2 * i] = a / tile; uv[2 * i + 1] = b / tile;
+    }
+    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); mesh.geometry = g;
+  }
+  function dress(root) {
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = o.receiveShadow = true;
+      const nm = (o.material && o.material.name || "").split(".")[0];
+      const sk = SKIN[nm];
+      if (sk) {
+        boxUV(o, sk[1]);
+        if (!o.material.userData.dressed) { o.material.map = tex(sk[0], 1); o.material.color.set(0xffffff);
+          o.material.roughness = nm === "roof_tiles" ? 0.75 : 0.65; o.material.metalness = 0; o.material.userData.dressed = true; o.material.needsUpdate = true; }
+      }
+      if (nm === "glass") { o.material.transparent = true; o.material.opacity = 0.28; o.material.roughness = 0.05; o.material.metalness = 0.2; o.castShadow = false; }
+      if (nm === "water") { o.material.color.set(0x2a8fb8); o.material.roughness = 0.05; o.material.transparent = true; o.material.opacity = 0.85; }
+      if (!PASS.has(nm)) solids.push(o);
+    });
+  }
   const hemi = scene.children.find(o => o.isHemisphereLight);
   /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
   const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
   const LAMPS = [[340, 230, 200, 16762250, 2.2, 9], [570, 670, 200, 16762250, 1.4, 6], [170, 230, 500, 16762250, 1.6, 6], [510, 230, 500, 16762250, 1.6, 6], [344, -120, 280, 16766624, 1.6, 6], [344, -120, 560, 16766624, 1.4, 6], [91, -570, -60, 16742954, 3.0, 6], [585, -1000, -80, 6737151, 1.2, 5], [340, -1300, 150, 16766624, 0.8, 5], [1180, 230, 200, 16762250, 2.2, 9], [1410, 670, 200, 16762250, 1.4, 6], [1010, 230, 500, 16762250, 1.6, 6], [1350, 230, 500, 16762250, 1.6, 6], [1184, -120, 280, 16766624, 1.6, 6], [1184, -120, 560, 16766624, 1.4, 6], [931, -570, -60, 16742954, 3.0, 6], [1425, -1000, -80, 6737151, 1.2, 5], [1180, -1300, 150, 16766624, 0.8, 5]];
-  LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); lamps.add(L); });
+  LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); L.userData.i = i; lamps.add(L); });
+  lamps.visible = true;   // بالنهار إنارة داخلية خفيفة (مثل الرندر)، وبالليل كاملة
   function night(n) {
-    scene.background = new THREE.Color(n ? 0x0b1424 : 0xdfe6ea);
-    hemi.intensity = n ? 0.08 : 0.55; sun.intensity = n ? 0.04 : 0.75; lamps.visible = n;
-    ground.material.color.set(n ? 0x2e3a26 : 0x8fa86c); renderer.toneMappingExposure = n ? 1.25 : 0.9;
+    scene.background = n ? new THREE.Color(0x0b1424) : (skyTex || new THREE.Color(0xbfd3e6));
+    scene.environment = n ? null : skyEnv;
+    hemi.intensity = n ? 0.06 : 0.55; sun.intensity = n ? 0.03 : 1.25;
+    lamps.children.forEach(L => { L.intensity = L.userData.i * (n ? 1 : 0.5); });
+    ground.material.color.set(n ? 0x55604a : 0xffffff); renderer.toneMappingExposure = n ? 1.3 : 1.0;
   }
   modeHooks.push(night);
   const HOLES = [[470, -1240, 700, -760], [-46, -740, 274, -400], [1310, -1240, 1540, -760], [794, -740, 1114, -400]];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
   const gs = new THREE.Shape(); gs.absarc(0, 0, 60, 0, Math.PI * 2, false);
   HOLES.forEach(([x0, y0, x1, y1]) => { const h = new THREE.Path(); h.moveTo(x0 / 100, y0 / 100); h.lineTo(x1 / 100, y0 / 100);
     h.lineTo(x1 / 100, y1 / 100); h.lineTo(x0 / 100, y1 / 100); h.lineTo(x0 / 100, y0 / 100); gs.holes.push(h); });
-  const ground = new THREE.Mesh(new THREE.ShapeGeometry(gs, 48), new THREE.MeshLambertMaterial({ color: 0x8fa86c, side: THREE.DoubleSide }));
-  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; scene.add(ground);
+  const gtex = tex("grass.jpg", 1); gtex.repeat.set(0.5, 0.5);
+  const ground = new THREE.Mesh(new THREE.ShapeGeometry(gs, 48), new THREE.MeshStandardMaterial({ map: gtex, color: 0xffffff, roughness: 1, side: THREE.DoubleSide }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; ground.receiveShadow = true; scene.add(ground); solids.push(ground);
+  /* السماء الحقيقية خلفية + إضاءة محيطة (نفس سماء الرندر) */
+  const pm = new THREE.PMREMGenerator(renderer); let skyEnv = null, skyTex = null;
+  texL.load("tex/sky.jpg", t => { t.mapping = THREE.EquirectangularReflectionMapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+    skyTex = t; skyEnv = pm.fromEquirectangular(t).texture; if (!NIGHT) { scene.background = skyTex; scene.environment = skyEnv; } });
   const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   let home = null;
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-  const bin = Uint8Array.from(atob(window.MODEL_GLB || ""), c => c.charCodeAt(0)).buffer;
-  new THREE.GLTFLoader().parse(bin, "", g => {
-    scene.add(g.scene);
+  new THREE.GLTFLoader().load("web.glb", g => {
+    dress(g.scene); scene.add(g.scene);
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) startTour();
-  }, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
+  }, x => { if (x.total) loadEl.textContent = `جاري تحميل المجسم… ${Math.round(x.loaded / x.total * 100)}%`; },
+  () => { loadEl.textContent = "تعذر تحميل المجسم"; });
   /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
   const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
   const SPOTS = {
     gate: { p: P(340, -1250, 115), yaw: 0 },
     living: { p: P(410, 40, 160), yaw: 0 },
-    upper: { p: P(160, 512, 465), yaw: -Math.PI / 2 },
+    upper: { p: P(120, 512, 465), yaw: Math.PI / 2 },
     unit2: { p: P(1180, -1250, 115), yaw: 0 },
   };
   let walk = false, yaw = 0, pitch = -0.05, look = null;
+  const ray = new THREE.Raycaster(), DOWN = new THREE.Vector3(0, -1, 0), EYE = 1.6;
   const move = { f: 0, s: 0 }, keys = {};
   const joy = document.getElementById("joy"), knob = document.getElementById("joy-knob"), hint = document.getElementById("model-hint");
   function setMode(spot) {
@@ -338,8 +389,22 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     if (!walk) return;
     let f = move.f + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0);
     let st = move.s + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0);
-    const sp = 1.6 * dt, dir = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
-    camera.position.addScaledVector(dir, f * sp).addScaledVector(side, st * sp);
+    const sp = 1.4 * dt, dir = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    const mv = new THREE.Vector3().addScaledVector(dir, f * sp).addScaledVector(side, st * sp);
+    // تصادم: ما يدخل بالجدران (يتزحلق على الجدار)، ويعبر الأبواب والزجاج
+    for (const axis of ["x", "z"]) {
+      const d = new THREE.Vector3(); d[axis] = mv[axis]; const L = Math.abs(d[axis]); if (L < 1e-5) continue;
+      d.normalize(); let blocked = false;
+      for (const h of [0.35, 1.0]) {
+        ray.set(new THREE.Vector3(camera.position.x, camera.position.y - EYE + h, camera.position.z), d); ray.far = L + 0.3;
+        if (ray.intersectObjects(solids, false).length) { blocked = true; break; }
+      }
+      if (!blocked) camera.position[axis] += mv[axis];
+    }
+    // الأرضية: يمشي على الأرض والدرج والتراس، وينزل للجلسة المدفونة
+    ray.set(new THREE.Vector3(camera.position.x, camera.position.y - EYE + 0.45, camera.position.z), DOWN); ray.far = 4;
+    const hit = ray.intersectObjects(solids, false)[0];
+    if (hit) camera.position.y += (hit.point.y + EYE - camera.position.y) * Math.min(1, dt * 10);
     const t = camera.position.clone().add(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)));
     camera.lookAt(t);
   }
@@ -350,6 +415,7 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     now = now || performance.now();
     if (tour) { tourStep(Math.max(0, Math.min(0.05, (now - last) / 1000))); last = now; }
     else if (walk) walkStep(now); else { last = now; controls.update(); }
+    sun.target.position.set(camera.position.x, 0, camera.position.z); sun.position.set(camera.position.x - 14, 22, camera.position.z + 18);
     renderer.render(scene, camera); requestAnimationFrame(tick);
   })();
 })();

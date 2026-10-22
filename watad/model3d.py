@@ -386,7 +386,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             ztop = pt["top"] if not cut else min(cut, pt["top"])
         ps = pt.get("size", 15)
         S.box("trim", px - ps / 2, py - ps / 2, pt.get("base", 0), px + ps / 2, py + ps / 2, ztop)
-        pz.append((px, py, ztop))
+        if not pt.get("inner"):          # أعمدة داخلية (بارتشن أعمدة) ما تدخل بحساب جسر الواجهة
+            pz.append((px, py, ztop))
     if len(pz) >= 2 and project.roof.ext_start and not cut:
         b_edge = sum((py if ridge_y else px) for px, py, _ in pz) / len(pz)
         a0, a1 = a_lo, a_hi
