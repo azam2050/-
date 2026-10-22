@@ -15,6 +15,9 @@ def roof_geometry(project, rules):
     rise = (span if r.type == "shed" else span / 2) * math.tan(pitch)
     if r.type == "peaks" and r.peaks:
         rise = max(pk["h"] + _lantern_extra(pk) for pk in r.peaks)
+    if r.type == "tent_hip" and r.units:
+        from .tent_roof import rise as tent_rise
+        rise = tent_rise(project)
     return {"bbox": (x0, y0, x1, y1), "ridge_len": ridge_len, "span": span, "rise": rise,
             "pitch": pitch}
 
@@ -24,6 +27,17 @@ def gable_rafters(project, rules):
     r = project.roof
     if r.type == "peaks":
         return peaks_rafters(project, rules)
+    if r.type == "tent_hip":
+        from .tent_roof import rafters as tent_rafters
+        t = tent_rafters(project, rules)
+        rise = roof_geometry(project, rules)["rise"]
+        return {"ridge_length": 0, "roof_length": 0, "span": 0, "pitch_deg": r.pitch_deg, "overhang": 0,
+                "rise": round(rise, 1), "ridge_level": round(project.roof_base + rise, 1),
+                "rafters_per_side": t["rafter_count"], "rafter_count": t["rafter_count"], "pieces": 2,
+                "rafter_length": t["rafter_length"], "stock_length": t["stock_length"], "purlins": [],
+                "hip_length": t["hip_length"], "warning": t["warning"],
+                "hip_warning": None if t["hip_length"] <= 520 else
+                f"المداد الركني {t['hip_length']:.0f} سم — قطعتين بوصلة فوق دعامة"}
     spacing = rules["roof"]["rafter_spacing"]
     roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1

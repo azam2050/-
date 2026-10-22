@@ -528,7 +528,7 @@ def elevation(ax, ctx, w):
     depth = rules["members"]["rafter"]["w"] / math.cos(p)
     cover = rules["cladding"]["effective_cover"]
     ux, uy = w.u
-    gable_end = (P.roof.ridge_axis == "y") == (abs(uy) < 1e-6) and P.roof.type != "peaks"
+    gable_end = (P.roof.ridge_axis == "y") == (abs(uy) < 1e-6) and P.roof.type not in ("peaks", "tent_hip")
     sh = P.slab_height
     # امتداد السقف على جانب الجملون (تراس مسقوف) يظهر في واجهات الرفرف
     along = (w.start[1], w.end[1]) if P.roof.ridge_axis == "y" else (w.start[0], w.end[0])
@@ -573,6 +573,21 @@ def elevation(ax, ctx, w):
                     ax.plot([x_l, x_r], [yy, yy], color=C_ROOF, lw=0.3)
                     yy += 12
                 roof_top = z_hi + depth
+    elif P.roof.type == "tent_hip":  # سقف الخيمة المنساب: أسطح هرمية + رفرف منساب، كلها تصرّف للخارج
+        from .tent_roof import elev_draw
+        ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
+        y = cover
+        while y < H - 1:
+            ax.plot([0, L], [y, y], color="#999", lw=0.4)
+            y += cover
+        top, _tt = elev_draw(ax, P, w, half, depth, C_ROOF, C_WIN, Polygon)
+        nx_, ny_ = w.n
+        for pt in P.posts:   # الأعمدة الظاهرة قدام الجدار
+            px, py = pt["at"]
+            tpos = _tt(px, py)
+            if (px - w.start[0]) * nx_ + (py - w.start[1]) * ny_ > half + 5:
+                ax.add_patch(Rectangle((tpos - 8, 0), 16, pt.get("top", H), fc="#c9a27e", ec="k", lw=0.6, zorder=2.5))
+        roof_top = top
     elif P.roof.type == "peaks":     # بيت شعر خشبي: قمم هرمية — كل قمة بظلها الحقيقي من هذي الجهة
         from .roof import peak_geometry
         ax.add_patch(Rectangle((0, 0), L, H, fc="white", ec="k", lw=1))
@@ -859,7 +874,8 @@ def elevation(ax, ctx, w):
         level(ax, lx - ext_l, H, H / 100, "أعلى الجدار")
     if not (shed_flat and top <= H + 5):
         level(ax, lx - ext_l, top, top / 100, "أعلى الجدار" if shed_flat else
-              ("أعلى السقف" if P.roof.type == "shed" else "أعلى القمة" if P.roof.type == "peaks" else "قمة الجملون"))
+              ("أعلى السقف" if P.roof.type == "shed" else "أعلى القمة" if P.roof.type in ("peaks", "tent_hip")
+               else "قمة الجملون"))
     # الأبعاد
     ts = [0] + sorted(t + half for o in w.openings for t in (o.offset, o.offset + o.width)) + [L]
     chain(ax, [(t, -sh) for t in ts], -35)
@@ -875,6 +891,11 @@ def elevation(ax, ctx, w):
         from .roof import peak_geometry
         tt_ = lambda x_, y_: (x_ - w.start[0]) * ux + (y_ - w.start[1]) * uy + half  # noqa: E731
         ts_ = [tt_(e[0], e[1]) for pk in P.roof.peaks for e in peak_geometry(P, pk)["E"]]
+        xl, xr = min(xl, min(ts_) - 60), max(xr, max(ts_) + 60)
+    if P.roof.type == "tent_hip":
+        from .tent_roof import all_faces
+        tt_ = lambda x_, y_: (x_ - w.start[0]) * ux + (y_ - w.start[1]) * uy + half  # noqa: E731
+        ts_ = [tt_(p_[0], p_[1]) for _k, f_ in all_faces(P) for p_ in f_]
         xl, xr = min(xl, min(ts_) - 60), max(xr, max(ts_) + 60)
     ax.set_xlim(xl, xr)
     ax.set_ylim(-120 - sh, roof_top + 30)
@@ -970,10 +991,110 @@ def peaks_roof_sheet(ctx):
     return fig, "مسقط السقف والقطاع"
 
 
+def tent_roof_sheet(ctx):
+    """مسقط سقف الخيمة المنساب + قطاع عرضي يمر بالمشراق (يبين الكسرة والرفرف فوق التراس)."""
+    from .tent_roof import units, surface_z, rafters as tent_rafters
+    P, rules = ctx["project"], ctx["rules"]
+    half = wall_thickness(rules) / 2
+    x0, y0, x1, y1 = outer_bbox(P, rules)
+    H = P.roof_base
+    fig = new_page()
+    ax = drawing_ax(fig, [0.04, 0.12, 0.52, 0.76])
+    title(ax, "مسقط السقف — سقف الخيمة المنساب", "كل الأسطح تصرّف للخارج — بدون وديان  |  مقياس 1:50")
+    Us = units(P)
+    for g in Us:
+        for f in g["flare"]:
+            ax.add_patch(Polygon([(p[0], p[1]) for p in f], closed=True, fc="#f6e6cf", ec=C_ROOF, lw=0.8))
+        for f in g["upper"]:
+            ax.add_patch(Polygon([(p[0], p[1]) for p in f], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+        (ra, rb) = g["ridge"]
+        ax.plot([ra[0], rb[0]], [ra[1], rb[1]], color="#6b4f3a", lw=2)
+        if g.get("monitor_rect"):
+            a0, b0, a1, b1 = g["monitor_rect"]
+            ax.add_patch(Rectangle((a0, b0), a1 - a0, b1 - b0, fc="#e3f0fb", ec=C_WIN, lw=1))
+            ax.text((a0 + a1) / 2, (b0 + b1) / 2, "مشراق", ha="center", va="center", fontsize=7, color=C_WIN)
+        # أسهم تصريف المويه من القمة للخارج
+        rx0, ry0, rx1, ry1 = g["rect"]
+        ex0, ey0, ex1, ey1 = g["eave"]
+        cx, cy = (rx0 + rx1) / 2, (ry0 + ry1) / 2
+        for (sx, sy), (tx, ty) in (((cx, cy - 40), (cx, ey0 + 25)), ((cx, cy + 40), (cx, ey1 - 25)),
+                                   ((ra[0] - 30, cy), (ex0 + 25, cy)), ((rb[0] + 30, cy), (ex1 - 25, cy))):
+            if math.dist((sx, sy), (tx, ty)) > 60:
+                ax.annotate("", (tx, ty), (sx, sy), arrowprops=dict(arrowstyle="->", color="#1f77b4", lw=0.9))
+        ax.text(cx, ry0 + 20, f"+{g['top'] / 100:.2f}", ha="center", fontsize=7, color="red",
+                bbox=dict(fc="white", ec="none", pad=1))
+    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
+    for pt in P.posts:
+        ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
+    ex0 = min(g["eave"][0] for g in Us)
+    ey0 = min(g["eave"][1] for g in Us)
+    ex1 = max(g["eave"][2] for g in Us)
+    ey1 = max(g["eave"][3] for g in Us)
+    m = Us[0]
+    dim(ax, (m["eave"][0], m["eave"][3]), (m["eave"][2], m["eave"][3]), 40)
+    dim(ax, (m["eave"][2], m["eave"][3]), (m["eave"][2], m["eave"][1]), 40)
+    R = tent_rafters(P, rules)
+    ax.text((ex0 + ex1) / 2, ey0 - 60,
+            f"المداد العلوي {R['upper'] / 100:.2f} م (ميل {P.roof.pitch_deg:.0f}°) + مداد الرفرف {R['flare'] / 100:.2f} م "
+            f"(ميل {P.roof.units[0].get('flare_pitch', 20):.0f}°) — الركني {R['hip_length'] / 100:.2f} م بوصلة",
+            ha="center", fontsize=8, color="#6b4f3a")
+    ax.set_xlim(ex0 - 80, ex1 + 120)
+    ax.set_ylim(ey0 - 110, ey1 + 100)
+    # قطاع عرضي (من الواجهة للخلف) يمر بالمشراق
+    ax2 = drawing_ax(fig, [0.6, 0.3, 0.37, 0.5])
+    title(ax2, "قطاع عرضي يمر بالمشراق", "الكسرة عند الجدار: 35° فوق ثم 20° منساب  |  مقياس 1:50")
+    sh = P.slab_height
+    mr = m.get("monitor_rect")
+    xs = (mr[0] + mr[2]) / 2 if mr else (x0 + x1) / 2
+    ax2.add_patch(Rectangle((y0 - 10, -sh), y1 - y0 + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6))
+    for d in P.decks:
+        dx0, dy0, dx1, dy1 = d.rect
+        if dx0 <= xs <= dx1:
+            ax2.add_patch(Rectangle((dy0, -sh), dy1 - dy0, sh, fc="#e9d9c4", ec="#8b5a2b", lw=0.6))
+    for wy in (y0, y1):
+        ax2.add_patch(Rectangle((wy if wy == y0 else wy - 2 * half, 0), 2 * half, H, fc="white", ec="k", lw=0.8,
+                                hatch="////"))
+    rd = rules["members"]["rafter"]["w"]
+    import numpy as np
+    ys = np.linspace(m["eave"][1], m["eave"][3], 240)
+    zs = [surface_z(P, xs, y_) for y_ in ys]
+    prof = [(y_, z_) for y_, z_ in zip(ys, zs) if z_ is not None]
+    ax2.add_patch(Polygon(prof + [(y_, z_ + rd) for y_, z_ in prof][::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+    if mr:
+        zr = m["H"] + m["h"]
+        mh = P.roof.units[0]["monitor"].get("h", 60)
+        hw = (mr[3] - mr[1]) / 2
+        zb = zr - hw * m["t1"]
+        ax2.add_patch(Rectangle((mr[1], zb + rd), mr[3] - mr[1], zr + mh - zb, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=3))
+        cap = [(mr[1] - 25, zr + mh + rd), ((mr[1] + mr[3]) / 2, zr + mh + rd + (hw + 25) * m["t1"]),
+               (mr[3] + 25, zr + mh + rd)]
+        ax2.add_patch(Polygon(cap, closed=True, fc="#fff3e0", ec=C_ROOF, lw=1, zorder=3))
+        ax2.text((mr[1] + mr[3]) / 2, zr + rd + 10, "مشراق", ha="center", fontsize=6, color=C_WIN, zorder=4)
+    for pt in P.posts:
+        if abs(pt["at"][0] - xs) < 400 and pt["at"][1] < y0:
+            ax2.add_patch(Rectangle((pt["at"][1] - 8, 0), 16, pt.get("top", H), fc="#c9a27e", ec="k", lw=0.6))
+            break
+    for y_, z_ in ((y0, H), (y1, H)):
+        ax2.plot(y_, z_ + rd, "o", color="#6b4f3a", ms=3)
+    ax2.annotate("", (m["eave"][1] + 10, prof[0][1] + rd), (y0 - 30, H + rd), arrowprops=dict(arrowstyle="->", color="#1f77b4"))
+    ax2.annotate("", (m["eave"][3] - 10, prof[-1][1] + rd), (y1 + 30, H + rd), arrowprops=dict(arrowstyle="->", color="#1f77b4"))
+    level(ax2, m["eave"][3] + 60, m["top"], m["top"] / 100, "أعلى القمة")
+    level(ax2, m["eave"][1] - 60, H, H / 100, "الكسرة / أعلى الجدار")
+    level(ax2, m["eave"][1] - 170, prof[0][1], prof[0][1] / 100, "طرف الرفرف")
+    level(ax2, m["eave"][1] - 60, 0, 0, "الأرضية")
+    dim(ax2, (m["eave"][1], -sh), (y0, -sh), -40, fs=7)
+    dim(ax2, (y0, -sh), (y1, -sh), -40, fs=7)
+    ax2.set_xlim(m["eave"][1] - 260, m["eave"][3] + 260)
+    ax2.set_ylim(-sh - 90, m["top"] + 120)
+    return fig, "مسقط السقف والقطاع"
+
+
 def roof_sheet(ctx):
     P, rules, R = ctx["project"], ctx["rules"], ctx["q"]["pallets"]["roof"]
     if P.roof.type == "peaks":
         return peaks_roof_sheet(ctx)
+    if P.roof.type == "tent_hip":
+        return tent_roof_sheet(ctx)
     g = roof_geometry(P, rules)
     x0, y0, x1, y1 = g["bbox"]
     ov = P.roof.overhang

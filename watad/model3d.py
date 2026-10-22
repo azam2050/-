@@ -175,7 +175,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
         ux, uy = w.u
         gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y) and \
-            project.roof.type != "peaks"
+            project.roof.type not in ("peaks", "tent_hip")
         if cut:
             pass
         elif gable_end and project.roof.type == "shed":       # حشوة الجدار الجانبي تحت الميل
@@ -274,10 +274,13 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
         kv = 1 / math.cos(p)
         shed = project.roof.type == "shed"
-        peaks = project.roof.type == "peaks"
+        peaks = project.roof.type in ("peaks", "tent_hip")
         gable_sides = [] if shed or peaks else [(-1, a_lo - ov), (1, a_hi + ov)]
-        if peaks:
+        if project.roof.type == "peaks":
             _peaks_3d(S, project, rafter_d)
+        elif peaks:
+            from .tent_roof import add_3d as _tent_3d
+            _tent_3d(S, project, rafter_d)
         if shed:            # سقف مائل باتجاه واحد: لوح واحد من الحافة العالية للواطية
             hi_lo = project.roof.high_side in ("S", "W")
             a_low = a_hi if hi_lo else a_lo
