@@ -334,16 +334,55 @@ if vid:
     tr.track_axis = "TRACK_NEGATIVE_Z"
     tr.up_axis = "UP_Y"
     pts, looks = vid["path"], vid["look"]
-    dist = [0.0]
-    for a_, b_ in zip(pts, pts[1:]):
-        dist.append(dist[-1] + math.dist(a_, b_))
     nfr = vid.get("frames", 288)
-    for (p_, l_, d_) in zip(pts, looks, dist):
-        f_ = 1 + round((nfr - 1) * d_ / dist[-1])
-        cam.location = Vector(p_)
-        cam.keyframe_insert("location", frame=f_)
-        target.location = Vector(l_)
-        target.keyframe_insert("location", frame=f_)
+
+    def cr(P_, n):
+        """منحنى Catmull-Rom مركزي يمر بالنقاط بالضبط (بدون تجاوز يدخّل الكاميرا بالجدران) — n نقطة بالتساوي حسب الطول."""
+        P_ = [Vector(q) for q in P_]
+        ext = [P_[0] * 2 - P_[1]] + P_ + [P_[-1] * 2 - P_[-2]]
+        seg = [(P_[i + 1] - P_[i]).length for i in range(len(P_) - 1)]
+        tot = sum(seg)
+        out_ = []
+        for k in range(n):
+            d = tot * k / (n - 1)
+            i = 0
+            while i < len(seg) - 1 and d > seg[i]:
+                d -= seg[i]
+                i += 1
+            t = d / seg[i] if seg[i] else 0
+            p0, p1, p2, p3 = ext[i], ext[i + 1], ext[i + 2], ext[i + 3]
+            a_ = 0.5
+            t0 = 0.0
+            t1 = t0 + max((p1 - p0).length, 1e-4) ** a_
+            t2 = t1 + max((p2 - p1).length, 1e-4) ** a_
+            t3 = t2 + max((p3 - p2).length, 1e-4) ** a_
+            tt = t1 + (t2 - t1) * t
+            A1 = p0 * ((t1 - tt) / (t1 - t0)) + p1 * ((tt - t0) / (t1 - t0))
+            A2 = p1 * ((t2 - tt) / (t2 - t1)) + p2 * ((tt - t1) / (t2 - t1))
+            A3 = p2 * ((t3 - tt) / (t3 - t2)) + p3 * ((tt - t2) / (t3 - t2))
+            B1 = A1 * ((t2 - tt) / (t2 - t0)) + A2 * ((tt - t0) / (t2 - t0))
+            B2 = A2 * ((t3 - tt) / (t3 - t1)) + A3 * ((tt - t1) / (t3 - t1))
+            out_.append(B1 * ((t2 - tt) / (t2 - t1)) + B2 * ((tt - t1) / (t2 - t1)))
+        return out_, seg
+
+    cps, seg_ = cr(pts, nfr)
+    # النظر يتبع نفس توزيع المسار (نفس المقطع ونفس النسبة داخله)
+    tot_ = sum(seg_)
+    lps = []
+    for k in range(nfr):
+        d = tot_ * k / (nfr - 1)
+        i = 0
+        while i < len(seg_) - 1 and d > seg_[i]:
+            d -= seg_[i]
+            i += 1
+        t = d / seg_[i] if seg_[i] else 0
+        t = t * t * (3 - 2 * t)                           # التفات ناعم
+        lps.append(Vector(looks[i]).lerp(Vector(looks[i + 1]), t))
+    for f_ in range(nfr):
+        cam.location = cps[f_]
+        cam.keyframe_insert("location", frame=f_ + 1)
+        target.location = lps[f_]
+        target.keyframe_insert("location", frame=f_ + 1)
     scene.frame_start, scene.frame_end = 1, nfr
     scene.render.fps = vid.get("fps", 12)
     scene.render.use_persistent_data = True

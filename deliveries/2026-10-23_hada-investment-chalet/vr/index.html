@@ -299,15 +299,18 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     camera.updateProjectionMatrix();
   }
   /* الجولة التلقائية: نفس مسار فيديو الجولة — درون فوق السور، الحوش، الجلسة المدفونة، المسبح، الصالة، الدرج، الدور الأول، البلكونة */
-  const TOUR_P = [[340, -2000, 520], [340, -1450, 330], [340, -1150, 125], [340, -900, 115], [380, -600, 115], [600, -560, 115], [410, -330, 125], [410, -150, 160], [410, 60, 160], [450, 250, 160], [330, 420, 160], [180, 520, 160], [184, 760, 312], [120, 830, 315], [56, 760, 335], [56, 600, 465], [160, 512, 465], [390, 512, 465], [390, 380, 465], [520, 120, 465], [520, -130, 465], [560, -700, 760], [764, -1700, 950]], TOUR_L = [[344, -200, 200], [344, 0, 220], [344, 0, 260], [90, -570, -40], [90, -570, -60], [585, -1000, -20], [344, 100, 200], [410, 200, 160], [300, 350, 140], [100, 300, 120], [120, 650, 200], [184, 870, 330], [184, 900, 340], [0, 830, 360], [56, 500, 480], [56, 450, 470], [400, 512, 465], [390, 300, 450], [442, 220, 410], [520, -200, 450], [344, -900, 150], [764, 0, 300], [764, 300, 300]];
-  const curP = new THREE.CatmullRomCurve3(TOUR_P.map(q => P(...q)), false, "centripetal");
-  const curL = new THREE.CatmullRomCurve3(TOUR_L.map(q => P(...q)), false, "centripetal");
+  const TOUR = [{"path": [[340, -2000, 520], [340, -1450, 330], [340, -1150, 125], [340, -900, 115], [330, -650, 115], [340, -420, 115], [410, -300, 125], [410, -120, 160], [410, 40, 160], [410, 200, 160], [400, 330, 160]], "look": [[344, -200, 200], [344, 0, 220], [344, 0, 260], [90, -570, -40], [90, -570, -60], [585, -1000, -30], [410, 100, 170], [410, 200, 160], [410, 300, 160], [600, 250, 130], [560, 700, 140]], "frames": 270}, {"path": [[390, 530, 465], [390, 400, 465], [480, 250, 465], [470, 60, 465], [470, -150, 465], [470, -420, 430], [470, -900, 430], [600, -1300, 760], [764, -1900, 950]], "look": [[390, 300, 450], [440, 220, 420], [470, -200, 450], [470, -300, 440], [344, -900, 150], [344, -900, 100], [600, -1600, 200], [764, 0, 300], [764, 300, 300]], "frames": 210}];   // أجزاء الجولة (نفس مسار الفيديو) — بينها انتقال مباشر
+  const curves = TOUR.map(sg => ({ p: new THREE.CatmullRomCurve3(sg.path.map(q => P(...q)), false, "centripetal"),
+    l: new THREE.CatmullRomCurve3(sg.look.map(q => P(...q)), false, "centripetal"), w: sg.frames }));
+  const wsum = curves.reduce((a, c) => a + c.w, 0);
   let tour = false, tourT = 0;
   const TOUR_SEC = 75;
   function startTour() { tour = true; tourT = 0; walk = false; controls.enabled = false; joy.hidden = true; camera.fov = 62; camera.updateProjectionMatrix();
     document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === "tour")));
     hint.textContent = "الجولة شغالة — اضغط أي زر تحت عشان تمشي بنفسك"; }
-  function tourStep(dt) { tourT = (tourT + dt / TOUR_SEC) % 1; camera.position.copy(curP.getPointAt(tourT)); camera.lookAt(curL.getPointAt(tourT)); }
+  function tourStep(dt) { tourT = (tourT + dt / TOUR_SEC) % 1; let u = tourT * wsum, c = curves[0];
+    for (const cv of curves) { c = cv; if (u <= cv.w) break; u -= cv.w; }
+    const t = Math.min(1, u / c.w); camera.position.copy(c.p.getPointAt(t)); camera.lookAt(c.l.getPointAt(t)); }
   document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => {
     if (b.dataset.mode === "tour") return startTour();
     tour = false; setMode(b.dataset.spot || null);
