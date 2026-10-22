@@ -52,6 +52,15 @@ figcaption { font-size: .92rem; color: var(--muted) }
 .spec b { font-family: var(--display); font-weight: 500; font-size: 1.05rem; display: block }
 .spec p { margin: 4px 0 0; color: var(--muted); font-size: .93rem }
 footer { color: var(--muted); font-size: .85rem }
+.walkbar { display: flex; flex-wrap: wrap; gap: 8px }
+.walkbar button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.walkbar button[aria-pressed="true"] { background: var(--cedar); border-color: var(--cedar); color: var(--bg) }
+.joy { position: absolute; bottom: 16px; right: 16px; width: 120px; height: 120px; border-radius: 50%; background: rgba(12,15,13,.45); border: 1px solid rgba(255,255,255,.25); touch-action: none }
+.joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(240,242,238,.85) }
+.sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px }
+.sheets a { display: grid; gap: 6px; color: inherit; text-decoration: none; min-width: 0 }
+.sheets img { width: 100%; aspect-ratio: 1.414 / 1; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 6px }
+.pdf { display: inline-block; justify-self: start; background: var(--pine); color: var(--bg); text-decoration: none; padding: 8px 18px; border-radius: 8px; font-weight: 600 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
 </style>
 
@@ -59,7 +68,7 @@ footer { color: var(--muted); font-size: .85rem }
   <header>
     <div class="eyebrow">مصنع وتد الأخشاب · الهدا — الطائف</div>
     <h1>شاليهين الهدا الاستثماري — جولة افتراضية</h1>
-    <p class="lead">تجوّل داخل التصميم كأنك واقف فيه: اسحب بإصبعك أو بالماوس لتلف 360°، وقرّب بإصبعين أو بعجلة الماوس. اختر المكان من الأزرار تحت.</p>
+    <p class="lead">كل التصميم في صفحة وحدة: جولة 360°، والمشي داخل المجسم في الحوش والدورين، وفيديو الجولة، ولقطات الرندر، وملف الأوتوكاد كامل.</p>
     <div class="facts">
       <span>أرض ≈ 500 م² (24.27 / 16.23 × 25.00)</span>
       <span>شاليهين × دورين</span>
@@ -85,11 +94,19 @@ footer { color: var(--muted); font-size: .85rem }
   <section aria-labelledby="t-model">
     <div class="sec-head">
       <h2 id="t-model">المجسم ثلاثي الأبعاد</h2>
-      <span class="hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+      <span class="hint" id="model-hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+    </div>
+    <div class="walkbar" id="walkbar">
+      <button type="button" data-mode="orbit" aria-pressed="true">لف حول المشروع</button>
+      <button type="button" data-spot="gate" aria-pressed="false">امشِ: من البوابة والحوش</button>
+      <button type="button" data-spot="living" aria-pressed="false">امشِ: الدور الأرضي</button>
+      <button type="button" data-spot="upper" aria-pressed="false">امشِ: الدور الأول</button>
+      <button type="button" data-spot="unit2" aria-pressed="false">امشِ: الوحدة الثانية</button>
     </div>
     <div class="stage" id="model-stage">
       <canvas id="model"></canvas>
       <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
+      <div class="joy" id="joy" hidden><i id="joy-knob"></i></div>
       <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
     </div>
   </section>
@@ -97,6 +114,12 @@ footer { color: var(--muted); font-size: .85rem }
   <section aria-labelledby="t-shots">
     <div class="sec-head"><h2 id="t-shots">لقطات التصميم الواقعي</h2></div>
     <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section aria-labelledby="t-files">
+    <div class="sec-head"><h2 id="t-files">ملف التصميم كامل (الأوتوكاد)</h2><span class="hint">اضغط على أي لوحة لتكبيرها</span></div>
+    <a class="pdf" href="hada-chalet-autocad.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
+    <div class="sheets" id="sheets"></div>
   </section>
 
   <section aria-labelledby="t-spec">
@@ -116,7 +139,7 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="model.js"></script>
 <script>
-const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "file": "pano/yard.jpg"}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "file": "pano/sunken.jpg"}]/*END*/;
+const PANOS = /*PANOS*/[{"id": "yard", "name": "حوش الوحدة", "file": "pano/yard.jpg"}, {"id": "sunken", "name": "الجلسة الشتوية المدفونة", "file": "pano/sunken.jpg"}, {"id": "living", "name": "الصالة", "file": "pano/living.jpg"}]/*END*/;
 const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file": "shots/x1.jpg"}, {"name": "حوش الوحدة — الجلسة المدفونة والمسبح", "file": "shots/x2.jpg"}, {"name": "الجلسة الشتوية المدفونة", "file": "shots/x3.jpg"}, {"name": "منظر علوي خلفي", "file": "shots/x4.jpg"}, {"name": "الصالة — الجلسة والبارتشن", "file": "shots/i1.jpg"}, {"name": "الصالة — من الجلسة", "file": "shots/i2.jpg"}, {"name": "الماستر", "file": "shots/i3.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
@@ -207,10 +230,73 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
   }, () => { loadEl.textContent = "تعذر تحميل المجسم"; });
-  document.getElementById("model-reset").addEventListener("click", () => { if (home) { camera.position.copy(home.p); controls.target.copy(home.t); } });
+  /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
+  const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
+  const SPOTS = {
+    gate: { p: P(340, -1250, 115), yaw: 0 },
+    living: { p: P(410, 40, 160), yaw: 0 },
+    upper: { p: P(160, 512, 465), yaw: -Math.PI / 2 },
+    unit2: { p: P(1180, -1250, 115), yaw: 0 },
+  };
+  let walk = false, yaw = 0, pitch = -0.05, look = null;
+  const move = { f: 0, s: 0 }, keys = {};
+  const joy = document.getElementById("joy"), knob = document.getElementById("joy-knob"), hint = document.getElementById("model-hint");
+  function setMode(spot) {
+    walk = !!spot; controls.enabled = !walk; joy.hidden = !walk;
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(spot ? b.dataset.spot === spot : b.dataset.mode === "orbit")));
+    hint.textContent = walk ? "اسحب على الصورة للالتفات · العصا أو W/A/S/D للمشي" : "اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك";
+    if (walk) { camera.position.copy(SPOTS[spot].p); yaw = SPOTS[spot].yaw; pitch = -0.05; camera.fov = 70; }
+    else if (home) { camera.fov = 40; camera.position.copy(home.p); controls.target.copy(home.t); }
+    camera.updateProjectionMatrix();
+  }
+  document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.spot || null)));
+  canvas.addEventListener("pointerdown", e => { if (walk) { look = { x: e.clientX, y: e.clientY, yaw, pitch }; canvas.setPointerCapture(e.pointerId); } });
+  canvas.addEventListener("pointermove", e => { if (walk && look) { yaw = look.yaw + (e.clientX - look.x) * 0.005; pitch = Math.max(-1.2, Math.min(1.2, look.pitch + (e.clientY - look.y) * 0.004)); } });
+  canvas.addEventListener("pointerup", () => { look = null; });
+  canvas.addEventListener("pointercancel", () => { look = null; });
+  let jid = null;
+  function joyAt(e) {
+    const r = joy.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const m = Math.min(1, Math.hypot(dx, dy) / (r.width / 2)), a = Math.atan2(dy, dx);
+    knob.style.transform = `translate(${Math.cos(a) * m * 36}px, ${Math.sin(a) * m * 36}px)`;
+    move.f = -Math.sin(a) * m; move.s = Math.cos(a) * m;
+  }
+  joy.addEventListener("pointerdown", e => { jid = e.pointerId; joy.setPointerCapture(jid); joyAt(e); e.stopPropagation(); });
+  joy.addEventListener("pointermove", e => { if (e.pointerId === jid) joyAt(e); });
+  const joyEnd = () => { jid = null; move.f = move.s = 0; knob.style.transform = ""; };
+  joy.addEventListener("pointerup", joyEnd); joy.addEventListener("pointercancel", joyEnd);
+  addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
+  addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+  let last = performance.now();
+  function walkStep(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!walk) return;
+    let f = move.f + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0);
+    let st = move.s + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0);
+    const sp = 1.6 * dt, dir = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    camera.position.addScaledVector(dir, f * sp).addScaledVector(side, st * sp);
+    const t = camera.position.clone().add(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)));
+    camera.lookAt(t);
+  }
+  document.getElementById("model-reset").addEventListener("click", () => { setMode(null); });
   document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
   new ResizeObserver(size).observe(stage); size();
-  (function tick() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick); })();
+  (function tick(now) { if (walk) walkStep(now || performance.now()); else { last = now || performance.now(); controls.update(); } renderer.render(scene, camera); requestAnimationFrame(tick); })();
+})();
+
+/* ---------- لوحات الأوتوكاد ---------- */
+(function () {
+  const names = ["الموقع العام واللاندسكيب", "المسقط الأرضي", "مسقط الدور الأول", "الواجهة الأمامية والشرقية",
+    "الواجهة الخلفية والغربية", "مسقط السقف والقطاع", "جدول الأبواب والشبابيك", "المساحات والتسعير",
+    "لقطات المنظور", "الفرش — الدور الأرضي", "الفرش — الدور الأول", "نماذج الدرابزين"];
+  const g = document.getElementById("sheets");
+  names.forEach((n, k) => {
+    const f = `sheets/sheet-${String(k + 1).padStart(2, "0")}.jpg`, a = document.createElement("a");
+    a.href = f; a.target = "_blank"; a.rel = "noopener";
+    const i = document.createElement("img"); i.src = f; i.alt = n; i.loading = "lazy";
+    const c = document.createElement("span"); c.className = "hint"; c.textContent = `A-${String(k + 1).padStart(2, "0")} · ${n}`;
+    a.append(i, c); g.appendChild(a);
+  });
 })();
 
 /* ---------- اللقطات ---------- */
