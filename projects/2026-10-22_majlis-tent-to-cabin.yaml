@@ -1,0 +1,143 @@
+# عميل: مجلس كان مصمم خيمة/بيت شعر (مخطط + رندرات) — المطلوب نفس المخطط والمساحة بالضبط لكن كوخ خشب إبداعي.
+# المخطط الأصلي: 15.10 × 7.00 = 105.7 م² — مجلس 10.39 × 6.40، مطبخ 4.05 × 2.80 بباب خدمة، دورات مياه
+#   (مغاسل + 2 كبينة)، مدخل رئيسي 1.55 م على الواجهة بدرج عريض، وجلسة خارجية 6.60 × 4.50 بمشب نار.
+# الفكرة الإبداعية (بدل الخيمة):
+#   - جملون زجاج كبير فوق المدخل (يشبه قمة الخيمة) بجسور خشب بارزة وكوابيل — يدخل الضوء على الجلسة.
+#   - واجهة المجلس زجاج من الأرض للسقف (سحابات) وبرجولة شرائح خشب قدامها تظلل مثل قماش الخيمة.
+#   - المجلس U حول مشب معلّق بالنص (مثل الرندرات)، وجدران سدو + لوحات خيل وجمل بالتشطيب.
+#   - تراس خشب أمامي بدرج عريض + جلسة نار خارجية 6.60 × 4.50 جنب المجلس.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: majlis-tent-to-cabin
+title: مجلس كوخ خشب (بدل الخيمة) — 15.10 × 7.00 = 105.7 م²
+client: "عميل — مجلس خيمة إلى كوخ"
+meta:
+  location: "—"
+  usage: مجلس / استراحة
+  date: 2026-10-22
+  price_note: ""
+  price_scope: building
+  terms:
+    - "السعر على مساحة الكوخ 105.7 م² (نفس مساحة المخطط الأصلي)."
+    - "التراس الأمامي وجلسة النار والبرجولة والجملون الزجاج حسب الاتفاق."
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 300
+slab_height: 45
+roof:
+  ridge_axis: x
+  pitch_deg: 35
+  overhang: 60
+  cross_gables:   # جملون زجاج كبير فوق المدخل — قمة "الخيمة" بخشب وزجاج
+    - {side: S, center: 838, width: 520, pitch: 40, overhang: 90, glass: true, beams: 1}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [1498, 0]
+    openings:   # المجلس: سحابات زجاج من الأرض للسقف + المدخل الرئيسي 1.55 تحت الجملون الزجاج
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج المجلس, offset: 30, width: 330, height: 260, style: sliding, leaves: 3}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج المجلس, offset: 390, width: 330, height: 260, style: sliding, leaves: 3}
+      - {kind: door, code: ب2, name: ب2 المدخل الرئيسي (خشب), offset: 760, width: 155, height: 260, leaves: 2}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 930, width: 100, height: 260, sill: 10, style: fixed}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [1498, 0]
+    end: [1498, 688]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 500, width: 120, height: 100, sill: 110, grid: [2, 2]}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [1498, 688]
+    end: [0, 688]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 120, width: 140, height: 100, sill: 110, grid: [2, 2]}
+      - {kind: door, code: ب3, name: ب3 باب خدمة المطبخ, offset: 330, width: 90, height: 220, leaves: 1, grid: [2, 5]}
+      # المجلس: شبابيك علوية (إضاءة بدون كشف) فوق الجلسة
+      - {kind: window, code: ش4, name: ش4 شباك علوي, offset: 560, width: 140, height: 60, sill: 200, grid: [2, 1]}
+      - {kind: window, code: ش4, name: ش4 شباك علوي, offset: 830, width: 140, height: 60, sill: 200, grid: [2, 1]}
+      - {kind: window, code: ش4, name: ش4 شباك علوي, offset: 1100, width: 140, height: 60, sill: 200, grid: [2, 1]}
+      - {kind: window, code: ش4, name: ش4 شباك علوي, offset: 1300, width: 140, height: 60, sill: 200, grid: [2, 1]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 688]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 208, width: 280, height: 150, sill: 80, grid: [4, 3]}
+  - name: جدار الخدمات
+    exterior: false
+    start: [1051, 0]
+    end: [1051, 688]
+    openings:   # دورات المياه من جهة المدخل (بعيد عن الجلسة) والمطبخ من الخلف (تقديم)
+      - {kind: door, code: ب4, name: ب4 دورات المياه, offset: 20, width: 80, height: 220}
+      - {kind: door, code: ب5, name: ب5 المطبخ (تقديم), offset: 590, width: 80, height: 220}
+  - {name: فاصل المطبخ, exterior: false, start: [1051, 408], end: [1498, 408]}
+  - name: فاصل المغاسل
+    exterior: false
+    start: [1251, 0]
+    end: [1251, 408]
+    openings:
+      - {kind: door, code: ب6, name: ب6 كبينة 1, offset: 50, width: 70, height: 210}
+      - {kind: door, code: ب6, name: ب6 كبينة 2, offset: 250, width: 70, height: 210}
+  - {name: فاصل الكبينتين, exterior: false, start: [1251, 204], end: [1498, 204]}
+
+rooms:
+  - {name: المجلس, rect: [6, 6, 1045, 682], label: [520, 560]}
+  - {name: المغاسل, rect: [1057, 6, 1245, 402], wet: true, label: [1150, 300]}
+  - {name: دورة مياه 1, rect: [1257, 6, 1492, 198], wet: true, label: [1380, 150]}
+  - {name: دورة مياه 2, rect: [1257, 210, 1492, 402], wet: true, label: [1380, 350]}
+  - {name: المطبخ, rect: [1057, 414, 1492, 682], label: [1280, 560]}
+
+decks:
+  - name: التراس الأمامي
+    rect: [-6, -246, 1310, -6]
+    height: 45
+    railing: [W]
+    stairs: {side: S, offset: 600, width: 400}      # درج عريض قدام المدخل (بدل الدرج النصف دائري)
+  - name: جلسة النار الخارجية
+    rect: [1310, -456, 1970, -6]
+    height: 45
+    railing: [E, S]
+    stairs: {side: W, offset: 0, width: 200}
+
+pergolas:   # برجولة شرائح خشب تظلل واجهة الزجاج (مثل قماش الخيمة)
+  - {wall: جنوب, offset: 20, width: 700, depth: 240, z: 285}
+
+posts:
+  - {at: [20, -237], size: 18, top: 330}
+  - {at: [370, -237], size: 18, top: 330}
+  - {at: [710, -237], size: 18, top: 330}
+
+furniture:
+  # المجلس U حول المشب المعلّق بالنص (مثل الرندرات) — المدخل على الطرف ما يقطع الجلسة
+  - {name: كنبة, rect: [86, 602, 960, 682]}
+  - {name: كنبة, rect: [6, 80, 86, 682]}
+  - {name: كنبة, rect: [965, 140, 1045, 520]}
+  - {name: مشب معلّق, rect: [450, 290, 610, 410]}
+  - {name: طاولة, rect: [200, 300, 300, 380]}
+  - {name: طاولة, rect: [760, 300, 860, 380]}
+  # جلسة النار الخارجية: مشب دائري بالنص وكنب خارجي حوله
+  - {name: مشب نار, rect: [1590, -281, 1690, -181]}
+  - {name: كنبة, rect: [1360, -400, 1440, -60]}
+  - {name: كنبة, rect: [1840, -400, 1920, -60]}
+  - {name: كنبة, rect: [1480, -440, 1800, -360]}
+  # المغاسل + الكبينتين
+  - {name: "", rect: [1100, 356, 1146, 402], shape: basin}
+  - {name: "", rect: [1170, 356, 1216, 402], shape: basin}
+  - {name: "", rect: [1452, 6, 1492, 56], shape: wc}
+  - {name: "", rect: [1452, 352, 1492, 402], shape: wc}
+  # المطبخ
+  - {name: كاونتر, rect: [1432, 414, 1492, 682]}
+  - {name: كاونتر, rect: [1180, 622, 1432, 682]}
+  - {name: ثلاجة, rect: [1057, 414, 1122, 479]}
+
+notes:
+  - "نفس مخطط ومساحة المجلس الأصلي (15.10 × 7.00 = 105.7 م²) — الخيمة صارت كوخ خشب."
+  - "جملون زجاج بقواطع خشب وجسور بارزة فوق المدخل الرئيسي، وواجهة المجلس سحابات زجاج من الأرض للسقف."
+  - "برجولة شرائح خشب 7.00 × 2.40 م قدام الزجاج تظلل الجلسة، وتراس خشب بدرج عريض 4.00 م."
+  - "جلسة نار خارجية 6.60 × 4.50 م بمشب دائري بالنص."
+  - "دورات المياه بشفاط هواء (بدون شبابيك على جهة الجلسة الخارجية) مثل المخطط الأصلي."
+  - "التشطيب الداخلي: جدران بنقوش السدو، لوحات خيل وجمل، إضاءة مخفية بالسقف، ومشب معلّق أسود بالنص."
