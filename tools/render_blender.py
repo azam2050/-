@@ -305,7 +305,7 @@ for name, cpos, yaw in cfg.get("panos", []):
     scene.view_settings.exposure = cfg.get("pano_exposure", 0.4)
     rx, ry = scene.render.resolution_x, scene.render.resolution_y
     scene.render.resolution_x, scene.render.resolution_y = cfg.get("pano_res", [2400, 1200])
-    scene.render.filepath = f"{cfg['out_dir']}/pano-{name}.jpg"
+    scene.render.filepath = f"{cfg['out_dir']}/pano-{name}{'-night' if cfg.get('night') else ''}.jpg"
     bpy.ops.render.render(write_still=True)
     print("RENDERED pano", name)
     scene.render.resolution_x, scene.render.resolution_y = rx, ry
