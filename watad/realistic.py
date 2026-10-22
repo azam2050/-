@@ -136,7 +136,9 @@ def ext_lights(project, rules, spacing=0.9):
     tp = _m.tan(_m.radians(r.pitch_deg))
     rise = roof_geometry(project, rules)["rise"] / 100
     pts = []
-    if r.type != "shed":
+    if r.type == "tent_hip":
+        pts = tent_lights(project)
+    elif r.type != "shed":
         zs = H - 0.12
         if r.ridge_axis == "x":
             for yy in (y0 - ov * 0.55, y1 + ov * 0.55):
@@ -179,6 +181,37 @@ def ext_lights(project, rules, spacing=0.9):
     return pts
 
 
+CM_KEYS = ("rect", "line", "at", "from", "to", "z", "top", "ceil", "r", "dia", "hgt", "pitch", "sw", "sd", "bw", "bh",
+           "aw", "ah")
+
+
+def decor_items(project):
+    """interior_decor بالمشروع (سم) → بالمتر لـ tools/blender_decor.py."""
+    def cm(v):
+        return [cm(x) for x in v] if isinstance(v, (list, tuple)) else v / 100
+    return [{k: (cm(v) if k in CM_KEYS else v) for k, v in d.items()} for d in project.decor]
+
+
+def tent_lights(project):
+    """سقف الخيمة المنساب: سبوتات تحت الرفرف المنساب (كل ~1.2 م) بمستوى سطحه."""
+    from .tent_roof import units
+    pts = []
+    for g in units(project):
+        x0, y0, x1, y1 = g["rect"]
+        ex0, ey0, ex1, ey1 = g["eave"]
+        H, t2 = g["H"], g["t2"]
+        for (a, b, fixed, d_out, alongx) in ((x0, x1, y0 - g["of"] * 0.45, g["of"] * 0.45, True),
+                                             (x0, x1, y1 + g["ob"] * 0.5, g["ob"] * 0.5, True),
+                                             (y0, y1, x0 - g["os"] * 0.5, g["os"] * 0.5, False),
+                                             (y0, y1, x1 + g["os"] * 0.5, g["os"] * 0.5, False)):
+            n = max(2, int((b - a) / 120))
+            z = (H - t2 * d_out - 14) / 100
+            for k in range(n):
+                v = a + (b - a) * (k + 0.5) / n
+                pts.append([v / 100, fixed / 100, z, 8, "spot"] if alongx else [fixed / 100, v / 100, z, 8, "spot"])
+    return pts
+
+
 def _areas(project, per_m2):
     out = []
     for r in project.rooms:
@@ -203,7 +236,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     # WATAD_REAL_PARTS=exterior,dusk → يعيد الخارج فقط ويحتفظ بصور الداخل السابقة (تعديل سقف/واجهة)
     parts = set(os.environ.get("WATAD_REAL_PARTS", "exterior,dusk,interior").split(","))
     for old in out.glob("*.jpg"):
-        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] == "d" and "dusk" not in parts):
+        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] in "dn" and "dusk" not in parts):
             continue
         old.unlink()
     scene = build_scene(project, rules, style, heights, furniture="floors")
@@ -211,6 +244,10 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     scene.write_glb(glb)
     ext = exterior_shots(project)
     inn = interior_shots(project)
+    rs = project.render or {}
+    if rs.get("interior"):           # لقطات داخلية محددة بالمشروع (سم)
+        inn = [[f"i{k + 1}", s_["name"], [v / 100 for v in s_["cam"]], [v / 100 for v in s_["target"]],
+                s_.get("lens", 17), s_.get("shift", -0.06)] for k, s_ in enumerate(rs["interior"])]
     items = plan_furniture(project)
     for it in items:
         it["ceil"] = (project.floor_list[0]["height"] if project.floors else project.wall_height) / 100
@@ -219,18 +256,25 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "views": [], "furnish": items, "furnish_py": str(ROOT / "tools" / "blender_furnish.py"),
             "landscape": plan_landscape(project, keep_clear=[tuple(s[2][:2]) for s in ext]),
             "wood_frames": style.get("frame_ar", "").startswith("إطار خشب"),
-            "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35}
+            "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35,
+            "decor": decor_items(project), "sadu": bool(rs.get("sadu"))}
+    lk = rs.get("ext_lens_k", 1.0)       # تقريب اللقطات الخارجية
+    ext = [s[:4] + [round(s[4] * lk), round(min(0.3, s[5] * lk), 3)] for s in ext]
     day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
-        ([[s[0], s[2], s[3], s[4], s[5], 0.6] for s in inn] if "interior" in parts else [])
+        ([[s[0], s[2], s[3], s[4], s[5], rs.get("day_exposure", 0.6)] for s in inn] if "interior" in parts else [])
     if day:
-        _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 15)}, out)
+        _run({**base, **DAY, "tag": "day", "shots": day, "area_lights": _areas(project, 5 if project.decor else 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
+    night_in = [["n" + s[0][1:], s[2], s[3], s[4], s[5], rs.get("night_exposure", 0.4)] for s in inn[:rs.get("night_interior", 0)]]
+    dusk += night_in
     if "dusk" in parts:
-        _run({**base, **DUSK, "tag": "dusk", "shots": dusk, "area_lights": _areas(project, 40),
+        _run({**base, **DUSK, "tag": "dusk", "night": True, "shots": dusk,
+              "area_lights": [] if project.decor else _areas(project, 40),
               "ext_lights": ext_lights(project, rules)}, out)
     glb.unlink(missing_ok=True)
     meta = {"exterior": [[f"{s[0]}.jpg", s[1]] for s in ext],
-            "dusk": [[f"d{s[0][1:]}.jpg", s[1] + " — وقت الغروب"] for s in ext[:2]],
+            "dusk": [[f"d{s[0][1:]}.jpg", s[1] + " — وقت الغروب"] for s in ext[:2]] +
+                    [[f"n{s[0][1:]}.jpg", s[1] + " — بالليل والإنارة شغالة"] for s in inn[:len(night_in)]],
             "interior": [[f"{s[0]}.jpg", s[1]] for s in inn]}
     (out / "shots.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     return load_shots(out_dir)

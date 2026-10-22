@@ -7,7 +7,7 @@
 import math
 
 
-KINDS = [("جلسة عربية", "majlis_seat"), ("كنبة", "sofa"), ("كرسي", "armchair"), ("طاولة 6", "dining_table"), ("طاولة", "coffee_table"),
+KINDS = [("مشب", "fireplace"), ("جلسة عربية", "majlis_seat"), ("كنبة", "sofa"), ("كرسي", "armchair"), ("طاولة 6", "dining_table"), ("طاولة", "coffee_table"),
          ("تلفزيون", "tv"), ("كاونتر", "kitchen"), ("ثلاجة", "fridge"), ("سرير", "bed"), ("دولاب", "wardrobe")]
 
 

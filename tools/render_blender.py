@@ -226,6 +226,8 @@ for i, (x, y, z, w, kind) in enumerate(cfg.get("ext_lights", [])):
 if cfg.get("furnish") or cfg.get("landscape"):
     import os as _os
     exec(open(cfg["furnish_py"], encoding="utf-8").read())
+    if cfg.get("decor"):          # ديكورات خشب داخلية وإنارتها (المشروع: interior_decor)
+        exec(open(cfg["furnish_py"].replace("blender_furnish", "blender_decor"), encoding="utf-8").read())
 
 # الريندر
 scene.render.engine = "CYCLES"

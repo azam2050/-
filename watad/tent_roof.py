@@ -160,6 +160,45 @@ def surface_z(project, x, y):
     return best
 
 
+def _clip(poly, axis, val, keep_less):
+    """قص مضلع ثلاثي الأبعاد (مستوي) بمستوى x أو y = val (Sutherland–Hodgman)."""
+    out = []
+    n = len(poly)
+    inside = (lambda p: p[axis] <= val + 1e-6) if keep_less else (lambda p: p[axis] >= val - 1e-6)
+    for i in range(n):
+        p, q = poly[i], poly[(i + 1) % n]
+        if inside(p):
+            out.append(p)
+        if inside(p) != inside(q) and abs(q[axis] - p[axis]) > 1e-9:
+            t = (val - p[axis]) / (q[axis] - p[axis])
+            out.append(tuple(p[k] + t * (q[k] - p[k]) for k in range(3)))
+    return out if len(out) >= 3 else None
+
+
+def _holed(g):
+    """أسطح السقف العلوية مع فتحة المشراق (عشان الضوء ينزل للمجلس)."""
+    mr = g.get("monitor_rect")
+    if not mr:
+        return g["upper"]
+    a0, b0, a1, b1 = mr
+    alongx = g["ridge"][0][1] == g["ridge"][1][1]
+    ax_, ay_ = (0, 1) if alongx else (1, 0)
+    lo, hi = (a0, a1) if alongx else (b0, b1)
+    clo, chi = (b0, b1) if alongx else (a0, a1)
+    out = []
+    for f in g["upper"]:
+        for part in (_clip(f, ax_, lo, True), _clip(f, ax_, hi, False)):
+            if part:
+                out.append(part)
+        mid = _clip(f, ax_, lo, False)
+        mid = mid and _clip(mid, ax_, hi, True)
+        if mid:
+            for part in (_clip(mid, ay_, clo, True), _clip(mid, ay_, chi, False)):
+                if part:
+                    out.append(part)
+    return out
+
+
 def add_3d(S, project, rd):
     """أسطح السقف (تطبيق + قرميد) + ألواح الرفرف + جسر الكسرة + المشراق الزجاج وغطاه."""
     def prism(mat, pts, z0, z1):
@@ -169,7 +208,7 @@ def add_3d(S, project, rd):
         S.poly(mat, verts, faces)
     from .model3d import _beam
     for g in units(project):
-        for f in g["upper"] + g["flare"]:
+        for f in _holed(g) + g["flare"]:
             prism("sheathing", f, 0, rd + 2.5)
             prism("roof_tiles", f, rd + 2.5, rd + 6.5)
         for f in g["flare"]:                        # لوح الرفرف على الحافة الخارجية

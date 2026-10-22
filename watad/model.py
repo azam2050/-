@@ -162,6 +162,8 @@ class Project:
     decks: list = field(default_factory=list)
     bays: list = field(default_factory=list)      # شبابيك بارزة مضلعة (bay window) — watad/features.py
     porches: list = field(default_factory=list)   # مظلة مدخل بجملون صغير على عمودين
+    decor: list = field(default_factory=list)     # ديكورات خشب داخلية وإنارتها للرندر الواقعي (tools/blender_decor.py)
+    render: dict = field(default_factory=dict)    # إعدادات الرندر الواقعي: sadu، لقطات داخلية محددة
     pergolas: list = field(default_factory=list)  # برجولات خشب فوق الأبواب/الشبابيك
     mezzanines: list = field(default_factory=list)  # نص دور (ميزانين) داخل المبنى — watad/features.py
     straight_stairs: list = field(default_factory=list)  # درج مستقيم (للميزانين)
@@ -234,6 +236,8 @@ def load_project(path, rules):
         straight_stairs=d.get("straight_stairs", []),
         spiral_stairs=d.get("spiral_stairs", []),
         voids=d.get("voids", []),
+        decor=d.get("interior_decor", []),
+        render=d.get("render", {}),
         bumps=d.get("bumps", []),
         site=d.get("site"),
         meta=d.get("meta", {}),
