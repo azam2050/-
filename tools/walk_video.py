@@ -17,7 +17,10 @@ P = load_project(sys.argv[1], rules)
 P.wall_height = suggest_height(P.wall_height, rules)["suggested"]
 out = Path(sys.argv[2])
 out.mkdir(parents=True, exist_ok=True)
-v = P.render["video"]
+v = dict(P.render["video"])
+if __import__("os").environ.get("WATAD_GPU"):   # على كرت الشاشة: جودة أعلى بنفس الوقت تقريباً
+    v["samples"] = max(v.get("samples", 12), 64)
+    v["res"] = [1280, 720]
 cm = lambda L: [[c / 100 for c in p] for p in L]
 # نعيد استخدام بناء الإعداد من render_real بدون رندر: نستدعي _run بنسخة معدلة
 from watad.model3d import build_scene
