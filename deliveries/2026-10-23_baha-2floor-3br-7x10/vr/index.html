@@ -1,0 +1,446 @@
+<title>فيلا الباحة الافتراضية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: عمود واحد — جولة 360° كبيرة، ثم المجسم التفاعلي، ثم لقطات الرندر. ألوان خشب صنوبر وغابات الهدا. */
+:root {
+  --bg: #F1F2EE; --panel: #FFFFFF; --ink: #1C2420; --muted: #5E6B63; --line: #D9DDD5;
+  --pine: #2F5D4A; --cedar: #A3653A; --chip: #E4E8E1;
+  --display: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111613; --panel: #18201B; --ink: #E6EAE4; --muted: #9AA79F; --line: #2A342E;
+  --pine: #74B697; --cedar: #D99A67; --chip: #212B25; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.7; direction: rtl;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 36px }
+header { display: grid; gap: 6px }
+.eyebrow { color: var(--cedar); font-weight: 600; letter-spacing: .02em; font-size: .95rem }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4.5vw, 2.8rem); line-height: 1.25; margin: 0; text-wrap: balance }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.45rem; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); max-width: 65ch; margin: 0 }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px }
+.facts span { background: var(--chip); border-radius: 999px; padding: 3px 12px; font-size: .9rem; font-variant-numeric: tabular-nums }
+section { display: grid; gap: 14px; min-width: 0 }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px }
+.hint { color: var(--muted); font-size: .9rem }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 78vh; background: #0c0f0d; border-radius: 10px; overflow: hidden; touch-action: none }
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab }
+.stage canvas:active { cursor: grabbing }
+.stage .badge { position: absolute; top: 12px; right: 12px; background: rgba(12,15,13,.72); color: #F0F2EE; padding: 4px 12px; border-radius: 6px; font-size: .92rem; pointer-events: none }
+.stage .tools { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 8px }
+.stage .tools button { background: rgba(12,15,13,.72); color: #F0F2EE; border: 1px solid rgba(255,255,255,.18); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: .88rem; cursor: pointer }
+.stage .loading { position: absolute; inset: 0; display: grid; place-items: center; color: #cfd6d1; font-size: .95rem; pointer-events: none }
+.spots { display: flex; flex-wrap: wrap; gap: 8px }
+.spots button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.spots button[aria-pressed="true"] { background: var(--pine); border-color: var(--pine); color: var(--bg) }
+.spots button:focus-visible, .stage button:focus-visible { outline: 2px solid var(--cedar); outline-offset: 2px }
+.dn { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; justify-self: start; margin-top: 4px }
+.dn button { font: inherit; font-weight: 600; border: 0; background: var(--panel); color: var(--ink); padding: 7px 22px; cursor: pointer }
+.dn button[aria-pressed="true"] { background: var(--ink); color: var(--bg) }
+.dn button:focus-visible { outline: 2px solid var(--cedar); outline-offset: -2px }
+video { width: 100%; border-radius: 10px; background: #000; max-height: 78vh }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0 }
+figure img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: var(--chip) }
+figcaption { font-size: .92rem; color: var(--muted) }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 14px }
+.spec div { border-top: 2px solid var(--pine); padding-top: 8px; min-width: 0 }
+.spec b { font-family: var(--display); font-weight: 500; font-size: 1.05rem; display: block }
+.spec p { margin: 4px 0 0; color: var(--muted); font-size: .93rem }
+footer { color: var(--muted); font-size: .85rem }
+.walkbar { display: flex; flex-wrap: wrap; gap: 8px }
+.walkbar button { font: inherit; font-size: .95rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 14px; cursor: pointer }
+.walkbar button[aria-pressed="true"] { background: var(--cedar); border-color: var(--cedar); color: var(--bg) }
+.joy { position: absolute; bottom: 16px; right: 16px; width: 120px; height: 120px; border-radius: 50%; background: rgba(12,15,13,.45); border: 1px solid rgba(255,255,255,.25); touch-action: none }
+.joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(240,242,238,.85) }
+.sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px }
+.sheets a { display: grid; gap: 6px; color: inherit; text-decoration: none; min-width: 0 }
+.sheets img { width: 100%; aspect-ratio: 1.414 / 1; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 6px }
+.pdf { display: inline-block; justify-self: start; background: var(--pine); color: var(--bg); text-decoration: none; padding: 8px 18px; border-radius: 8px; font-weight: 600 }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">مصنع وتد الأخشاب · الباحة</div>
+    <h1>فيلا خشب دورين — جولة افتراضية</h1>
+    <p class="lead">امشِ داخل الفيلا بحرية — الدور الأرضي والأول — بالنهار والليل، مع فيديو الجولة ولقطات الرندر وملف الأوتوكاد كامل.</p>
+    <div class="dn" role="group" aria-label="وقت المشاهدة">
+      <button type="button" id="dn-day" aria-pressed="true">بالنهار</button>
+      <button type="button" id="dn-night" aria-pressed="false">بالليل</button>
+    </div>
+    <div class="facts">
+      <span>7.00 × 10.00 م × دورين = 140 م²</span>
+      <span>صالة ومطبخ وغرفة عاملة</span>
+      <span>3 غرف — ماستر بغرفة ملابس وحمام</span>
+      <span>عزل كامل + جملون 30°</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-model">
+    <div class="sec-head">
+      <h2 id="t-model">الجولة داخل المشروع</h2>
+      <span class="hint" id="model-hint">اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك</span>
+    </div>
+    <div class="walkbar" id="walkbar">
+      <button type="button" data-mode="tour" aria-pressed="true">جولة تلقائية كاملة</button>
+      <button type="button" data-mode="orbit" aria-pressed="false">لف حول المشروع</button>
+      <button type="button" data-spot="front" aria-pressed="false">امشِ: من برا</button>
+      <button type="button" data-spot="living" aria-pressed="false">امشِ: الدور الأرضي</button>
+      <button type="button" data-spot="upper" aria-pressed="false">امشِ: الدور الأول</button>
+    </div>
+    <div class="stage" id="model-stage">
+      <canvas id="model"></canvas>
+      <div class="loading" id="model-loading">جاري تحميل المجسم…</div>
+      <div class="joy" id="joy" hidden><i id="joy-knob"></i></div>
+      <div class="tools"><button type="button" id="model-fs">ملء الشاشة</button><button type="button" id="model-reset">إعادة الزاوية</button></div>
+    </div>
+  </section>
+
+
+  <section aria-labelledby="t-video" id="video-sec" hidden>
+    <div class="sec-head"><h2 id="t-video">فيديو الجولة</h2></div>
+    <video id="walk" controls playsinline preload="metadata"></video>
+  </section>
+
+  <section aria-labelledby="t-shots">
+    <div class="sec-head"><h2 id="t-shots">لقطات التصميم الواقعي</h2></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section aria-labelledby="t-tour">
+    <div class="sec-head">
+      <h2 id="t-tour">صور 360° من الرندر</h2>
+      <span class="hint">بدّل بين النهار والليل من الزر فوق</span>
+    </div>
+    <div class="spots" id="spots"></div>
+    <div class="stage" id="pano-stage">
+      <canvas id="pano"></canvas>
+      <div class="badge" id="pano-name"></div>
+      <div class="loading" id="pano-loading">جاري التحميل…</div>
+      <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-files">
+    <div class="sec-head"><h2 id="t-files">ملف التصميم كامل (الأوتوكاد)</h2><span class="hint">اضغط على أي لوحة لتكبيرها</span></div>
+    <a class="pdf" href="baha-autocad.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
+    <div class="sheets" id="sheets"></div>
+  </section>
+
+
+  <footer>مصنع وتد الأخشاب</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const PANOS = /*PANOS*/[]/*END*/;
+const HAS_VIDEO = /*VIDEO*/false/*END*/;
+let NIGHT = location.hash === "#night";
+const modeHooks = [];
+function setNight(n) {
+  NIGHT = n;
+  document.getElementById("dn-day").setAttribute("aria-pressed", String(!n));
+  document.getElementById("dn-night").setAttribute("aria-pressed", String(n));
+  try { history.replaceState(null, "", n ? "#night" : "#day"); } catch (e) {}
+  modeHooks.forEach(f => f(n));
+}
+document.getElementById("dn-day").addEventListener("click", () => setNight(false));
+document.getElementById("dn-night").addEventListener("click", () => setNight(true));
+if (HAS_VIDEO) { document.getElementById("video-sec").hidden = false; document.getElementById("walk").src = "walk.mp4"; }
+const SHOTS = /*SHOTS*/[]/*END*/;
+
+/* ---------- جولة 360° ---------- */
+(function () {
+  const canvas = document.getElementById("pano"), stage = document.getElementById("pano-stage");
+  const nameEl = document.getElementById("pano-name"), loadEl = document.getElementById("pano-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 16 / 9, 1, 1100);
+  const geo = new THREE.SphereGeometry(500, 64, 40); geo.scale(-1, 1, 1);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+  scene.add(new THREE.Mesh(geo, mat));
+  const loader = new THREE.TextureLoader();
+  let lon = 90, lat = 0, spin = !matchMedia("(prefers-reduced-motion: reduce)").matches, dragging = null;
+  const pointers = new Map(); let pinch0 = 0, fov0 = 75;
+
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  let cur = null;
+  function load(p) {
+    cur = p;
+    const file = (NIGHT ? p.night : p.day) || p.day || p.night;
+    const note = NIGHT && !p.night ? " (النسخة الليلية تحت التجهيز)" : (!NIGHT && !p.day ? " (بالليل)" : (NIGHT ? " — بالليل" : ""));
+    loadEl.hidden = false; nameEl.textContent = p.name + note;
+    document.querySelectorAll("#spots button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === p.id)));
+    loader.load(file, tex => {
+      if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+      mat.map && mat.map.dispose(); mat.map = tex; mat.color.set(0xffffff); mat.needsUpdate = true; loadEl.hidden = true;
+    }, undefined, () => { loadEl.textContent = "تعذر تحميل الصورة"; });
+  }
+  const spots = document.getElementById("spots");
+  PANOS.forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = p.name; b.dataset.id = p.id;
+    b.addEventListener("click", () => load(p)); spots.appendChild(b);
+  });
+  canvas.addEventListener("pointerdown", e => {
+    canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, e);
+    if (pointers.size === 1) dragging = { x: e.clientX, y: e.clientY, lon, lat };
+    if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); fov0 = camera.fov; }
+  });
+  canvas.addEventListener("pointermove", e => {
+    if (!pointers.has(e.pointerId)) return; pointers.set(e.pointerId, e);
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      camera.fov = Math.max(35, Math.min(95, fov0 * pinch0 / d)); camera.updateProjectionMatrix(); return;
+    }
+    if (dragging) {
+      const k = camera.fov / stage.clientHeight;
+      lon = dragging.lon + (dragging.x - e.clientX) * k; lat = Math.max(-85, Math.min(85, dragging.lat + (e.clientY - dragging.y) * k));
+    }
+  });
+  const up = e => { pointers.delete(e.pointerId); if (!pointers.size) dragging = null; };
+  canvas.addEventListener("pointerup", up); canvas.addEventListener("pointercancel", up);
+  canvas.addEventListener("wheel", e => { e.preventDefault(); camera.fov = Math.max(35, Math.min(95, camera.fov + e.deltaY * 0.04)); camera.updateProjectionMatrix(); }, { passive: false });
+  const spinBtn = document.getElementById("pano-spin");
+  spinBtn.setAttribute("aria-pressed", String(spin));
+  spinBtn.addEventListener("click", () => { spin = !spin; spinBtn.setAttribute("aria-pressed", String(spin)); });
+  document.getElementById("pano-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  function tick() {
+    if (spin && !dragging) lon += 0.03;
+    const phi = THREE.MathUtils.degToRad(90 - lat), th = THREE.MathUtils.degToRad(lon);
+    camera.lookAt(500 * Math.sin(phi) * Math.cos(th), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(th));
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  }
+  modeHooks.push(() => { if (cur) load(cur); });
+  if (!PANOS.length) { loadEl.textContent = "صور الجولة 360° تحت التجهيز — تنزل هنا قريب"; nameEl.hidden = true; return; }
+  new ResizeObserver(size).observe(stage); size(); load(PANOS[0]); tick();
+})();
+
+/* ---------- المجسم ---------- */
+(function () {
+  const canvas = document.getElementById("model"), stage = document.getElementById("model-stage"), loadEl = document.getElementById("model-loading");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfd3e6);
+  const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.05, 500);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  scene.add(new THREE.HemisphereLight(0xf2f6ff, 0x7a6a50, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 1.25); sun.position.set(-14, 22, 18); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 80 });
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; scene.add(sun); scene.add(sun.target);
+  /* خامات واقعية: صور خشب/قرميد/بلاط/عشب تنلبس حسب اسم الخامة بإسقاط صندوقي (نفس الرندر) */
+  const texL = new THREE.TextureLoader(), texC = {};
+  const tex = (f, rep) => { const k = f + rep; if (texC[k]) return texC[k];
+    const t = texL.load("tex/" + f); t.wrapS = t.wrapT = THREE.RepeatWrapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+    t.anisotropy = 8; return (texC[k] = t); };
+  const SKIN = { wood: ["wood.jpg", 1.1], wood_in: ["wood.jpg", 0.9], ceiling: ["wood.jpg", 0.9], sheathing: ["wood.jpg", 0.9],
+    floor: ["wood.jpg", 1.3], joist: ["wood_dark.jpg", 1.0], rafters: ["wood_dark.jpg", 1.0], trim: ["wood_dark.jpg", 1.0],
+    stair: ["wood_dark.jpg", 1.0], door: ["wood_dark.jpg", 1.0], roof_tiles: ["roof.jpg", 1.2], paver: ["paver.jpg", 1.4],
+    site_wall: ["wall.jpg", 2.2], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
+  const PASS = new Set(["glass", "door", "frame", "water"]);    // تقدر تعبر منها بالمشي (الأبواب والزجاج)
+  const solids = [];
+  function boxUV(mesh, tile) {
+    let g = mesh.geometry; if (g.index) g = g.toNonIndexed(); g.computeVertexNormals();
+    const pos = g.attributes.position, nor = g.attributes.normal, uv = new Float32Array(pos.count * 2), v = new THREE.Vector3(), n = new THREE.Vector3();
+    mesh.updateWorldMatrix(true, false); const nm = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld); n.fromBufferAttribute(nor, i).applyMatrix3(nm);
+      const ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z);
+      const [a, b] = ay >= ax && ay >= az ? [v.x, v.z] : ax >= az ? [v.z, v.y] : [v.x, v.y];
+      uv[2 * i] = a / tile; uv[2 * i + 1] = b / tile;
+    }
+    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); mesh.geometry = g;
+  }
+  function dress(root) {
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = o.receiveShadow = true;
+      const nm = (o.material && o.material.name || "").split(".")[0];
+      const sk = SKIN[nm];
+      if (sk) {
+        boxUV(o, sk[1]);
+        if (!o.material.userData.dressed) { o.material.map = tex(sk[0], 1); o.material.color.set(0xffffff);
+          o.material.roughness = nm === "roof_tiles" ? 0.75 : 0.65; o.material.metalness = 0; o.material.userData.dressed = true; o.material.needsUpdate = true; }
+      }
+      if (nm === "glass") { o.material.transparent = true; o.material.opacity = 0.28; o.material.roughness = 0.05; o.material.metalness = 0.2; o.castShadow = false; }
+      if (nm === "water") { o.material.color.set(0x2a8fb8); o.material.roughness = 0.05; o.material.transparent = true; o.material.opacity = 0.85; }
+      if (!PASS.has(nm)) solids.push(o);
+    });
+  }
+  const hemi = scene.children.find(o => o.isHemisphereLight);
+  /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
+  const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
+  const LAMPS = [[220, 240, 230, 16762250, 2.2, 8], [570, 230, 230, 16762250, 1.4, 6], [340, 512, 230, 16762250, 1.0, 5], [170, 700, 230, 16762250, 1.0, 5], [170, 230, 535, 16762250, 1.6, 6], [510, 140, 535, 16762250, 1.6, 6], [170, 776, 535, 16762250, 1.6, 6], [340, 512, 535, 16762250, 1.0, 5], [344, -60, 250, 16766624, 1.2, 5], [600, -60, 250, 16766624, 0.8, 4]];
+  LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); L.userData.i = i; lamps.add(L); });
+  lamps.visible = true;   // بالنهار إنارة داخلية خفيفة (مثل الرندر)، وبالليل كاملة
+  /* سماء ليل متدرجة (كحلي فوق ← أزرق دافئ عند الأفق) بدل لون مسطح، وضوء قمر بارد بظلال ناعمة */
+  const nsky = (() => { const c = document.createElement("canvas"); c.width = 16; c.height = 256; const g = c.getContext("2d");
+    const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, "#03060f"); gr.addColorStop(0.42, "#0b1630"); gr.addColorStop(0.5, "#2a3a5c");
+    gr.addColorStop(0.53, "#3a3640"); gr.addColorStop(1, "#07080a"); g.fillStyle = gr; g.fillRect(0, 0, 16, 256);
+    const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; return t; })();
+  const nEnv = pm => pm.fromEquirectangular(nsky).texture;
+  let nightEnv = null;
+  function night(n) {
+    scene.background = n ? nsky : (skyTex || new THREE.Color(0xbfd3e6));
+    if (n && !nightEnv) nightEnv = nEnv(pm);
+    scene.environment = n ? nightEnv : skyEnv;
+    hemi.color.set(n ? 0x7d93c4 : 0xf2f6ff); hemi.groundColor.set(n ? 0x2b2722 : 0x7a6a50); hemi.intensity = n ? 0.18 : 0.55;
+    sun.color.set(n ? 0xa9bcff : 0xfff0dc); sun.intensity = n ? 0.12 : 1.25;
+    lamps.children.forEach(L => { L.intensity = L.userData.i * (n ? 0.85 : 0.5); });
+    ground.material.color.set(n ? 0x7c8a66 : 0xffffff); renderer.toneMappingExposure = n ? 1.02 : 1.0;
+  }
+  modeHooks.push(night);
+  const HOLES = [];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
+  const gs = new THREE.Shape(); gs.absarc(0, 0, 60, 0, Math.PI * 2, false);
+  HOLES.forEach(([x0, y0, x1, y1]) => { const h = new THREE.Path(); h.moveTo(x0 / 100, y0 / 100); h.lineTo(x1 / 100, y0 / 100);
+    h.lineTo(x1 / 100, y1 / 100); h.lineTo(x0 / 100, y1 / 100); h.lineTo(x0 / 100, y0 / 100); gs.holes.push(h); });
+  const gtex = tex("grass.jpg", 1); gtex.repeat.set(0.5, 0.5);
+  const ground = new THREE.Mesh(new THREE.ShapeGeometry(gs, 48), new THREE.MeshStandardMaterial({ map: gtex, color: 0xffffff, roughness: 1, side: THREE.DoubleSide }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.46; ground.receiveShadow = true; scene.add(ground); solids.push(ground);
+  /* السماء الحقيقية خلفية + إضاءة محيطة (نفس سماء الرندر) */
+  const pm = new THREE.PMREMGenerator(renderer); let skyEnv = null, skyTex = null;
+  texL.load("tex/sky.jpg", t => { t.mapping = THREE.EquirectangularReflectionMapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+    skyTex = t; skyEnv = pm.fromEquirectangular(t).texture; if (!NIGHT) { scene.background = skyTex; scene.environment = skyEnv; } });
+  const controls = new THREE.OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
+  let home = null;
+  function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  const GLB_SRC = ["web.glb", "https://raw.githubusercontent.com/azam2050/-/HEAD/site/baha/web.glb"];
+  (function loadGLB(k) { new THREE.GLTFLoader().load(GLB_SRC[k], g => {
+    dress(g.scene); scene.add(g.scene);
+    const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
+    controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
+    home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) startTour();
+  }, x => { if (x.total) loadEl.textContent = `جاري تحميل المجسم… ${Math.round(x.loaded / x.total * 100)}%`; },
+  () => { if (k + 1 < GLB_SRC.length) loadGLB(k + 1); else loadEl.textContent = "تعذر تحميل المجسم"; }); })(0);
+  /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
+  const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
+  const SPOTS = {
+    front: { p: P(344, -950, 115), yaw: 0 },
+    living: { p: P(380, 60, 160), yaw: -0.8 },
+    upper: { p: P(300, 512, 465), yaw: -Math.PI / 2 },
+  };
+  let walk = false, yaw = 0, pitch = -0.05, look = null;
+  const ray = new THREE.Raycaster(), DOWN = new THREE.Vector3(0, -1, 0), EYE = 1.6;
+  const move = { f: 0, s: 0 }, keys = {};
+  const joy = document.getElementById("joy"), knob = document.getElementById("joy-knob"), hint = document.getElementById("model-hint");
+  function setMode(spot) {
+    walk = !!spot; controls.enabled = !walk; joy.hidden = !walk;
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(spot ? b.dataset.spot === spot : b.dataset.mode === "orbit")));
+    hint.textContent = walk ? "اسحب على الصورة للالتفات · العصا أو W/A/S/D للمشي" : "اسحب للف حول المشروع · إصبعين أو عجلة للتقريب · سحب بالزر الأيمن للتحريك";
+    if (walk) { camera.position.copy(SPOTS[spot].p); yaw = SPOTS[spot].yaw; pitch = -0.05; camera.fov = 70; }
+    else if (home) { camera.fov = 40; camera.position.copy(home.p); controls.target.copy(home.t); }
+    camera.updateProjectionMatrix();
+  }
+  /* الجولة التلقائية: من برا للمدخل وتدخل الصالة (نفس مسار الفيديو) */
+  const TOUR = [{"path": [[344, -1600, 600], [344, -900, 300], [344, -400, 170], [344, -140, 160], [344, 100, 160], [300, 300, 155], [160, 340, 150]], "look": [[344, 400, 300], [344, 400, 250], [344, 300, 180], [344, 300, 160], [200, 350, 140], [60, 300, 120], [120, 60, 130]], "frames": 300}];   // أجزاء الجولة (نفس مسار الفيديو) — بينها انتقال مباشر
+  const curves = TOUR.map(sg => ({ p: new THREE.CatmullRomCurve3(sg.path.map(q => P(...q)), false, "centripetal"),
+    l: new THREE.CatmullRomCurve3(sg.look.map(q => P(...q)), false, "centripetal"), w: sg.frames }));
+  const wsum = curves.reduce((a, c) => a + c.w, 0);
+  let tour = false, tourT = 0;
+  const TOUR_SEC = 45;
+  function startTour() { tour = true; tourT = 0; walk = false; controls.enabled = false; joy.hidden = true; camera.fov = 62; camera.updateProjectionMatrix();
+    document.querySelectorAll("#walkbar button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === "tour")));
+    hint.textContent = "الجولة شغالة — اضغط أي زر تحت عشان تمشي بنفسك"; }
+  function tourStep(dt) { tourT = (tourT + dt / TOUR_SEC) % 1; let u = tourT * wsum, c = curves[0];
+    for (const cv of curves) { c = cv; if (u <= cv.w) break; u -= cv.w; }
+    const t = Math.min(1, u / c.w); camera.position.copy(c.p.getPointAt(t)); camera.lookAt(c.l.getPointAt(t)); }
+  document.querySelectorAll("#walkbar button").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.mode === "tour") return startTour();
+    tour = false; setMode(b.dataset.spot || null);
+  }));
+  canvas.addEventListener("pointerdown", e => { if (walk) { look = { x: e.clientX, y: e.clientY, yaw, pitch }; canvas.setPointerCapture(e.pointerId); } });
+  canvas.addEventListener("pointermove", e => { if (walk && look) { yaw = look.yaw + (e.clientX - look.x) * 0.005; pitch = Math.max(-1.2, Math.min(1.2, look.pitch + (e.clientY - look.y) * 0.004)); } });
+  canvas.addEventListener("pointerup", () => { look = null; });
+  canvas.addEventListener("pointercancel", () => { look = null; });
+  let jid = null;
+  function joyAt(e) {
+    const r = joy.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const m = Math.min(1, Math.hypot(dx, dy) / (r.width / 2)), a = Math.atan2(dy, dx);
+    knob.style.transform = `translate(${Math.cos(a) * m * 36}px, ${Math.sin(a) * m * 36}px)`;
+    move.f = -Math.sin(a) * m; move.s = Math.cos(a) * m;
+  }
+  joy.addEventListener("pointerdown", e => { jid = e.pointerId; joy.setPointerCapture(jid); joyAt(e); e.stopPropagation(); });
+  joy.addEventListener("pointermove", e => { if (e.pointerId === jid) joyAt(e); });
+  const joyEnd = () => { jid = null; move.f = move.s = 0; knob.style.transform = ""; };
+  joy.addEventListener("pointerup", joyEnd); joy.addEventListener("pointercancel", joyEnd);
+  addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
+  addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+  let last = performance.now();
+  function walkStep(now) {
+    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now;
+    if (!walk) return;
+    let f = move.f + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0);
+    let st = move.s + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0);
+    const sp = 1.4 * dt, dir = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    const mv = new THREE.Vector3().addScaledVector(dir, f * sp).addScaledVector(side, st * sp);
+    // تصادم: ما يدخل بالجدران (يتزحلق على الجدار)، ويعبر الأبواب والزجاج
+    for (const axis of ["x", "z"]) {
+      const d = new THREE.Vector3(); d[axis] = mv[axis]; const L = Math.abs(d[axis]); if (L < 1e-5) continue;
+      d.normalize(); let blocked = false;
+      for (const h of [0.35, 1.0]) {
+        ray.set(new THREE.Vector3(camera.position.x, camera.position.y - EYE + h, camera.position.z), d); ray.far = L + 0.3;
+        if (ray.intersectObjects(solids, false).length) { blocked = true; break; }
+      }
+      if (!blocked) camera.position[axis] += mv[axis];
+    }
+    // الأرضية: يمشي على الأرض والدرج والتراس، وينزل للجلسة المدفونة
+    ray.set(new THREE.Vector3(camera.position.x, camera.position.y - EYE + 0.45, camera.position.z), DOWN); ray.far = 4;
+    const hit = ray.intersectObjects(solids, false)[0];
+    if (hit) camera.position.y += (hit.point.y + EYE - camera.position.y) * Math.min(1, dt * 10);
+    const t = camera.position.clone().add(new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)));
+    camera.lookAt(t);
+  }
+  document.getElementById("model-reset").addEventListener("click", () => { tour = false; setMode(null); });
+  document.getElementById("model-fs").addEventListener("click", () => { (stage.requestFullscreen ? stage.requestFullscreen() : Promise.reject()).catch(() => {}); });
+  new ResizeObserver(size).observe(stage); size();
+  (function tick(now) {
+    now = now || performance.now();
+    if (tour) { tourStep(Math.max(0, Math.min(0.05, (now - last) / 1000))); last = now; }
+    else if (walk) walkStep(now); else { last = now; controls.update(); }
+    sun.target.position.set(camera.position.x, 0, camera.position.z); sun.position.set(camera.position.x - 14, 22, camera.position.z + 18);
+    renderer.render(scene, camera); requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------- لوحات الأوتوكاد ---------- */
+(function () {
+  const names = ["المسقط الأفقي — الدور الأرضي", "المسقط الأفقي — الدور الأول", "الواجهة الأمامية والشرقية", "الواجهة الخلفية والغربية", "مسقط السقف والقطاع", "جدول الأبواب والشبابيك", "المساحات والتسعير", "لقطات المنظور", "الفرش — الدور الأرضي", "الفرش — الدور الأول", "المنظور والمواد"];
+  const g = document.getElementById("sheets");
+  names.forEach((n, k) => {
+    const f = `sheets/sheet-${String(k + 1).padStart(2, "0")}.jpg`, a = document.createElement("a");
+    a.href = f; a.target = "_blank"; a.rel = "noopener";
+    const i = document.createElement("img"); i.src = f; i.alt = n; i.loading = "lazy";
+    const c = document.createElement("span"); c.className = "hint"; c.textContent = `A-${String(k + 1).padStart(2, "0")} · ${n}`;
+    a.append(i, c); g.appendChild(a);
+  });
+})();
+
+/* ---------- اللقطات ---------- */
+(function () {
+  const g = document.getElementById("gallery");
+  SHOTS.forEach(s => {
+    const f = document.createElement("figure"), i = document.createElement("img"), c = document.createElement("figcaption");
+    i.src = s.file; i.alt = s.name; i.loading = "lazy"; c.textContent = s.name; f.append(i, c); g.appendChild(f);
+  });
+})();
+setNight(NIGHT);
+</script>
