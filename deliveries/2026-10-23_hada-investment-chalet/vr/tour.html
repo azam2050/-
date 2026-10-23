@@ -9,13 +9,13 @@
 <title>شاليهات الهدا الافتراضية</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: عمود واحد — جولة 360° كبيرة، ثم المجسم التفاعلي، ثم لقطات الرندر. ألوان خشب صنوبر وغابات الهدا. */
 :root {
   --bg: #F1F2EE; --panel: #FFFFFF; --ink: #1C2420; --muted: #5E6B63; --line: #D9DDD5;
   --pine: #2F5D4A; --cedar: #A3653A; --chip: #E4E8E1;
-  --display: "Reem Kufi", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --display: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
   --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -33,7 +33,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); line-
 header { display: grid; gap: 6px }
 .eyebrow { color: var(--cedar); font-weight: 600; letter-spacing: .02em; font-size: .95rem }
 h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4.5vw, 2.8rem); line-height: 1.25; margin: 0; text-wrap: balance }
-h2 { font-family: var(--display); font-weight: 500; font-size: 1.45rem; margin: 0; text-wrap: balance }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.45rem; margin: 0; text-wrap: balance }
 .lead { color: var(--muted); max-width: 65ch; margin: 0 }
 .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px }
 .facts span { background: var(--chip); border-radius: 999px; padding: 3px 12px; font-size: .9rem; font-variant-numeric: tabular-nums }
@@ -81,7 +81,7 @@ footer { color: var(--muted); font-size: .85rem }
   <header>
     <div class="eyebrow">مصنع وتد الأخشاب · الهدا — الطائف</div>
     <h1>شاليهين الهدا الاستثماري — جولة افتراضية</h1>
-    <p class="lead">كل التصميم في صفحة وحدة: جولة 360°، والمشي داخل المجسم في الحوش والدورين، وفيديو الجولة، ولقطات الرندر، وملف الأوتوكاد كامل.</p>
+    <p class="lead">امشِ داخل المشروع بحرية — الحوش والدورين — بالنهار والليل، مع فيديو الجولة ولقطات الرندر وملف الأوتوكاد كامل.</p>
     <div class="dn" role="group" aria-label="وقت المشاهدة">
       <button type="button" id="dn-day" aria-pressed="true">بالنهار</button>
       <button type="button" id="dn-night" aria-pressed="false">بالليل</button>
@@ -115,19 +115,6 @@ footer { color: var(--muted); font-size: .85rem }
     </div>
   </section>
 
-  <section aria-labelledby="t-tour">
-    <div class="sec-head">
-      <h2 id="t-tour">الجولة 360°</h2>
-      <span class="hint">بدّل بين النهار والليل من الزر فوق</span>
-    </div>
-    <div class="spots" id="spots"></div>
-    <div class="stage" id="pano-stage">
-      <canvas id="pano"></canvas>
-      <div class="badge" id="pano-name"></div>
-      <div class="loading" id="pano-loading">جاري التحميل…</div>
-      <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
-    </div>
-  </section>
 
   <section aria-labelledby="t-video" id="video-sec" hidden>
     <div class="sec-head"><h2 id="t-video">فيديو الجولة</h2></div>
@@ -139,22 +126,28 @@ footer { color: var(--muted); font-size: .85rem }
     <div class="gallery" id="gallery"></div>
   </section>
 
+  <section aria-labelledby="t-tour">
+    <div class="sec-head">
+      <h2 id="t-tour">صور 360° من الرندر</h2>
+      <span class="hint">بدّل بين النهار والليل من الزر فوق</span>
+    </div>
+    <div class="spots" id="spots"></div>
+    <div class="stage" id="pano-stage">
+      <canvas id="pano"></canvas>
+      <div class="badge" id="pano-name"></div>
+      <div class="loading" id="pano-loading">جاري التحميل…</div>
+      <div class="tools"><button type="button" id="pano-fs">ملء الشاشة</button><button type="button" id="pano-spin" aria-pressed="true">دوران تلقائي</button></div>
+    </div>
+  </section>
+
   <section aria-labelledby="t-files">
     <div class="sec-head"><h2 id="t-files">ملف التصميم كامل (الأوتوكاد)</h2><span class="hint">اضغط على أي لوحة لتكبيرها</span></div>
     <a class="pdf" href="hada-chalet-autocad.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
     <div class="sheets" id="sheets"></div>
   </section>
 
-  <section aria-labelledby="t-spec">
-    <div class="sec-head"><h2 id="t-spec">التصميم باختصار</h2></div>
-    <div class="spec">
-      <div><b>الأرضي</b><p>صالة 6.76 × 4.48 م بسحابات زجاج، يقسمها بارتشن خشب حامل للدور الثاني: جلسة وتلفزيون غربه، وطعام ومدخل شرقه. مطبخ مفتوح، حمام يخدم الصالة، ودرج خشب.</p></div>
-      <div><b>الأول</b><p>ماستر 3.40 × 4.48 م بغرفة ملابس وحمام خاص، وغرفة 2 بمقاس 3.24 × 4.48 م وحمامها، والغرفتين على بلكونة 7.00 × 2.40 م ومثلث زجاج بالجملون.</p></div>
-      <div><b>الحوش</b><p>كل وحدة مستقلة بسور: موقف، ممر من باب المشاة للدرج، مسبح غطس 2.30 × 4.80 م، وجلسة شتوية مدفونة بمشب نار تحت برجولة خشب.</p></div>
-    </div>
-  </section>
 
-  <footer>تصميم مبدئي للمراجعة — مصنع وتد الأخشاب. الصور مرسومة بالحاسب (رندر) وتوضّح الفكرة؛ الأبعاد المعتمدة في مخطط الأوتوكاد.</footer>
+  <footer>مصنع وتد الأخشاب</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -307,12 +300,22 @@ const SHOTS = /*SHOTS*/[{"name": "الشاليهين من الشارع", "file":
   const LAMPS = [[340, 230, 200, 16762250, 2.2, 9], [570, 670, 200, 16762250, 1.4, 6], [170, 230, 500, 16762250, 1.6, 6], [510, 230, 500, 16762250, 1.6, 6], [344, -120, 280, 16766624, 1.6, 6], [344, -120, 560, 16766624, 1.4, 6], [91, -570, -60, 16742954, 3.0, 6], [585, -1000, -80, 6737151, 1.2, 5], [340, -1300, 150, 16766624, 0.8, 5], [1180, 230, 200, 16762250, 2.2, 9], [1410, 670, 200, 16762250, 1.4, 6], [1010, 230, 500, 16762250, 1.6, 6], [1350, 230, 500, 16762250, 1.6, 6], [1184, -120, 280, 16766624, 1.6, 6], [1184, -120, 560, 16766624, 1.4, 6], [931, -570, -60, 16742954, 3.0, 6], [1425, -1000, -80, 6737151, 1.2, 5], [1180, -1300, 150, 16766624, 0.8, 5]];
   LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); L.userData.i = i; lamps.add(L); });
   lamps.visible = true;   // بالنهار إنارة داخلية خفيفة (مثل الرندر)، وبالليل كاملة
+  [[390, 530, 560], [1230, 530, 560]].forEach(([x, y, z]) => { const L = new THREE.PointLight(16762250, 1.2, 6, 2); L.position.set(x / 100, z / 100, -y / 100); L.userData.i = 1.2; lamps.add(L); });   // الممر العلوي
+  /* سماء ليل متدرجة (كحلي فوق ← أزرق دافئ عند الأفق) بدل لون مسطح، وضوء قمر بارد بظلال ناعمة */
+  const nsky = (() => { const c = document.createElement("canvas"); c.width = 16; c.height = 256; const g = c.getContext("2d");
+    const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, "#03060f"); gr.addColorStop(0.42, "#0b1630"); gr.addColorStop(0.5, "#2a3a5c");
+    gr.addColorStop(0.53, "#3a3640"); gr.addColorStop(1, "#07080a"); g.fillStyle = gr; g.fillRect(0, 0, 16, 256);
+    const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; return t; })();
+  const nEnv = pm => pm.fromEquirectangular(nsky).texture;
+  let nightEnv = null;
   function night(n) {
-    scene.background = n ? new THREE.Color(0x0b1424) : (skyTex || new THREE.Color(0xbfd3e6));
-    scene.environment = n ? null : skyEnv;
-    hemi.intensity = n ? 0.06 : 0.55; sun.intensity = n ? 0.03 : 1.25;
-    lamps.children.forEach(L => { L.intensity = L.userData.i * (n ? 1 : 0.5); });
-    ground.material.color.set(n ? 0x55604a : 0xffffff); renderer.toneMappingExposure = n ? 1.3 : 1.0;
+    scene.background = n ? nsky : (skyTex || new THREE.Color(0xbfd3e6));
+    if (n && !nightEnv) nightEnv = nEnv(pm);
+    scene.environment = n ? nightEnv : skyEnv;
+    hemi.color.set(n ? 0x7d93c4 : 0xf2f6ff); hemi.groundColor.set(n ? 0x2b2722 : 0x7a6a50); hemi.intensity = n ? 0.18 : 0.55;
+    sun.color.set(n ? 0xa9bcff : 0xfff0dc); sun.intensity = n ? 0.12 : 1.25;
+    lamps.children.forEach(L => { L.intensity = L.userData.i * (n ? 0.85 : 0.5); });
+    ground.material.color.set(n ? 0x7c8a66 : 0xffffff); renderer.toneMappingExposure = n ? 1.02 : 1.0;
   }
   modeHooks.push(night);
   const HOLES = [[470, -1240, 700, -760], [-46, -740, 274, -400], [1310, -1240, 1540, -760], [794, -740, 1114, -400]];   // فتحات المسابح والجلسات المدفونة في أرضية العشب (سم)
