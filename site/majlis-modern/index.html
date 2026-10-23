@@ -292,6 +292,28 @@ const SHOTS = /*SHOTS*/[{"name": "الواجهة الزجاج — منظور أ�
       if (!PASS.has(nm)) solids.push(o);
     });
   }
+  /* إضاءة مخبوزة من Blender (Cycles): كل سطح ينضرب بخريطة إضاءته الحقيقية — نهار وليل — فيطلع مثل الرندر */
+  let LM = null; const lmTex = {}, baked = [];
+  const LMX = { day: 0.62, night: 0.75 };
+  fetch("lm.json").then(r => r.ok ? r.json() : null).then(j => { LM = j; applyLM(); }).catch(() => {});
+  function lmGroup(o) { for (let p = o; p; p = p.parent) if (p.userData && p.userData.lmgroup) return p.userData.lmgroup; return null; }
+  function bakeLM(root) {
+    const cache = {};
+    root.traverse(o => {
+      if (!o.isMesh || !o.geometry.attributes.uv2) return;
+      const g = lmGroup(o); if (!g) return;
+      const om = o.material, key = om.uuid + g;
+      if (!cache[key]) { const m = new THREE.MeshBasicMaterial({ map: om.map || null, color: om.map ? 0xffffff : om.color.clone() });
+        m.userData.g = g; cache[key] = m; baked.push(m); }
+      o.material = cache[key]; o.castShadow = true; o.receiveShadow = false;
+    });
+  }
+  function lmLoad(g, mode) { const k = g + mode; if (lmTex[k]) return lmTex[k];
+    const t = texL.load(LM.groups[g][mode].file); t.flipY = false; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; return (lmTex[k] = t); }
+  function applyLM() { if (!LM) return; const mode = NIGHT ? "night" : "day";
+    baked.forEach(m => { const gg = LM.groups[m.userData.g]; if (!gg) return;
+      m.lightMap = lmLoad(m.userData.g, mode); m.lightMapIntensity = gg[mode].k * LMX[mode]; m.needsUpdate = true; }); }
+  modeHooks.push(applyLM);
   const hemi = scene.children.find(o => o.isHemisphereLight);
   /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
   const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
@@ -331,7 +353,7 @@ const SHOTS = /*SHOTS*/[{"name": "الواجهة الزجاج — منظور أ�
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
   const GLB_SRC = ["web.glb", "https://raw.githubusercontent.com/azam2050/-/HEAD/site/majlis-modern/web.glb"];
   (function loadGLB(k) { new THREE.GLTFLoader().load(GLB_SRC[k], g => {
-    dress(g.scene); scene.add(g.scene);
+    dress(g.scene); bakeLM(g.scene); scene.add(g.scene); applyLM();
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;
