@@ -1,0 +1,183 @@
+# تبوك — فيلا خشب دورين على بصمة 7.00 × 9.00 = 63 م² للدور (طلب العميل: 63 م²).
+#  الأرضي: مجلس ضيوف 6.76 × 4.48 م بباب على الطرف (الجلسة U متصلة) + دورة مياه ومغاسل خلف المجلس (بعيدة عن الجلسة)
+#   + مدخل عائلة منفصل بالجدار الشرقي للممر والدرج (العائلة تطلع فوق بدون ما تمر بالمجلس).
+#  الأول: غرفتين (3.24 × 4.48 و 3.40 × 4.48) على بلكونة أمامية + دورة مياه فوق دورة الأرضي + مخزن/غسيل.
+# نفس تخطيط شاليه الهدا المعتمد (الدرج U بالخلف، الحمامات فوق بعض على الجدار الخلفي، الغرف مقفلة بجدار).
+# تبوك باردة شتاءً: عزل كامل + جملون 30° (يصرّف المطر والثلج للخارج). المداد 444 سم (أقل من طبلية 520).
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: tabuk-2floor-majlis-7x9
+title: فيلا خشب دورين — مجلس + غرفتين — 7.00 × 9.00 م (63 م² للدور)
+client: "عميل — تبوك"
+meta:
+  location: تبوك
+  usage: سكن — مجلس ضيوف + غرفتين
+  date: 2026-10-23
+  price_note: ""
+  price_scope: building
+  price_items:
+    - {name: تراس الأرضي + بلكونة الأول (7.00 × 2.40 × 2), qty: 33.6, unit: م², rate: 1096}
+  terms:
+    - "السعر للدورين والتراس والبلكونة حسب المخطط المعتمد — التراس يُسعّر بنفس سعر متر الكوخ."
+    - "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 35, ext_start: 240}   # السقف ممتد 2.40 م يغطي البلكونة
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ======================= الدور الأرضي =======================
+  - name: أ-جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [688, 0]
+    openings:   # شباكين للمجلس + باب الضيوف على الطرف الشرقي (قدام درج التراس)
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 40, width: 180, height: 150, sill: 80, grid: [3, 3]}
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 270, width: 180, height: 150, sill: 80, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 باب الضيوف (المجلس), offset: 540, width: 110, height: 240, leaves: 1, grid: [2, 5]}
+  - name: أ-شرق
+    title: الواجهة الشرقية
+    start: [688, 0]
+    end: [688, 888]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المجلس, offset: 170, width: 140, height: 140, sill: 80, grid: [2, 3]}
+      - {kind: door, code: ب2, name: ب2 مدخل العائلة (للمغاسل والدرج), offset: 600, width: 90, height: 220, leaves: 1}
+  - name: أ-شمال
+    title: الواجهة الخلفية
+    start: [688, 888]
+    end: [0, 888]
+    openings:
+      - {kind: window, code: ش3, name: ش3 المغاسل, offset: 70, width: 100, height: 80, sill: 120, grid: [2, 2]}
+      - {kind: window, code: ش4, name: ش4 دورة المياه, offset: 330, width: 60, height: 60, sill: 160}
+  - name: أ-غرب
+    title: الواجهة الغربية
+    start: [0, 888]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المجلس, offset: 560, width: 140, height: 140, sill: 80, grid: [2, 3]}
+  - name: أ-فاصل المجلس
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:   # باب المجلس للمغاسل ودورة المياه على الطرف الشرقي (بعيد عن الجلسة)
+      - {kind: door, code: ب3, name: ب3 المجلس — المغاسل, offset: 586, width: 90, height: 220}
+  - name: أ-فاصل الدورة
+    exterior: false
+    start: [240, 564]
+    end: [450, 564]
+    openings:
+      - {kind: door, code: ب4, name: ب4 دورة المياه, offset: 60, width: 70, height: 210}
+  - {name: أ-جدار الدرج, exterior: false, start: [240, 564], end: [240, 888]}
+  - {name: أ-جدار الدورة, exterior: false, start: [450, 564], end: [450, 888]}
+  # ======================= الدور الأول =======================
+  - name: ب-جنوب
+    floor: 1
+    title: الواجهة الأمامية (على البلكونة)
+    gable_glass: true
+    start: [0, 0]
+    end: [688, 0]
+    openings:
+      - {kind: door, code: ب5, name: ب5 سحاب غرفة 2 — البلكونة, offset: 40, width: 220, height: 220, style: sliding, leaves: 2}
+      - {kind: door, code: ب5, name: ب5 سحاب غرفة 1 — البلكونة, offset: 410, width: 230, height: 220, style: sliding, leaves: 2}
+  - name: ب-شرق
+    floor: 1
+    title: الواجهة الشرقية
+    start: [688, 0]
+    end: [688, 888]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة 1, offset: 160, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش4, name: ش4 المخزن, offset: 700, width: 60, height: 60, sill: 160}
+  - name: ب-شمال
+    floor: 1
+    title: الواجهة الخلفية
+    start: [688, 888]
+    end: [0, 888]
+    openings:
+      - {kind: window, code: ش4, name: ش4 دورة المياه, offset: 330, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش6, name: ش6 الدرج, offset: 520, width: 100, height: 100, sill: 120, grid: [2, 2]}
+  - name: ب-غرب
+    floor: 1
+    title: الواجهة الغربية
+    start: [0, 888]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة 2, offset: 640, width: 120, height: 120, sill: 90, grid: [2, 3]}
+  - name: ب-فاصل أمامي
+    floor: 1
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:
+      - {kind: door, code: ب6, name: ب6 غرفة 2, offset: 253, width: 70, height: 210}
+      - {kind: door, code: ب6, name: ب6 غرفة 1, offset: 350, width: 80, height: 210}
+  - {name: ب-فاصل الغرف, floor: 1, exterior: false, start: [336, 0], end: [336, 460]}
+  - name: ب-فاصل الدورة
+    floor: 1
+    exterior: false
+    start: [240, 564]
+    end: [450, 564]
+    openings:
+      - {kind: door, code: ب8, name: ب8 دورة المياه, offset: 60, width: 70, height: 210}
+  - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [240, 564], end: [240, 888]}
+  - name: ب-جدار المخزن
+    floor: 1
+    exterior: false
+    start: [450, 460]
+    end: [450, 888]
+    openings:   # باب المخزن من الممر (مو من الغرفة)
+      - {kind: door, code: ب7, name: ب7 المخزن والغسيل, offset: 16, width: 76, height: 210}
+
+stairs:   # درج U خشب بالخلف — من ممر العائلة، يطلع للممر العلوي قدام أبواب الغرف
+  - {from: 0, rect: [6, 570, 234, 870], flight_w: 100, first: east, tread: 26, landing: 100}
+
+rooms:
+  - {name: المجلس, rect: [6, 6, 682, 454], label: [300, 330]}
+  - {name: ممر العائلة, rect: [6, 466, 444, 558], kind: corridor, label: [330, 512]}
+  - {name: الدرج, rect: [6, 570, 234, 870], kind: stair}
+  - {name: دورة مياه, rect: [246, 570, 444, 882], wet: true, label: [330, 700]}
+  - {name: المغاسل, rect: [456, 466, 682, 882], label: [560, 700]}
+  - {name: غرفة نوم 2, floor: 1, rect: [6, 6, 330, 454], label: [170, 380]}
+  - {name: غرفة نوم 1, floor: 1, rect: [342, 6, 682, 454], label: [510, 380]}
+  - {name: الممر, floor: 1, rect: [6, 466, 444, 558], kind: corridor, label: [330, 512]}
+  - {name: فتحة الدرج, floor: 1, rect: [6, 570, 234, 870], kind: stair}
+  - {name: دورة مياه, floor: 1, rect: [246, 570, 444, 882], wet: true, label: [330, 700]}
+  - {name: مخزن وغسيل, floor: 1, rect: [456, 466, 682, 882], label: [560, 700]}
+
+decks:
+  - {name: التراس, rect: [-6, -246, 694, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 480, width: 200}}
+  - {name: البلكونة, rect: [-6, -246, 694, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+
+posts:   # أعمدة خشب 18×18 من الأرض لين السقف الممتد (تحمل البلكونة وبروز السقف)
+  - {at: [3, -237], size: 18}
+  - {at: [250, -237], size: 18}
+  - {at: [460, -237], size: 18}
+  - {at: [685, -237], size: 18}
+
+furniture:
+  # ---- المجلس: جلسة U (غرب + خلف + شرق) مفتوحة على شبابيك الواجهة — باب الضيوف وباب المغاسل على الطرف الشرقي
+  - {name: كنبة, rect: [6, 90, 86, 454]}
+  - {name: كنبة, rect: [86, 374, 560, 454]}
+  - {name: كنبة, rect: [602, 140, 682, 340]}
+  - {name: طاولة, rect: [250, 190, 400, 270]}
+  # المغاسل (مغسلتين على الجدار الخلفي) + دورة المياه
+  - {name: "", rect: [470, 836, 516, 882], shape: basin}
+  - {name: "", rect: [540, 836, 586, 882], shape: basin}
+  - {name: "", rect: [404, 570, 444, 620], shape: wc}
+  - {name: "", rect: [246, 836, 292, 882], shape: basin}
+  # ---- الأول: رأس السرير على الجدار المصمت (فاصل الغرف) والدولاب على جدار الممر
+  - {name: سرير 160×200, floor: 1, rect: [130, 140, 330, 300]}
+  - {name: دولاب, floor: 1, rect: [6, 394, 186, 454]}
+  - {name: سرير 180×200, floor: 1, rect: [342, 130, 542, 310]}
+  - {name: "", floor: 1, rect: [342, 80, 387, 125]}
+  - {name: "", floor: 1, rect: [342, 315, 387, 360]}
+  - {name: دولاب, floor: 1, rect: [470, 394, 682, 454]}
+  # دورة المياه (فوق دورة الأرضي)
+  - {name: دش, floor: 1, rect: [354, 792, 444, 882], shape: shower}
+  - {name: "", floor: 1, rect: [404, 570, 444, 620], shape: wc}
+  - {name: "", floor: 1, rect: [246, 836, 292, 882], shape: basin}
