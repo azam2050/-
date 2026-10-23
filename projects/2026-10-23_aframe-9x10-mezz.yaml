@@ -2,8 +2,8 @@
 # المطلوب: صالة + غرفة + مطبخ أمريكي + حمام، مع ميزانين.
 #  الأرضي: صالة بارتفاع مزدوج تطل على الزجاج (8.76 × 4.94) + درج مستقيم خشب يطلع للميزانين،
 #          وتحت الميزانين: غرفة النوم مقفلة (غرب) + مطبخ أمريكي مفتوح على الصالة + الحمام (خلفي شرق) + مخزن.
-#  الميزانين (+2.60): جلسة علوية/نوم إضافي مطلة على الزجاج بدربزين — 8.76 × 4.70، الوقفة الكاملة (≥ 2.00 م) بعرض 4.80 م بالنص.
-# الميل 55° والجدار الجانبي 1.80 → القمة ≈ 8.2 م. المداد ≈ 8.5 م → جسر حامل (purlin) بكل جهة والمداد قطعتين ≤ طبلية 520.
+#  الميزانين (+2.50): جلسة علوية/نوم إضافي مطلة على الزجاج بدربزين — 8.76 × 4.76، الوقفة الكاملة (≥ 2.00 م) بعرض 3.60 م بالنص.
+# ملاحظة المصنع: 8 م عالي مرة — نزّلناه: الميل 45° والجدار الجانبي 2.00 → القمة 6.50 م. المداد ≈ 6.9 م → جسر حامل (purlin) بكل جهة والمداد قطعتين ≤ طبلية 520.
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: aframe-9x10-mezz
 title: كوخ A-frame بواجهة زجاج + ميزانين — صالة وغرفة ومطبخ أمريكي وحمام — 9.00 × 10.00 م
@@ -16,10 +16,10 @@ meta:
   price_scope: building
   hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
 style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: french}
-wall_height: 180
+wall_height: 200
 height_exact: true
 slab_height: 45
-roof: {ridge_axis: y, pitch_deg: 55, overhang: 40, purlins: 1}
+roof: {ridge_axis: y, pitch_deg: 45, overhang: 40, purlins: 1}
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -32,11 +32,11 @@ walls:
     start: [0, 0]
     end: [888, 0]
     openings:
-      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 190, height: 170, sill: 5, style: fixed}
-      - {kind: window, code: ز1, name: زجاج ثابت, offset: 204, width: 160, height: 170, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 190, height: 190, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 204, width: 160, height: 190, sill: 5, style: fixed}
       - {kind: door, code: ب1, name: ب1 باب زجاج دبل, offset: 372, width: 144, height: 220, leaves: 2}
-      - {kind: window, code: ز1, name: زجاج ثابت, offset: 524, width: 160, height: 170, sill: 5, style: fixed}
-      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 692, width: 190, height: 170, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 524, width: 160, height: 190, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 692, width: 190, height: 190, sill: 5, style: fixed}
   - name: شرق
     title: الواجهة الشرقية
     start: [888, 0]
@@ -61,22 +61,22 @@ walls:
       - {kind: window, code: ش1, name: ش1 الصالة, offset: 668, width: 120, height: 90, sill: 60, grid: [2, 2]}
   - name: جدار الغرفة الأمامي
     exterior: false
-    height: 248
+    height: 238
     start: [0, 512]
     end: [406, 512]
     openings:
       - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 300, width: 80, height: 210}
-  - {name: جدار الغرفة الجانبي, exterior: false, height: 248, start: [406, 512], end: [406, 988]}
+  - {name: جدار الغرفة الجانبي, exterior: false, height: 238, start: [406, 512], end: [406, 988]}
   - name: جدار الحمام
     exterior: false
-    height: 248
+    height: 238
     start: [606, 788]
     end: [888, 788]
     openings:
       - {kind: door, code: ب3, name: ب3 الحمام, offset: 30, width: 70, height: 210}
   - name: جدار المخزن
     exterior: false
-    height: 248
+    height: 238
     start: [606, 788]
     end: [606, 988]
 
@@ -90,15 +90,15 @@ rooms:
 mezzanines:
   - name: الميزانين (جلسة علوية)
     rect: [6, 506, 882, 982]
-    level: 260
+    level: 250
     use: جلسة علوية / نوم إضافي
     railing: [S]
     gaps: [[520, 610]]           # وصول الدرج
-    headroom: [203, 685]
-    railing_span: [133, 755]     # بين هذي الحدود السقف أعلى من الدربزين
+    headroom: [262, 626]
+    railing_span: [162, 726]     # بين هذي الحدود السقف أعلى من الدربزين
 
 straight_stairs:   # درج خشب مفتوح بالصالة: 13 قائمة × 20 ونائمة 23 — يطلع لحافة الميزانين بالنص (وقفة كاملة فوق)
-  - {name: درج الميزانين, start: [520, 230], dir: N, width: 90, rise: 260, riser: 20, tread: 23, rail: W}
+  - {name: درج الميزانين, start: [520, 230], dir: N, width: 90, rise: 250, riser: 19.2, tread: 23, rail: W}
 
 decks:
   - name: عتبة المدخل
@@ -124,12 +124,12 @@ furniture:
   - {name: سرير 180×200, rect: [110, 782, 290, 982]}
   - {name: "", rect: [60, 937, 105, 982]}
   - {name: "", rect: [295, 937, 340, 982]}
-  - {name: دولاب, rect: [340, 620, 400, 780]}   # على الجدار المرتفع (الجدار الجانبي 1.80 واطي للدولاب)
+  - {name: دولاب, rect: [340, 620, 400, 780]}   # على الجدار المرتفع (الجدار الجانبي 2.00 واطي للدولاب)
   # الحمام
   - {name: دش, rect: [792, 892, 882, 982], shape: shower}
   - {name: "", rect: [612, 932, 652, 982], shape: wc}
   - {name: "", rect: [700, 936, 746, 982], shape: basin}
   # الميزانين: جلسة + فرشتين بالنص (تحت أعلى السقف)
-  - {name: كنبة, rect: [300, 880, 580, 960], floor: -1, z: 260}
-  - {name: طاولة, rect: [390, 760, 490, 830], floor: -1, z: 260}
-  - {name: سرير 120×200, rect: [230, 620, 350, 820], floor: -1, z: 260}
+  - {name: كنبة, rect: [300, 880, 580, 960], floor: -1, z: 250}
+  - {name: طاولة, rect: [390, 760, 490, 830], floor: -1, z: 250}
+  - {name: سرير 120×200, rect: [290, 620, 410, 820], floor: -1, z: 250}
