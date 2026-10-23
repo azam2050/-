@@ -1,0 +1,213 @@
+# الباحة — فيلا خشب دورين (عميل جاد: واقع افتراضي بعد الاعتماد).
+# طلب العميل ≈ 60 م² للدور (120 للدورين) — بس الدور العلوي فيه 3 غرف (ماستر بحمامها) + حمام للغرفتين + درج:
+#   بمساحة 60 الغرف تطلع أقل من 3.20 × 3.60 (قاعدة المصنع)، فالبصمة 7.00 × 10.00 = 70 م² للدور (140 للدورين).
+#  الأرضي: صالة 4.44 × 4.48 + مطبخ مقفل 2.20 × 4.48 + دورة مياه + غرفة عاملة بدورة مياهها + الدرج.
+#  الأول: غرفتين أمام + حمام للغرفتين من الممر (جدار شرقي) + ماستر خلفي بغرفة ملابس وحمام خاص (جدار خلفي فوق دورة الأرضي).
+# السقف جملون 30° محوره على العمق — المداد ≈ 440 سم (أقل من طبلية 520). الباحة جبلية وممطرة: عزل كامل.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: baha-2floor-3br-7x10
+title: فيلا خشب دورين — صالة ومطبخ وغرفة عاملة + 3 غرف (ماستر) — 7.00 × 10.00 م
+client: "عميل — الباحة"
+meta:
+  location: الباحة
+  usage: سكن عائلي
+  date: 2026-10-23
+  price_note: ""
+  price_scope: building
+  terms:
+    - "السعر للدورين حسب المخطط المعتمد."
+    - "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 35}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ======================= الدور الأرضي =======================
+  - name: أ-جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [688, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 40, width: 180, height: 150, sill: 80, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 المدخل, offset: 290, width: 110, height: 240, leaves: 1, grid: [2, 5]}
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 520, width: 120, height: 100, sill: 110, grid: [2, 2]}
+  - name: أ-شرق
+    title: الواجهة الشرقية
+    start: [688, 0]
+    end: [688, 988]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 150, width: 120, height: 100, sill: 110, grid: [2, 2]}
+  - name: أ-شمال
+    title: الواجهة الخلفية
+    start: [688, 988]
+    end: [0, 988]
+    openings:
+      - {kind: window, code: ش3, name: ش3 دورة المياه, offset: 248, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش3, name: ش3 دورة مياه العاملة, offset: 450, width: 60, height: 60, sill: 160}
+  - name: أ-غرب
+    title: الواجهة الغربية
+    start: [0, 988]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش4, name: ش4 غرفة العاملة, offset: 230, width: 100, height: 110, sill: 100, grid: [2, 2]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 658, width: 180, height: 150, sill: 80, grid: [3, 3]}
+  - name: أ-فاصل الصالة
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:
+      - {kind: door, code: ف1, name: ف1 الصالة — الممر, offset: 250, width: 100, height: 220, leaves: 0}
+  - name: أ-جدار المطبخ
+    exterior: false
+    start: [456, 0]
+    end: [456, 460]
+    openings:
+      - {kind: door, code: ب2, name: ب2 المطبخ, offset: 330, width: 90, height: 210}
+  - name: أ-فاصل خلفي
+    exterior: false
+    start: [0, 564]
+    end: [484, 564]
+    openings:
+      - {kind: door, code: ب3, name: ب3 غرفة العاملة, offset: 230, width: 80, height: 210}
+      - {kind: door, code: ب4, name: ب4 دورة المياه, offset: 370, width: 70, height: 210}
+  - {name: أ-جدار العاملة, exterior: false, start: [336, 564], end: [336, 988]}
+  - {name: أ-جدار الدرج, exterior: false, start: [484, 564], end: [484, 988]}
+  - name: أ-فاصل دورة العاملة
+    exterior: false
+    start: [0, 856]
+    end: [336, 856]
+    openings:
+      - {kind: door, code: ب5, name: ب5 دورة مياه العاملة, offset: 110, width: 70, height: 210}
+  # ======================= الدور الأول =======================
+  - name: ب-جنوب
+    floor: 1
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [688, 0]
+    openings:
+      - {kind: window, code: ش5, name: ش5 غرفة 2, offset: 80, width: 150, height: 130, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش8, name: ش8 غرفة 3, offset: 584, width: 80, height: 130, sill: 90, grid: [1, 3]}
+  - name: ب-شرق
+    floor: 1
+    title: الواجهة الشرقية
+    start: [688, 0]
+    end: [688, 988]
+    openings:
+      - {kind: window, code: ش6, name: ش6 غرفة 3, offset: 90, width: 120, height: 120, sill: 90, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 الحمام, offset: 330, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش7, name: ش7 الدرج, offset: 720, width: 100, height: 100, sill: 120, grid: [2, 2]}
+  - name: ب-شمال
+    floor: 1
+    title: الواجهة الخلفية
+    start: [688, 988]
+    end: [0, 988]
+    openings:
+      - {kind: window, code: ش3, name: ش3 حمام الماستر, offset: 248, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش5, name: ش5 الماستر, offset: 420, width: 150, height: 130, sill: 90, grid: [2, 3]}
+  - name: ب-غرب
+    floor: 1
+    title: الواجهة الغربية
+    start: [0, 988]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش6, name: ش6 غرفة 2, offset: 690, width: 120, height: 120, sill: 90, grid: [2, 3]}
+  - name: ب-فاصل أمامي
+    floor: 1
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:
+      - {kind: door, code: ب6, name: ب6 غرفة 2, offset: 220, width: 80, height: 210}
+      - {kind: door, code: ب6, name: ب6 غرفة 3, offset: 420, width: 76, height: 210}
+      - {kind: door, code: ب8, name: ب8 الحمام (للغرفتين), offset: 560, width: 60, height: 210}
+  - {name: ب-فاصل الغرف, floor: 1, exterior: false, start: [336, 0], end: [336, 460]}
+  - {name: ب-جدار الحمام, floor: 1, exterior: false, start: [526, 460], end: [526, 274]}
+  - {name: ب-واجهة الحمام, floor: 1, exterior: false, start: [526, 274], end: [688, 274]}
+  - name: ب-فاصل خلفي
+    floor: 1
+    exterior: false
+    start: [0, 564]
+    end: [484, 564]
+    openings:
+      - {kind: door, code: ب6, name: ب6 الماستر, offset: 200, width: 80, height: 210}
+  - name: ب-جدار الماستر
+    floor: 1
+    exterior: false
+    start: [336, 564]
+    end: [336, 988]
+    openings:
+      - {kind: door, code: ب9, name: ب9 ملابس الماستر, offset: 40, width: 70, height: 210}
+      - {kind: door, code: ب7, name: ب7 حمام الماستر, offset: 230, width: 70, height: 210}
+  - {name: ب-فاصل الحمامين, floor: 1, exterior: false, start: [336, 776], end: [484, 776]}
+  - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [484, 564], end: [484, 988]}
+
+stairs:   # درج U خشب بالزاوية الخلفية الشرقية — من الممر، ويطلع لممر الغرف
+  - {from: 0, rect: [490, 570, 682, 982], flight_w: 90, first: east, tread: 26, landing: 100}
+
+rooms:
+  - {name: الصالة, rect: [6, 6, 450, 454], label: [220, 330]}
+  - {name: المطبخ, rect: [462, 6, 682, 454], label: [570, 300]}
+  - {name: الممر, rect: [6, 466, 682, 558], kind: corridor, label: [330, 512]}
+  - {name: غرفة العاملة, rect: [6, 570, 330, 850], label: [170, 700]}
+  - {name: دورة مياه العاملة, rect: [6, 862, 330, 982], wet: true, label: [170, 925]}
+  - {name: دورة مياه, rect: [342, 570, 478, 982], wet: true, label: [410, 760]}
+  - {name: الدرج, rect: [490, 570, 682, 982], kind: stair}
+  - {name: غرفة نوم 2, floor: 1, rect: [6, 6, 330, 454], label: [170, 380]}
+  - {name: غرفة نوم 3, floor: 1, rect: [342, 6, 682, 268], label: [600, 230]}
+  - {name: غرفة نوم 3 (جهة الدولاب), floor: 1, rect: [342, 280, 520, 454], label: [460, 340]}
+  - {name: الممر, floor: 1, rect: [6, 466, 682, 558], kind: corridor, label: [330, 512]}
+  - {name: الماستر, floor: 1, rect: [6, 570, 330, 982], label: [170, 620]}
+  - {name: الحمام (للغرفتين), floor: 1, rect: [532, 280, 682, 454], wet: true, label: [607, 330]}
+  - {name: ملابس الماستر, floor: 1, rect: [342, 570, 478, 770], label: [410, 640]}
+  - {name: حمام الماستر, floor: 1, rect: [342, 782, 478, 982], wet: true, label: [410, 860]}
+  - {name: فتحة الدرج, floor: 1, rect: [490, 570, 682, 982], kind: stair}
+
+decks:   # عتبة المدخل بدرج (الأرضية مرفوعة 45 سم)
+  - {name: عتبة المدخل, rect: [270, -126, 420, -6], height: 45, railing: [], stairs: {side: S, offset: 0, width: 150}}
+
+furniture:
+  # ---- الأرضي: الصالة (جلسة L + تلفزيون على جدار المطبخ)
+  - {name: كنبة, rect: [6, 140, 86, 454]}
+  - {name: كنبة, rect: [86, 374, 236, 454]}
+  - {name: طاولة, rect: [150, 200, 260, 280]}
+  - {name: تلفزيون, rect: [414, 130, 450, 300]}
+  # المطبخ المقفل
+  - {name: كاونتر, rect: [462, 6, 682, 66]}
+  - {name: كاونتر, rect: [622, 66, 682, 300]}
+  - {name: ثلاجة, rect: [462, 80, 527, 145]}
+  # غرفة العاملة ودورتها
+  - {name: سرير 90×190, rect: [6, 640, 96, 830]}
+  - {name: دولاب, rect: [270, 660, 330, 840]}
+  - {name: "", rect: [290, 862, 330, 912], shape: wc}
+  - {name: دش, rect: [6, 892, 96, 982], shape: shower}
+  - {name: "", rect: [120, 936, 166, 982], shape: basin}
+  # دورة المياه
+  - {name: "", rect: [438, 920, 478, 970], shape: wc}
+  - {name: "", rect: [342, 700, 388, 746], shape: basin}
+  # ---- الأول: غرفة 2 و 3 — رأس السرير على الجدار المصمت بين الغرف، والدولاب على جدار الممر
+  - {name: سرير 160×200, floor: 1, rect: [130, 140, 330, 300]}
+  - {name: دولاب, floor: 1, rect: [6, 394, 186, 454]}
+  - {name: سرير 160×200, floor: 1, rect: [400, 6, 560, 206]}
+  - {name: دولاب, floor: 1, rect: [342, 300, 402, 454]}
+  # الماستر (خلفي) — رأس السرير على الجدار الغربي المصمت، ممرات ≥ 1.0 م حوله
+  - {name: سرير 180×200, floor: 1, rect: [6, 700, 206, 880]}
+  - {name: "", floor: 1, rect: [6, 650, 51, 695]}
+  - {name: "", floor: 1, rect: [6, 885, 51, 930]}
+  # الحمام (للغرفتين) — من الممر، على الجدار الشرقي فوق المطبخ
+  - {name: دش, floor: 1, rect: [592, 280, 682, 370], shape: shower}
+  - {name: "", floor: 1, rect: [532, 280, 572, 330], shape: wc}
+  - {name: "", floor: 1, rect: [636, 408, 682, 454], shape: basin}
+  # غرفة ملابس الماستر
+  - {name: دولاب, floor: 1, rect: [418, 570, 478, 770]}
+  # حمام الماستر — من الماستر
+  - {name: دش, floor: 1, rect: [388, 892, 478, 982], shape: shower}
+  - {name: "", floor: 1, rect: [438, 782, 478, 832], shape: wc}
+  - {name: "", floor: 1, rect: [342, 936, 388, 982], shape: basin}
