@@ -232,6 +232,9 @@ def _areas(project, per_m2):
 
 
 def _run(cfg, out):
+    if os.environ.get("WATAD_GPU"):      # الرندر على كرت شاشة سحابي
+        from . import gpu
+        return gpu.run(cfg, Path(out))
     p = out / f"cfg-{cfg['tag']}.json"
     p.write_text(json.dumps(cfg, ensure_ascii=False))
     subprocess.run([BLENDER, "-b", "-P", str(ROOT / "tools" / "render_blender.py"), "--", str(p)],
@@ -332,6 +335,11 @@ def bake_web(project, rules, style, heights, out_dir, samples=128, res=2048):
            "area_lights": _areas(project, 10 if project.decor else 40), "ext_lights": ext_lights(project, rules),
            "bake": {"script": str(ROOT / "tools" / "bake_web.py"), "out_dir": str(out), "res": res,
                     "samples": samples, "day": day, "max_tex": 1024}}
+    if os.environ.get("WATAD_GPU"):
+        from . import gpu
+        gpu.run(cfg, out)
+        glb.unlink(missing_ok=True)
+        return out / "web.glb"
     p = out / "cfg-bake.json"
     p.write_text(json.dumps(cfg, ensure_ascii=False))
     r = subprocess.run([BLENDER, "-b", "-P", str(ROOT / "tools" / "render_blender.py"), "--", str(p)],

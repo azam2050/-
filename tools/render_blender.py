@@ -292,6 +292,24 @@ if cfg.get("furnish") or cfg.get("landscape"):
 # الريندر
 scene.render.engine = "CYCLES"
 scene.cycles.device = "CPU"
+if cfg.get("gpu"):          # جهاز سحابي بكرت شاشة: OptiX أسرع بعشرات المرات
+    try:
+        cp = bpy.context.preferences.addons["cycles"].preferences
+        for kind in ("OPTIX", "CUDA"):
+            try:
+                cp.compute_device_type = kind
+                cp.get_devices()
+                devs = [d for d in cp.devices if d.type == kind]
+                if devs:
+                    for d in cp.devices:
+                        d.use = d.type == kind
+                    scene.cycles.device = "GPU"
+                    print("GPU", kind, [d.name for d in devs])
+                    break
+            except Exception as e:  # noqa: BLE001
+                print("GPU try failed", kind, e)
+    except Exception as e:  # noqa: BLE001
+        print("GPU setup failed", e)
 scene.cycles.samples = cfg.get("samples", 64)
 scene.cycles.use_denoising = True
 scene.cycles.max_bounces = 6
