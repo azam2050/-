@@ -562,7 +562,8 @@ def mezz_sheet(ctx):
     fig = new_page(A3)
     ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
     lv = P.mezzanines[0]["level"] if P.mezzanines else 0
-    title(ax, "مسقط الميزانين (نص الدور) — غرفة النوم", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
+    use = P.mezzanines[0].get("use", "غرفة النوم") if P.mezzanines else "غرفة النوم"
+    title(ax, f"مسقط الميزانين (نص الدور) — {use}", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec="k", lw=1.6, zorder=0.3))
     ax.add_patch(Rectangle((x0 + 2 * half, y0 + 2 * half), x1 - x0 - 4 * half, y1 - y0 - 4 * half, fc="white", ec="k",
                            lw=0.8, zorder=0.4))

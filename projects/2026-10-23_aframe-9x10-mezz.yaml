@@ -1,0 +1,135 @@
+# عميل جديد: كوخ A-frame 9.00 × 10.00 = 90 م² — مثل الصورة: واجهة زجاج كاملة بقواطع غامقة ومثلث خشب.
+# المطلوب: صالة + غرفة + مطبخ أمريكي + حمام، مع ميزانين.
+#  الأرضي: صالة بارتفاع مزدوج تطل على الزجاج (8.76 × 4.94) + درج مستقيم خشب يطلع للميزانين،
+#          وتحت الميزانين: غرفة النوم مقفلة (غرب) + مطبخ أمريكي مفتوح على الصالة + الحمام (خلفي شرق) + مخزن.
+#  الميزانين (+2.60): جلسة علوية/نوم إضافي مطلة على الزجاج بدربزين — 8.76 × 4.70، الوقفة الكاملة (≥ 2.00 م) بعرض 4.80 م بالنص.
+# الميل 55° والجدار الجانبي 1.80 → القمة ≈ 8.2 م. المداد ≈ 8.5 م → جسر حامل (purlin) بكل جهة والمداد قطعتين ≤ طبلية 520.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: aframe-9x10-mezz
+title: كوخ A-frame بواجهة زجاج + ميزانين — صالة وغرفة ومطبخ أمريكي وحمام — 9.00 × 10.00 م
+client: "عميل — A-frame 9×10"
+meta:
+  location: "—"
+  usage: استراحة / سكن
+  date: 2026-10-23
+  price_note: ""
+  price_scope: building
+  hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
+style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: french}
+wall_height: 180
+height_exact: true
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 55, overhang: 40, purlins: 1}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (زجاج كامل)
+    glass_front: true
+    glass_split: true
+    start: [0, 0]
+    end: [888, 0]
+    openings:
+      - {kind: window, code: ز1, name: زجاج ثابت يسار, offset: 6, width: 190, height: 170, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 204, width: 160, height: 170, sill: 5, style: fixed}
+      - {kind: door, code: ب1, name: ب1 باب زجاج دبل, offset: 372, width: 144, height: 220, leaves: 2}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 524, width: 160, height: 170, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت يمين, offset: 692, width: 190, height: 170, sill: 5, style: fixed}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [888, 0]
+    end: [888, 988]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 200, width: 120, height: 90, sill: 60, grid: [2, 2]}
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 600, width: 100, height: 60, sill: 100, grid: [2, 1]}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [888, 988]
+    end: [0, 988]
+    openings:
+      - {kind: window, code: ش3, name: ش3 الحمام, offset: 100, width: 60, height: 60, sill: 160}
+    gable_openings:   # شباك الميزانين في الجملون الخلفي (إضاءة وتهوية من الجهتين)
+      - {code: ش4, name: ش4 الميزانين, offset: 384, width: 120, height: 100, sill: 360, grid: [2, 2]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 988]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 غرفة النوم, offset: 100, width: 120, height: 90, sill: 60, grid: [2, 2]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 668, width: 120, height: 90, sill: 60, grid: [2, 2]}
+  - name: جدار الغرفة الأمامي
+    exterior: false
+    height: 248
+    start: [0, 512]
+    end: [406, 512]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 300, width: 80, height: 210}
+  - {name: جدار الغرفة الجانبي, exterior: false, height: 248, start: [406, 512], end: [406, 988]}
+  - name: جدار الحمام
+    exterior: false
+    height: 248
+    start: [606, 788]
+    end: [888, 788]
+    openings:
+      - {kind: door, code: ب3, name: ب3 الحمام, offset: 30, width: 70, height: 210}
+  - name: جدار المخزن
+    exterior: false
+    height: 248
+    start: [606, 788]
+    end: [606, 988]
+
+rooms:
+  - {name: الصالة (ارتفاع مزدوج), rect: [6, 6, 882, 500], label: [250, 300]}
+  - {name: غرفة النوم, rect: [6, 518, 400, 982], label: [200, 600]}
+  - {name: المطبخ الأمريكي, rect: [412, 512, 882, 782], label: [760, 600]}
+  - {name: الحمام, rect: [612, 794, 882, 982], wet: true, label: [800, 900]}
+  - {name: مخزن / غسيل, rect: [412, 794, 600, 982], label: [500, 900]}
+
+mezzanines:
+  - name: الميزانين (جلسة علوية)
+    rect: [6, 506, 882, 982]
+    level: 260
+    use: جلسة علوية / نوم إضافي
+    railing: [S]
+    gaps: [[520, 610]]           # وصول الدرج
+    headroom: [203, 685]
+    railing_span: [133, 755]     # بين هذي الحدود السقف أعلى من الدربزين
+
+straight_stairs:   # درج خشب مفتوح بالصالة: 13 قائمة × 20 ونائمة 23 — يطلع لحافة الميزانين بالنص (وقفة كاملة فوق)
+  - {name: درج الميزانين, start: [520, 230], dir: N, width: 90, rise: 260, riser: 20, tread: 23, rail: W}
+
+decks:
+  - name: عتبة المدخل
+    rect: [324, -146, 564, -6]
+    height: 45
+    railing: []
+    stairs: {side: S, offset: 40, width: 160}
+
+furniture:
+  # الصالة: جلسة L مطلة على الزجاج + تلفزيون على جدار الغرفة
+  - {name: كنبة, rect: [30, 100, 110, 420]}
+  - {name: كنبة, rect: [110, 400, 290, 480]}
+  - {name: طاولة, rect: [160, 200, 280, 300]}
+  - {name: كرسي, rect: [330, 160, 410, 240]}
+  # المطبخ الأمريكي: كاونتر على الجدار الشرقي + جزيرة مطلة على الصالة
+  - {name: كاونتر, rect: [822, 512, 882, 782]}
+  - {name: ثلاجة, rect: [757, 717, 822, 782]}
+  - {name: كاونتر, rect: [650, 560, 760, 680]}
+  - {name: طاولة 4, rect: [640, 300, 740, 420]}
+  - {name: "", rect: [745, 340, 785, 380]}
+  - {name: "", rect: [595, 340, 635, 380]}
+  # غرفة النوم: رأس السرير على الجدار الخلفي المصمت
+  - {name: سرير 180×200, rect: [110, 782, 290, 982]}
+  - {name: "", rect: [60, 937, 105, 982]}
+  - {name: "", rect: [295, 937, 340, 982]}
+  - {name: دولاب, rect: [340, 620, 400, 780]}   # على الجدار المرتفع (الجدار الجانبي 1.80 واطي للدولاب)
+  # الحمام
+  - {name: دش, rect: [792, 892, 882, 982], shape: shower}
+  - {name: "", rect: [612, 932, 652, 982], shape: wc}
+  - {name: "", rect: [700, 936, 746, 982], shape: basin}
+  # الميزانين: جلسة + فرشتين بالنص (تحت أعلى السقف)
+  - {name: كنبة, rect: [300, 880, 580, 960], floor: -1, z: 260}
+  - {name: طاولة, rect: [390, 760, 490, 830], floor: -1, z: 260}
+  - {name: سرير 120×200, rect: [230, 620, 350, 820], floor: -1, z: 260}
