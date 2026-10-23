@@ -347,7 +347,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         from .roof import purlin_positions
         pw, ph = project.roof.purlin["w"], project.roof.purlin["h"]
         for a in purlin_positions(project, rules):
-            ztop = zb(a, -1 if a <= ac else 1)
+            ztop = zsh(a) if shed else zb(a, -1 if a <= ac else 1)
             c0, c1 = to_xy(a - pw / 2, B0 - 10), to_xy(a + pw / 2, B1 + 10)
             S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), ztop - ph,
                   max(c0[0], c1[0]), max(c0[1], c1[1]), ztop)

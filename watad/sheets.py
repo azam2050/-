@@ -1157,8 +1157,10 @@ def roof_sheet(ctx):
             ax.add_patch(Rectangle((rx0 - 10, a - pw / 2), rx1 - rx0 + 20, pw, fc="#c9a27a", ec="#6b4f3a", lw=0.5,
                                    alpha=0.8))
     if P.roof.purlins:
-        ax.text(cx, y0 + 60, f"جسور حاملة طولية {P.roof.purlin['w']:.0f}×{P.roof.purlin['h']:.0f} — "
-                f"{P.roof.purlins} بكل جهة + جسر القمة", ha="center", fontsize=8, color="#6b4f3a",
+        ax.text(cx, y0 + 60, ("جسر حامل" if P.roof.type == "shed" else "جسور حاملة طولية")
+                + f" {P.roof.purlin['w']:.0f}×{P.roof.purlin['h']:.0f} — " +
+                (f"{P.roof.purlins} بالعرض من الجدار للجدار (المداد قطع فوقها)" if P.roof.type == "shed"
+                 else f"{P.roof.purlins} بكل جهة + جسر القمة"), ha="center", fontsize=8, color="#6b4f3a",
                 bbox=dict(fc="white", ec="none"))
     ax.text(cx, y0 + 30, f"مدادات 5×15 كل 60 سم — {R['rafter_count']} مداد", ha="center", fontsize=9,
             bbox=dict(fc="white", ec="none"))
@@ -1224,7 +1226,7 @@ def roof_sheet(ctx):
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     for a in purlin_positions(P, rules):            # مقطع الجسور الحاملة تحت المدادات
         xa = a - lo
-        za = H + min(xa, S - xa) * math.tan(p)
+        za = zz(xa) if P.roof.type == "shed" else H + min(xa, S - xa) * math.tan(p)
         pw, ph = P.roof.purlin["w"], P.roof.purlin["h"]
         ax2.add_patch(Rectangle((xa - pw / 2, za - ph), pw, ph, fc="#c9a27a", ec="k", lw=0.7))
     for gc in cross_gables(P, rules):               # المثلث البارز إذا القطاع يمر فيه
@@ -1359,7 +1361,7 @@ def areas_sheet(ctx):
             ["الاستخدام", m.get("usage", "")], ["التاريخ", str(m.get("date", ""))],
             ["نظام البناء", "هيكل خشب 7×5 + تلبيس 2.5 سم من الجهتين"],
             ["السقف", ("مائل باتجاه واحد" if P.roof.type == "shed" else "هرمي منساب (خيمة) بدون وديان — 20°/"
-                      if P.roof.type == "tent_hip" else "جملون") + f" {P.roof.pitch_deg}° — قرميد معدني"
+                      if P.roof.type == "tent_hip" else "جملون") + f" {P.roof.pitch_deg}° — " + ("صاج معدني + عزل مائي" if P.roof.low_pitch_approved else "قرميد معدني")
              + (f" + {len(P.roof.cross_gables)} مثلث بارز" if P.roof.cross_gables else "")]]
     items = [] if hide_price else (P.meta.get("price_items") or [])
     ax2 = fig.add_axes([0.58, 0.62, 0.38, 0.26] if items else [0.58, 0.52, 0.38, 0.36])
@@ -1511,7 +1513,8 @@ def perspective_sheet(ctx):
         ax.imshow(plt.imread(ctx["preview"]))
     ax.axis("off")
     rows = [("الخشب / الصبغة", st["wood_ar"], st["wood"]),
-            ("القرميد", st["roof_ar"], st["roof"]),
+            (("السقف (صاج معدني)", st["roof_ar"].replace("قرميد", "صاج"), st["roof"]) if ctx["project"].roof.low_pitch_approved
+             else ("القرميد", st["roof_ar"], st["roof"])),
             ("الزجاج", st["glass_ar"], st["glass"]),
             ("إطارات الشبابيك والأبواب", st["frame_ar"], st["frame"]),
             ("الكنار والزوايا", "نفس الصبغة أغمق درجة", st["trim"]),
@@ -1613,7 +1616,7 @@ def bom_rows(ctx):
             ["السقف", ("مائل باتجاه واحد" if ctx["project"].roof.type == "shed" else "جملون")
              + f" {roof['pitch_deg']}° — أعلى نقطة {roof['ridge_level']:.0f} سم من وجه الصبة"],
             ["المدادات 5×15", f"{roof['rafter_count']} مداد ("
-             + (f"{roof['rafters_per_side']} خط × قطعتين موصولة فوق الجدار الداخلي بتراكب 60 سم"
+             + (f"{roof['rafters_per_side']} خط × قطعتين موصولة فوق " + ("الجسر الحامل" if roof.get("purlins") or ctx["project"].roof.purlins else "الجدار الداخلي") + " بتراكب 60 سم"
                 if roof.get("pieces", 1) == 2 else f"{roof['rafters_per_side']} لكل جهة")
              + f") × حتى {roof['rafter_length']:.0f} سم — من طبلية {roof['stock_length']}"],
             ["طبليات الطريقة الأولى (مداد + عمود)",

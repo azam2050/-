@@ -51,6 +51,12 @@ def gable_rafters(project, rules):
         parts = [r.splice - lo + r.overhang + lap / 2, hi - r.splice + r.overhang + lap / 2]
         length = max(parts) / math.cos(g["pitch"])
         pieces = 2
+    if shed and r.purlins and r.splice is None:   # مائل: المداد قطع فوق الجسور الحاملة (تراكب 60 سم)
+        n = r.purlins + 1
+        seg = g["span"] / n
+        lap = 60
+        length = max(seg + r.overhang + lap / 2, seg + lap) / math.cos(g["pitch"])
+        pieces = n
     if not shed and r.purlins:            # شاليه: المداد قطع فوق الجسور الحاملة (تراكب 60 سم فوق كل جسر)
         n = r.purlins + 1
         seg = g["span"] / 2 / n
@@ -167,10 +173,12 @@ def shed_z(project, rules, x, y):
 def purlin_positions(project, rules):
     """مواقع الجسور الحاملة (على المحور العرضي للجملون): n بكل جهة + جسر القمة."""
     r = project.roof
-    if r.type == "shed" or not r.purlins:
+    if not r.purlins:
         return []
     x0, y0, x1, y1 = outer_bbox(project, rules)
     lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+    if r.type == "shed":                 # مائل طويل بدون جدار داخلي: جسور حاملة بالتساوي (المداد قطع فوقها)
+        return [lo + (hi - lo) * k / (r.purlins + 1) for k in range(1, r.purlins + 1)]
     ac, n = (lo + hi) / 2, r.purlins + 1
     pos = [lo + (ac - lo) * k / n for k in range(1, n)]
     return pos + [ac] + [hi - (p - lo) for p in reversed(pos)]
