@@ -74,6 +74,13 @@ def tex_material(name, asset, tile_m, tint=None, tint_mix=0.85, rough=None, bump
         L.new(col.outputs["Color"], mix.inputs[6])
         L.new(mul.outputs[2], mix.inputs[7])
         L.new(mix.outputs[2], bsdf.inputs["Base Color"])
+    elif HQ:
+        # جودة عالية: تهدئة البرتقالي (تشبّع أقل وإضاءة أعلى) عشان يبان صنوبر طبيعي مثل الصور الحقيقية
+        hs = N.new("ShaderNodeHueSaturation")
+        hs.inputs["Saturation"].default_value = cfg.get("hq_sat", 0.78)
+        hs.inputs["Value"].default_value = cfg.get("hq_val", 1.12)
+        L.new(col.outputs["Color"], hs.inputs["Color"])
+        L.new(hs.outputs["Color"], bsdf.inputs["Base Color"])
     else:
         L.new(col.outputs["Color"], bsdf.inputs["Base Color"])
     r = img("Roughness", True)
@@ -150,6 +157,23 @@ MATS["metal_roof"] = flat_material("W_metal_roof", "#2E3235", rough=0.38, metal=
 MATS["green_roof"] = tex_material("W_green_roof", "Grass004", 0.9, None, rough=1.0, bump=0.9)
 # زجاج معماري: انعكاس سماء خفيف (طبقة لامعة) عشان يبان زجاج مركّب مو فتحة فاضية
 MATS["glass"].node_tree.nodes["Principled BSDF"].inputs["Coat Weight"].default_value = 0.7
+if HQ:
+    # زجاج رقيق يمرّر الشمس والسماء للداخل (بقع شمس على الأرضية) مع انعكاس حسب زاوية النظر
+    g_ = bpy.data.materials.new("W_glass_hq")
+    g_.use_nodes = True
+    gn = g_.node_tree
+    gn.nodes.remove(gn.nodes["Principled BSDF"])
+    tr_ = gn.nodes.new("ShaderNodeBsdfTransparent")
+    gl_ = gn.nodes.new("ShaderNodeBsdfGlossy")
+    gl_.inputs["Roughness"].default_value = 0.02
+    lw = gn.nodes.new("ShaderNodeLayerWeight")
+    lw.inputs["Blend"].default_value = 0.12
+    mx = gn.nodes.new("ShaderNodeMixShader")
+    gn.links.new(lw.outputs["Fresnel"], mx.inputs["Fac"])
+    gn.links.new(tr_.outputs[0], mx.inputs[1])
+    gn.links.new(gl_.outputs[0], mx.inputs[2])
+    gn.links.new(mx.outputs[0], gn.nodes["Material Output"].inputs["Surface"])
+    MATS["glass"] = g_
 if cfg.get("furnish") or cfg.get("landscape"):
     # الداخل مثل كبائن المصنع: الجدران وتطبيق السقف والمدادات بنفس خشب الأرضية (صنوبر طبيعي)
     pine = tex_material("W_pine", "WoodFloor043", 0.8, None, bump=0.08)

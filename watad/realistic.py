@@ -277,7 +277,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     lk = rs.get("ext_lens_k", 1.0)       # تقريب اللقطات الخارجية
     ext = [s[:4] + [round(s[4] * lk), round(min(0.3, s[5] * lk), 3)] for s in ext]
     day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
-        ([[s[0], s[2], s[3], s[4], s[5], rs.get("day_exposure", 0.6)] for s in inn] if "interior" in parts else [])
+        ([[s[0], s[2], s[3], s[4], s[5], rs.get("day_exposure", 0.9 if rs.get("quality") == "high" else 0.6)] for s in inn] if "interior" in parts else [])
     if day:
         _run({**base, **DAY, **({"sky_hdr": "sky_day.hdr", "sky": 1.0} if base["hq"] and Path(TEX, "sky_day.hdr").exists() else {}), "tag": "day", "shots": day, "panos": pano("day") if "pano" in parts else [], "area_lights": _areas(project, 5 if project.decor else 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
