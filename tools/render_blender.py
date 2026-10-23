@@ -193,6 +193,7 @@ for ob in list(scene.objects):
     for m in ob.data.materials:
         key = (m.name if m else key).split(".")[0]
     if key in MATS:
+        ob["wkey"] = key                     # اسم خامة المحرك الأصلي (لمجسم الويب المخبوز)
         ob.data.materials.clear()
         ob.data.materials.append(MATS[key])
     bpy.context.view_layer.objects.active = ob
@@ -327,6 +328,10 @@ if HQ:
         gl.mix = -0.75
         ct.links.new(rl.outputs["Image"], gl.inputs["Image"])
         ct.links.new(gl.outputs["Image"], comp.inputs["Image"])
+
+if cfg.get("bake"):        # مجسم الويب بإضاءة مخبوزة (نهار + ليل) بدل الرندر
+    exec(open(cfg["bake"]["script"], encoding="utf-8").read())
+    raise SystemExit(0)
 
 cam_data = bpy.data.cameras.new("cam")
 cam_data.lens = cfg.get("lens", 32)

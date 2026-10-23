@@ -379,6 +379,13 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     pz = []
     for pt in project.posts:
         px, py = pt["at"]
+        if pt.get("kind") == "block":    # كتلة مصمتة (كبت/درج تحت عمود المكتبة)
+            w, d, h, z0 = pt.get("w", 50), pt.get("d", 30), pt.get("h", 45), pt.get("z", 0)
+            if pt.get("axis", "y") == "y":
+                S.box("trim", px - d / 2, py - w / 2, z0, px + d / 2, py + w / 2, z0 + h)
+            else:
+                S.box("trim", px - w / 2, py - d / 2, z0, px + w / 2, py + d / 2, z0 + h)
+            continue
         if pt.get("kind") == "box":      # صندوق مربع مفتوح بين أعمدة البارتشن (للفازات) — قاعدة وغطاء وجنبين
             w, d, h, z0, t = pt.get("w", 60), pt.get("d", 24), pt.get("h", 40), pt.get("z", 100), pt.get("t", 3)
             ax_y = pt.get("axis", "y") == "y"          # الصندوق ممتد على اتجاه البارتشن
@@ -393,8 +400,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                     S.box("trim", px + a0, py - hd + b0, z_0, px + a1, py - hd + b1, z_1)
             bx(-hw, hw, 0, d, z0, z0 + t)                    # القاعدة
             bx(-hw, hw, 0, d, z0 + h - t, z0 + h)            # الغطاء
-            bx(-hw, -hw + t, 0, d, z0, z0 + h)               # جنب
-            bx(hw - t, hw, 0, d, z0, z0 + h)                 # جنب
+            bx(-hw, -hw + t, 0, d, z0 + t, z0 + h - t)       # جنب (بين القاعدة والغطاء — بدون تداخل)
+            bx(hw - t, hw, 0, d, z0 + t, z0 + h - t)         # جنب
             continue
         if cut:
             ztop = cut

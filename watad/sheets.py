@@ -424,7 +424,7 @@ def plan_sheet(ctx, floor=0):
     for pt in P.posts:
         if pt.get("inner") and floor != 0:
             continue
-        if pt.get("kind") == "box":      # صندوق الفازات بين أعمدة البارتشن (خط متقطع — فوق الأرض)
+        if pt.get("kind") in ("box", "block"):      # صندوق الفازات بين أعمدة البارتشن (خط متقطع — فوق الأرض)
             w, d = pt.get("w", 60), pt.get("d", 24)
             bw, bd = (d, w) if pt.get("axis", "y") == "y" else (w, d)
             ax.add_patch(Rectangle((pt["at"][0] - bw / 2, pt["at"][1] - bd / 2), bw, bd, fc="none", ec="#8b5a2b",

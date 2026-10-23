@@ -305,3 +305,37 @@ def load_shots(out_dir):
         return {}
     m = json.loads(meta.read_text(encoding="utf-8"))
     return {k: [(out / f, n) for f, n in v if (out / f).exists()] for k, v in m.items()}
+
+
+def bake_web(project, rules, style, heights, out_dir, samples=128, res=2048):
+    """مجسم الويب بإضاءة مخبوزة (نهار + ليل) — نفس مشهد الرندر: web.glb + lm_*.jpg + lm.json في out_dir."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    scene = build_scene(project, rules, style, heights, furniture="floors")
+    glb = out / "scene.glb"
+    scene.write_glb(glb)
+    items = plan_furniture(project)
+    for it in items:
+        it["ceil"] = (project.floor_list[0]["height"] if project.floors else project.wall_height) / 100
+    rs = project.render or {}
+    hq = rs.get("quality", "high") != "draft"
+    day = {**DAY, "lamps": 0.25}
+    if hq and Path(TEX, "sky_day.hdr").exists():
+        day.update({"sky_hdr": "sky_day.hdr", "sky": 1.0})
+    cfg = {"glb": str(glb), "out_dir": str(out), "tex_dir": TEX, "models_dir": MODELS,
+           "colors": {k: style[k] for k in ("wood", "trim", "roof", "frame", "glass", "slab")},
+           "views": [], "furnish": items, "furnish_py": str(ROOT / "tools" / "blender_furnish.py"),
+           "landscape": [], "wood_frames": style.get("frame_ar", "").startswith("إطار خشب"),
+           "samples": samples, "res": [800, 600], "ground_z": -project.slab_height / 100, "lights": [], "lens": 35,
+           "decor": decor_items(project), "sadu": bool(rs.get("sadu")), "ground_holes": ground_holes(project),
+           "hq": hq, **DUSK, "tag": "bake", "night": True, "shots": [], "panos": [],
+           "area_lights": _areas(project, 10 if project.decor else 40), "ext_lights": ext_lights(project, rules),
+           "bake": {"script": str(ROOT / "tools" / "bake_web.py"), "out_dir": str(out), "res": res,
+                    "samples": samples, "day": day, "max_tex": 1024}}
+    p = out / "cfg-bake.json"
+    p.write_text(json.dumps(cfg, ensure_ascii=False))
+    r = subprocess.run([BLENDER, "-b", "-P", str(ROOT / "tools" / "render_blender.py"), "--", str(p)],
+                       capture_output=True, text=True)
+    (out / "bake.log").write_text(r.stdout[-20000:] + r.stderr[-5000:])
+    glb.unlink(missing_ok=True)
+    return out / "web.glb"
