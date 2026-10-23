@@ -211,3 +211,32 @@ furniture:
   - {name: دش, floor: 1, rect: [388, 892, 478, 982], shape: shower}
   - {name: "", floor: 1, rect: [438, 782, 478, 832], shape: wc}
   - {name: "", floor: 1, rect: [342, 936, 388, 982], shape: basin}
+
+# ---------------- الرندر الواقعي + الواقع الافتراضي (عميل جاد — اعتمد المصنع) ----------------
+interior_decor:
+  - {kind: pendant, at: [220, 240], z: 190, dia: 45, hgt: 35, ceil: 280, w: 70}
+  - {kind: cove, line: [6, 12, 450, 12], n: [0, 1], z: 272}
+  - {kind: rug, rect: [110, 170, 300, 310]}
+render:
+  night_interior: 2
+  interior:
+    - {name: الصالة, cam: [420, 60, 130], target: [80, 380, 110], lens: 17}
+    - {name: الماستر, cam: [300, 600, 440], target: [60, 900, 410], lens: 17}
+    - {name: غرفة النوم 2, cam: [300, 60, 440], target: [80, 360, 410], lens: 17}
+  video:
+    fps: 12
+    samples: 10
+    res: [854, 480]
+    lens: 18
+    exposure: 0.5
+    segments:
+      - name: من الخارج للصالة
+        frames: 300
+        path: [[344, -1600, 600], [344, -900, 300], [344, -400, 170], [344, -140, 160], [344, 100, 160], [300, 300, 155], [160, 340, 150]]
+        look: [[344, 400, 300], [344, 400, 250], [344, 300, 180], [344, 300, 160], [200, 350, 140], [60, 300, 120], [120, 60, 130]]
+  pano_res: [2400, 1200]
+  panos:
+    - {name: front, at: [344, -520, 160], day: true, night: true}
+    - {name: living, at: [220, 250, 140], day: true, night: true}
+    - {name: master, at: [170, 760, 445], day: true, night: true}
+    - {name: room2, at: [170, 250, 445], day: true, night: true}
