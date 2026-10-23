@@ -145,7 +145,7 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": null}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": null}]/*END*/;
+const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": "pano/front-night.jpg"}, {"id": "room2", "name": "غرفة النوم 2", "day": "pano/room2.jpg", "night": "pano/room2-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}]/*END*/;
 const HAS_VIDEO = /*VIDEO*/false/*END*/;
 let NIGHT = location.hash === "#night";
 const modeHooks = [];
@@ -159,7 +159,7 @@ function setNight(n) {
 document.getElementById("dn-day").addEventListener("click", () => setNight(false));
 document.getElementById("dn-night").addEventListener("click", () => setNight(true));
 if (HAS_VIDEO) { document.getElementById("video-sec").hidden = false; document.getElementById("walk").src = "walk.mp4"; }
-const SHOTS = /*SHOTS*/[{"name": "الفيلا — المنظور الأمامي", "file": "shots/x1.jpg"}, {"name": "الفيلا — من الجنب", "file": "shots/x2.jpg"}, {"name": "الواجهة الأمامية", "file": "shots/x3.jpg"}, {"name": "الخلف", "file": "shots/x4.jpg"}, {"name": "الصالة", "file": "shots/i1.jpg"}, {"name": "الماستر", "file": "shots/i2.jpg"}, {"name": "غرفة النوم 2", "file": "shots/i3.jpg"}]/*END*/;
+const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/x1.jpg"}, {"name": "أمامي من اليمين", "file": "shots/x2.jpg"}, {"name": "الواجهة الأمامية", "file": "shots/x3.jpg"}, {"name": "خلفي من اليسار", "file": "shots/x4.jpg"}, {"name": "أمامي من اليسار — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "أمامي من اليمين — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الماستر — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة", "file": "shots/i1.jpg"}, {"name": "الماستر", "file": "shots/i2.jpg"}, {"name": "غرفة النوم 2", "file": "shots/i3.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
 (function () {
