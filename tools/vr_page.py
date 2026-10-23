@@ -8,7 +8,7 @@ import shutil
 import sys
 from pathlib import Path
 
-PANO_AR = {"yard": "حوش الوحدة", "sunken": "الجلسة الشتوية المدفونة", "living": "الصالة", "master": "غرفة الماستر",
+PANO_AR = {"majlis": "داخل المجلس", "front": "قدام المجلس", "yard": "حوش الوحدة", "sunken": "الجلسة الشتوية المدفونة", "living": "الصالة", "master": "غرفة الماستر",
            "balcony": "البلكونة"}
 
 

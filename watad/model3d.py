@@ -297,6 +297,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             sh_hexa("roof_tiles", B0, B1, rafter_d + 2.5, rafter_d + 6.5)
             for pos in rafter_positions(project, rules):
                 sh_hexa("rafters", max(pos - rafter_t / 2, B0), min(pos + rafter_t / 2, B1), 0, rafter_d)
+            if project.roof.soffit:                      # تلبيس أملس تحت المدادات (مثل الصورة: سقف خشب نظيف بسبوتات)
+                sh_hexa("ceiling", B0, B1, -2.0, 0.0)
             for eave in (e_lo, e_hi):                    # لوح واجهة المداد على الحافتين
                 fa, fb = sorted((eave, eave + (-1 if eave == e_lo else 1) * tr["fascia"]["t"]))
                 ztop = zsh(eave) + (rafter_d + 6.5) * kv

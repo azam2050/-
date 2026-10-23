@@ -21,7 +21,7 @@ style: {preset: walnut_black, wood: honey_cedar, glass: clear, window_grid: none
 wall_height: 246        # متنقل: الجدار الخلفي (الواطي) 2.46 والأمامي 2.89 — الارتفاع الكلي 3.00 م (طلب المصنع)
 height_exact: true
 slab_height: 10         # متنقل: قواعد حديد 10 سم (بدون صبة)
-roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 5, overhang: 90, low_pitch_approved: true, purlins: 1}
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 5, overhang: 90, low_pitch_approved: true, purlins: 1, soffit: true}   # تحت الرفرف تلبيس أملس مثل الصورة
 insulation: false
 cladding_board_length: 400
 pallet_length: 320
