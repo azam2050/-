@@ -28,6 +28,7 @@ def qr_png(url):
 
 def main(autocad, real, url, out, title="", facts=""):
     real = Path(real)
+    vr = url not in ("-", "none", "")          # "-" = ملف أوتوكاد + صور فقط (بدون واقع افتراضي)
     doc = pymupdf.open()
     # ---- لوحات الأوتوكاد
     doc.insert_pdf(pymupdf.open(autocad))
@@ -44,8 +45,14 @@ def main(autocad, real, url, out, title="", facts=""):
             p = doc.new_page(width=W, height=H)
             html(p, (40, 22, W - 40, 60), f"{gtitle} · <b>{name}</b>", 18, BRAND)
             p.insert_image(pymupdf.Rect(40, 66, W - 40, H - 60), filename=str(f), keep_proportion=True)
+            if not vr:
+                html(p, (40, H - 48, W - 40, H - 18), "مصنع وتد الأخشاب", 12, MUTED, "center")
+                continue
             html(p, (40, H - 48, W - 40, H - 18), "مصنع وتد الأخشاب — الواقع الافتراضي في آخر صفحة (أو اضغط هنا)", 12, MUTED, "center")
             p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(300, H - 50, W - 300, H - 16), "uri": url})
+    if not vr:
+        doc.save(out, deflate=True, garbage=3)
+        return doc.page_count
     panos = sorted(real.glob("pano-*.jpg"))
     if panos:
         for i in range(0, len(panos), 2):

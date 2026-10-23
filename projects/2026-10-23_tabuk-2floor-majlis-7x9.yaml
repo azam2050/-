@@ -199,3 +199,11 @@ furniture:
   - {name: دش, floor: 1, rect: [354, 792, 444, 882], shape: shower}
   - {name: "", floor: 1, rect: [404, 570, 444, 620], shape: wc}
   - {name: "", floor: 1, rect: [246, 836, 292, 882], shape: basin}
+
+render:     # بعد الاعتماد — ملف أوتوكاد + صور جودة عالية فقط (بدون واقع افتراضي — طلب المصنع)
+  night_interior: 1
+  interior:
+    - {name: المجلس — البارتشن وصناديق الفازات, cam: [600, 60, 130], target: [200, 380, 115], lens: 17}
+    - {name: المجلس — من الجلسة الغربية, cam: [40, 60, 130], target: [520, 380, 120], lens: 17}
+    - {name: غرفة النوم 1, cam: [660, 40, 440], target: [342, 260, 410], lens: 17}
+
