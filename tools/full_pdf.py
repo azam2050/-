@@ -34,9 +34,9 @@ def main(autocad, real, url, out, title="", facts=""):
     doc.insert_pdf(pymupdf.open(autocad))
     # ---- الرندر الواقعي
     meta = json.loads((real / "shots.json").read_text(encoding="utf-8")) if (real / "shots.json").exists() else {}
-    groups = [("الرندر الواقعي — الخارج نهاراً", meta.get("exterior", [])),
-              ("الرندر الواقعي — وقت الغروب وبالليل", meta.get("dusk", [])),
-              ("الرندر الواقعي — الداخل", meta.get("interior", []))]
+    groups = [("الخارج — نهاراً", meta.get("exterior", [])),
+              ("وقت الغروب وبالليل", meta.get("dusk", [])),
+              ("الداخل", meta.get("interior", []))]
     for gtitle, items in groups:
         for fn, name in items:
             f = real / fn
