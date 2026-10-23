@@ -7,7 +7,7 @@ import math
 import numpy as np
 
 from .model import Wall, outer_bbox, wall_thickness
-from .roof import cross_gables, cross_planes, rafter_positions, roof_geometry
+from .roof import cross_ext_planes, cross_gables, cross_planes, rafter_positions, roof_geometry
 
 
 class Scene:
@@ -484,8 +484,24 @@ def _cross_gables(S, project, rules, half):
             S.poly("sheathing", list(tri) + [(x, y, z + (rd + 2.5) * kv) for x, y, z in tri], faces)
             S.poly("roof_tiles", [(x, y, z + (rd + 2.5) * kv) for x, y, z in tri]
                    + [(x, y, z + (rd + 6.5) * kv) for x, y, z in tri], faces)
+        qf = [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+        for q in cross_ext_planes(g):       # امتداد المثلث للأمام فوق البلكونة (مثل الشاليه)
+            S.poly("sheathing", list(q) + [(x, y, z + (rd + 2.5) * kv) for x, y, z in q], qf)
+            S.poly("roof_tiles", [(x, y, z + (rd + 2.5) * kv) for x, y, z in q]
+                   + [(x, y, z + (rd + 6.5) * kv) for x, y, z in q], qf)
         wall, sg, c, hw, H, zr = g["wall"], g["sg"], g["c"], g["hw"], g["H"], g["zr"]
         ax_y = g["axis"] == "y"
+        if g.get("ext"):                    # جملون أمامي مفتوح: جسر أفقي + عمود قمة + لوحين حافة
+            P0 = (lambda a, b, z: (a, b, z)) if ax_y else (lambda a, b, z: (b, a, z))
+            yf = wall + sg * (g["ov"] + g["ext"] - 12)
+            a0, a1 = P0(yf - 9, c - hw - 10, 0), P0(yf + 9, c + hw + 10, 0)
+            S.box("trim", min(a0[0], a1[0]), min(a0[1], a1[1]), H - 22, max(a0[0], a1[0]), max(a0[1], a1[1]), H)
+            a0, a1 = P0(yf - 8, c - 8, 0), P0(yf + 8, c + 8, 0)
+            S.box("trim", min(a0[0], a1[0]), min(a0[1], a1[1]), H, max(a0[0], a1[0]), max(a0[1], a1[1]), zr - 8)
+            yr = wall + sg * (g["ov"] + g["ext"] - 4)
+            for s_ in (-1, 1):
+                _beam(S, "trim", P0(yr, c + s_ * (hw + g["ov"]), g["ze"] - 6), P0(yr, c, zr - 6), 14)
+                _beam(S, "trim", P0(yf, c, H + 40), P0(yf, c + s_ * hw * 0.55, zr - hw * 0.55 * g["t"] - 14), 12)
         P = (lambda a, b, z: (a, b, z)) if ax_y else (lambda a, b, z: (b, a, z))
         tri = [P(wall, c - hw, H), P(wall, c, zr), P(wall, c + hw, H)]
         inner = [P(wall - sg * 2 * half, c - hw, H), P(wall - sg * 2 * half, c, zr), P(wall - sg * 2 * half, c + hw, H)]

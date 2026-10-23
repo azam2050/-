@@ -143,6 +143,7 @@ def cross_gables(project, rules):
         n_side = math.floor((reach + ov) / rules["roof"]["rafter_spacing"]) + 1
         valley = math.sqrt((reach + ov) ** 2 + (hw + ov) ** 2 + (rise + ov * t) ** 2)
         out.append({"i": i, "side": side, "axis": r.ridge_axis, "wall": wall, "sg": sg, "c": c, "hw": hw, "ov": ov,
+                    "ext": cg.get("ext", 0),
                     "pitch": pitch, "t": t, "rise": rise, "zr": zr, "ze": ze, "reach": reach, "H": H,
                     "rafter_length": round(rafter_len, 1), "rafters": 2 * n_side, "valley_length": round(valley, 1)})
     return out
@@ -155,6 +156,17 @@ def cross_planes(g):
     P = lambda a, b, z: (a, b, z) if g["axis"] == "y" else (b, a, z)  # noqa: E731
     return [[P(xo, c + hw + ov, g["ze"]), P(xi, c, g["zr"]), P(xo, c, g["zr"])],
             [P(xo, c - hw - ov, g["ze"]), P(xo, c, g["zr"]), P(xi, c, g["zr"])]]
+
+
+def cross_ext_planes(g):
+    """امتداد المثلث البارز للأمام (ext): سطحين مستطيلين بنفس الميل فوق البلكونة/البرندة — القمة أفقية والرفرف أفقي."""
+    if not g.get("ext"):
+        return []
+    wall, sg, c, hw, ov = g["wall"], g["sg"], g["c"], g["hw"], g["ov"]
+    xo, xf = wall + sg * ov, wall + sg * (ov + g["ext"])
+    P = lambda a, b, z: (a, b, z) if g["axis"] == "y" else (b, a, z)  # noqa: E731
+    return [[P(xo, c + s * (hw + ov), g["ze"]), P(xo, c, g["zr"]), P(xf, c, g["zr"]), P(xf, c + s * (hw + ov), g["ze"])]
+            for s in (1, -1)]
 
 
 def shed_z(project, rules, x, y):

@@ -131,6 +131,27 @@ def add_3d(S, P, rules, style, cut=None):
             S.wbox("trim", w, t, t + 5, -half - dp - 8, -half, z + 28, z + 36)
         for t in (a + 10, a + L - 18):                                     # كوابيل مائلة
             S.wdiag("trim", w, t, z - 40, t + 4, z, 6, -half - 30, -half)
+    from .model3d import _beam
+    for sk in P.skirts:                      # رفرف قصير مائل بين الدورين (مثل الشاليه): ألواح + قرميد + كوابيل
+        w = _wall(P, sk["wall"])
+        lev = P.level(w.floor)
+        a, L, dp, z = sk["offset"], sk["width"], sk.get("depth", 90), sk.get("z", 300)
+        zl = z - dp * math.tan(math.radians(sk.get("pitch", 25)))
+        if cut and cut <= lev + zl:
+            continue
+        S.zoff = 0
+        sF = -half - dp
+        q = [(a, -half, z), (a + L, -half, z), (a + L, sF, zl), (a, sF, zl)]
+        V = lambda dz: [(*w.point(t, s_), lev + z_ + dz) for t, s_, z_ in q]   # noqa: E731
+        fq = [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+        S.poly("sheathing", V(0) + V(3), fq)
+        S.poly("roof_tiles", V(3) + V(8), fq)
+        S.poly("trim", [(*w.point(t, sF - 1), lev + zz) for t, zz in ((a, zl - 14), (a + L, zl - 14), (a + L, zl + 1), (a, zl + 1))]
+               + [(*w.point(t, sF + 2), lev + zz) for t, zz in ((a, zl - 14), (a + L, zl - 14), (a + L, zl + 1), (a, zl + 1))], fq)
+        n = max(2, round(L / 150) + 1)
+        for k in range(n):
+            t = a + 15 + (L - 30) * k / (n - 1)
+            _beam(S, "trim", (*w.point(t, -half - 1), lev + z - 75), (*w.point(t, sF + 12), lev + zl - 6), 8)
     S.zoff = 0
 
 
@@ -165,6 +186,15 @@ def draw_plan(ax, P, rules, floor):
             ax.add_patch(Polygon(c, closed=True, fc=LINE, ec="k", lw=0.5, zorder=4))
         m = o(a + L / 2, dp + ov + 14)
         ax.text(*m, "مظلة المدخل", ha="center", va="center", fontsize=6.5, color=LINE, zorder=5)
+    for sk in P.skirts:
+        w = _wall(P, sk["wall"])
+        if w.floor != floor:
+            continue
+        a, L, dp = sk["offset"], sk["width"], sk.get("depth", 90)
+        o = _out(w, half)
+        ax.add_patch(Polygon([o(a, 0), o(a, dp), o(a + L, dp), o(a + L, 0)], closed=True, fill=False,
+                             ec=LINE, lw=0.7, ls="--", zorder=3))
+        ax.text(*o(a + L / 2, dp + 14), "رفرف مائل", ha="center", va="center", fontsize=6, color=LINE, zorder=5)
     for pg in P.pergolas:
         w = _wall(P, pg["wall"])
         if w.floor != floor:
@@ -221,6 +251,14 @@ def draw_elev(ax, P, rules, w, stack, gable_end=False):
         ax.add_patch(Polygon(lower + [(x, z + 10) for x, z in lower][::-1], closed=True, fc="#fff3e0", ec="#c56b1a",
                              lw=0.9, zorder=5))
         ax.text(x0 + L / 2, lev + eave + rise * 0.35, "مظلة", ha="center", fontsize=6, color=LINE, zorder=6)
+    for sk in P.skirts:
+        if sk["wall"] not in names:
+            continue
+        lev = names[sk["wall"]]
+        a, L, z, dp = sk["offset"], sk["width"], sk.get("z", 300), sk.get("depth", 90)
+        zl = z - dp * math.tan(math.radians(sk.get("pitch", 25)))
+        ax.add_patch(Rectangle((X(a), lev + zl - 14), L, z - zl + 22, fc="#fff3e0", ec="#c56b1a", lw=0.9, zorder=5))
+        ax.text(X(a) + L / 2, lev + zl + 2, "رفرف", ha="center", fontsize=6, color=LINE, zorder=6)
     for pg in P.pergolas:
         if pg["wall"] not in names:
             continue

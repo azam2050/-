@@ -36,7 +36,7 @@ roof:
   overhang: 35
   purlins: 1
   cross_gables:   # الجملون الزجاج بالنص فوق البلكونة (مثل الصورة)
-    - {side: S, center: 544, width: 440, pitch: 45, overhang: 60, glass: true, beams: 1}
+    - {side: S, center: 544, width: 440, pitch: 45, overhang: 60, ext: 90, glass: true, beams: 1}   # ممتد 0.90 للأمام فوق البلكونة على عمودين
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -231,11 +231,15 @@ decks:   # برندة المدخل بدرج + بلكونة فوقها على أ�
   - {name: البرندة, rect: [334, -146, 754, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 110, width: 200}}
   - {name: البلكونة, rect: [334, -146, 754, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
 
-posts:   # أعمدة خشب 18×18 تحمل البلكونة
-  - {at: [343, -137], size: 18, top: 305}
+posts:   # عمودين طرفيين 20×20 من الأرض لين جسر الجملون الممتد (مثل الصورة) + عمودين وسط تحت البلكونة
+  - {at: [343, -137], size: 20, top: 563}
   - {at: [440, -137], size: 18, top: 305}
   - {at: [648, -137], size: 18, top: 305}
-  - {at: [745, -137], size: 18, top: 305}
+  - {at: [745, -137], size: 20, top: 563}
+
+skirts:  # رفرف مائل بين الدورين يمين ويسار البرندة (خط السقف الواطي في الصورة) — يحمي شبابيك الأرضي من الشمس والمطر
+  - {wall: أ-جنوب, offset: -6, width: 330, depth: 80, z: 300, pitch: 25}
+  - {wall: أ-جنوب, offset: 764, width: 330, depth: 80, z: 300, pitch: 25}
 
 furniture:
   # ---- الأرضي: الصالة (جلسة L مواجهة للتلفزيون على جدار المدخل)

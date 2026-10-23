@@ -737,6 +737,13 @@ def elevation(ax, ctx, w):
                 dxt = (g["zr"] - zt) / g["t"]
                 ax.plot([tc - dxt, tc + dxt], [zt, zt], color="#6b4f3a", lw=1.2, zorder=3.2)
                 ax.text(tc, H + 25, "زجاج", ha="center", fontsize=6, color=C_WIN, zorder=4)
+            if g["ext"]:                # جملون ممتد للأمام: جسر أفقي + عمود قمة + حافة السقف
+                ax.add_patch(Rectangle((ta - 10, H - 22), tb - ta + 20, 22, fc="#c9a27a", ec="k", lw=0.7, zorder=3.7))
+                ax.add_patch(Rectangle((tc - 8, H), 16, g["zr"] - H - 8, fc="#c9a27a", ec="k", lw=0.7, zorder=3.7))
+                ex = g["hw"] + g["ov"]
+                ax.add_patch(Polygon([(tc - ex, g["ze"]), (tc, g["zr"]), (tc + ex, g["ze"]), (tc + ex, g["ze"] + kd),
+                                      (tc, g["zr"] + kd), (tc - ex, g["ze"] + kd)], closed=True, fc="#fff3e0",
+                                     ec="#c56b1a", lw=0.9, zorder=3.8))
             nb = cgd.get("beams", 0)
             for k in range(-nb, nb + 1):           # أطراف الجسور الحاملة بارزة تحت سقف المثلث
                 d_ = k * g["hw"] / (nb + 1) if nb else 0
@@ -1186,10 +1193,12 @@ def roof_sheet(ctx):
         if pt.get("inner"):          # أعمدة/صناديق البارتشن الداخلي ما تبان بمسقط السقف
             continue
         ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
-    from .roof import cross_gables, cross_planes
-    for gc in cross_gables(P, rules):               # المثلثات البارزة: سطحين + قمة + وادي
-        for tri in cross_planes(gc):
+    from .roof import cross_ext_planes, cross_gables, cross_planes
+    for gc in cross_gables(P, rules):               # المثلثات البارزة: سطحين + قمة + وادي (+ امتدادها للأمام)
+        for tri in cross_planes(gc) + cross_ext_planes(gc):
             ax.add_patch(Polygon([(x, y) for x, y, _ in tri], closed=True, fc="#ffe9cc", ec=C_ROOF, lw=0.9))
+        for q in cross_ext_planes(gc)[:1]:
+            ax.plot([q[1][0], q[2][0]], [q[1][1], q[2][1]], color=C_ROOF, lw=1.2)
         (ax_, ay_, _), (bx_, by_, _) = cross_planes(gc)[0][2], cross_planes(gc)[0][1]
         ax.plot([ax_, bx_], [ay_, by_], color=C_ROOF, lw=1.2)
         for tri in cross_planes(gc):
@@ -1199,8 +1208,8 @@ def roof_sheet(ctx):
         ax.text(mx, my + 14, f"مثلث بارز {gc['pitch']}°", ha="center", fontsize=7, color="red")
     if P.roof.cross_gables:
         ax.text(cx, y0 + 60, "--- وادي: ينزل للرفرف (تصريف لبرا)", ha="center", fontsize=7, color="#1f5fa8")
-    ax.set_xlim(rx0 - 60 - max([g["ov"] for g in cross_gables(P, rules)] + [0]), rx1 + 90 + max([g["ov"] for g in cross_gables(P, rules)] + [0]))
-    ax.set_ylim(ry0 - 40, ry1 + 90)
+    ax.set_xlim(rx0 - 60 - max([g["ov"] + g["ext"] for g in cross_gables(P, rules)] + [0]), rx1 + 90 + max([g["ov"] + g["ext"] for g in cross_gables(P, rules)] + [0]))
+    ax.set_ylim(ry0 - 40 - max([g["ov"] + g["ext"] for g in cross_gables(P, rules)] + [0]), ry1 + 90)
 
     # القطاع العرضي عمودي على الجملون، يمر بأكبر غرفة
     ax2 = drawing_ax(fig, [0.52, 0.33, 0.44, 0.52])
