@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def _req(method, url, data=None, headers=None, timeout=120):
-    h = {"Content-Type": "application/json", "Authorization": "Bearer proxy-injected", **(headers or {})}
+    h = {"Content-Type": "application/json", "Authorization": "Bearer proxy-injected", "User-Agent": "curl/8.5.0",
+         **(headers or {})}
     body = data if isinstance(data, (bytes, type(None))) else json.dumps(data).encode()
     r = urllib.request.Request(url, data=body, method=method, headers=h)
     with urllib.request.urlopen(r, timeout=timeout) as f:
