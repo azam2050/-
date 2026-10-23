@@ -39,6 +39,7 @@ cfg = {"glb": str(glb), "out_dir": str(out), "tex_dir": realistic.TEX, "models_d
        "lights": [], "lens": 18, "decor": realistic.decor_items(P), "sadu": bool(P.render.get("sadu")),
        "ground_holes": realistic.ground_holes(P), "shots": [], "panos": [], "tag": "video",
        "area_lights": realistic._areas(P, 5), **realistic.DAY,
+       "hq": P.render.get("quality", "high") != "draft",
        }
 exe = __import__("imageio_ffmpeg").get_ffmpeg_exe()
 fps = v.get("fps", 12)
