@@ -1,6 +1,7 @@
 # مجلس حديث 6.00 × 5.00 = 30 م² — مثل صورة العميل: صندوق خشب ألواح أفقية بلون سيدر عسلي، واجهة زجاج كاملة
 # بإطارات سوداء من الأرض للسقف، وسقف يبان مسطح برفرف عميق فوق الزجاج (ظل من الشمس) — بدون تراس (طلب العميل).
-# السقف: مائل باتجاه واحد 10° للخلف (العالي على الواجهة الزجاج) → من قدام يبان لوح مسطح مثل الصورة،
+# متنقل (طلب المصنع): الارتفاع الكلي ≈ 3.00 م عشان يمشي على السطحة تحت حد ارتفاع الطريق.
+# السقف: مائل باتجاه واحد 5° للخلف (العالي على الواجهة الزجاج) → من قدام يبان لوح مسطح مثل الصورة،
 #   والمويه تنزل للخلف برا. صاج معدني (مثل مجلس 4×5 المعتمد بميل خفيف).
 # المداد: العمق 5 م + رفرف 90 أطول من طبلية 520 → جسر خشب حامل 20×30 بالنص (من الجدار الشرقي للغربي)
 #   والمداد قطعتين فوقه (كل قطعة ≈ 3.70 م من طبلية 480).
@@ -16,10 +17,10 @@ meta:
   price_scope: building
   hide_pricing: true          # السعر يُحدد بعد اعتماد المخطط
 style: {preset: walnut_black, wood: honey_cedar, glass: clear, window_grid: none, exposed_rafter_tails: false}
-wall_height: 300
+wall_height: 210        # متنقل: الجدار الخلفي (الواطي) 2.10 والأمامي 2.53 — الارتفاع الكلي ≈ 3.00 م للنقل
 height_exact: true
-slab_height: 45
-roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 10, overhang: 90, low_pitch_approved: true, purlins: 1}
+slab_height: 20         # متنقل: قاعدة هيكل للنقل بدل الصبة
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 5, overhang: 90, low_pitch_approved: true, purlins: 1}
 insulation: false
 cladding_board_length: 400
 pallet_length: 320
@@ -30,15 +31,15 @@ walls:
     start: [0, 0]
     end: [588, 0]
     openings:   # زجاج من الأرض لتحت السقف بإطار أسود: ثابتين + سحاب بالطرف (باب المجلس على الطرف عشان الجلسة U متصلة)
-      - {kind: window, code: ز1, name: زجاج ثابت, offset: 14, width: 176, height: 265, sill: 5, style: fixed}
-      - {kind: window, code: ز1, name: زجاج ثابت, offset: 202, width: 176, height: 265, sill: 5, style: fixed}
-      - {kind: door, code: ب1, name: ب1 سحاب زجاج ضلفتين, offset: 390, width: 184, height: 270, style: sliding, leaves: 2}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 14, width: 176, height: 225, sill: 5, style: fixed}
+      - {kind: window, code: ز1, name: زجاج ثابت, offset: 202, width: 176, height: 225, sill: 5, style: fixed}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج ضلفتين, offset: 390, width: 184, height: 230, style: sliding, leaves: 2}
   - name: شرق
     title: الواجهة الشرقية
     start: [588, 0]
     end: [588, 488]
     openings:   # شباك علوي شريطي فوق الجلسة (تهوية وإضاءة بدون ما يكشف الجالسين)
-      - {kind: window, code: ش1, name: ش1 شباك علوي, offset: 194, width: 140, height: 50, sill: 220}
+      - {kind: window, code: ش1, name: ش1 شباك علوي, offset: 194, width: 140, height: 40, sill: 160}
   - name: شمال
     title: الواجهة الخلفية
     start: [588, 488]
@@ -48,15 +49,15 @@ walls:
     start: [0, 488]
     end: [0, 0]
     openings:
-      - {kind: window, code: ش1, name: ش1 شباك علوي, offset: 154, width: 140, height: 50, sill: 220}
+      - {kind: window, code: ش1, name: ش1 شباك علوي, offset: 154, width: 140, height: 40, sill: 160}
 
 rooms:
   - {name: المجلس, rect: [6, 6, 582, 482], label: [294, 330]}
 
-decks:   # بدون تراس (طلب العميل) — بس عتبة بدرج قدام باب السحاب (الأرضية مرفوعة 45 سم)
+decks:   # بدون تراس (طلب العميل) — بس عتبة بدرج قدام باب السحاب (الأرضية مرفوعة 20 سم على قاعدة النقل)
   - name: عتبة المدخل
     rect: [380, -96, 584, -6]
-    height: 45
+    height: 20
     railing: []
     stairs: {side: S, offset: 0, width: 204}
 
