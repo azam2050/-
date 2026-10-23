@@ -54,7 +54,7 @@ for k, sg in enumerate(segs):
     realistic._run(c, sub)
     mp = sub / "part.mp4"
     subprocess.run([exe, "-y", "-v", "error", "-framerate", str(fps), "-i", str(sub / "walk" / "f_%04d.jpg"),
-                    "-vf", "minterpolate=fps=24:mi_mode=blend,format=yuv420p", "-c:v", "libx264", "-crf", "20",
+                    "-vf", "minterpolate=fps=24:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,format=yuv420p", "-c:v", "libx264", "-crf", "20",
                     str(mp)], check=True)
     parts.append((mp, sg["frames"] / fps))
 if len(parts) == 1:
