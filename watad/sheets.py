@@ -96,6 +96,11 @@ def chain(ax, pts, off, fs=7):
         dim(ax, a, b, off, fs=fs)
 
 
+def steel_base(P):
+    """متنقل: يركب على قواعد حديد (بدون صبة) — meta.base: steel."""
+    return (P.meta or {}).get("base") == "steel"
+
+
 def level(ax, x, y, value, label, below=False):
     ax.plot([x - 45, x + 45], [y, y], color=C_LVL, lw=0.7)
     if below:
@@ -868,7 +873,7 @@ def elevation(ax, ctx, w):
     # المناسيب
     lx = -110
     level(ax, lx - ext_l, -sh, -sh / 100, "منسوب الأرض", below=True)
-    level(ax, lx - ext_l, 0, 0.0001, "وجه الصبة")
+    level(ax, lx - ext_l, 0, 0.0001, "وجه الأرضية" if steel_base(P) else "وجه الصبة")
     for f_ in range(1, len(P.floor_list)):
         lv = P.level(f_)
         level(ax, lx - ext_l, lv, lv / 100, "أرضية " + P.floor_list[f_]["name"])
@@ -1242,7 +1247,7 @@ def roof_sheet(ctx):
     ax2.text(S / 2, H + rise + depth + 15, "مداد 5×15 بخلعة على العمود العلوي، مثبت ببراغي",
              ha="center", fontsize=8)
     ax2.text(S / 2, P.floor_list[0]["height"] / 2, "قوائم 7×5 + تلبيس 2.5 من الجهتين", ha="center", fontsize=8)
-    level(ax2, -80, 0, 0.0001, "وجه الصبة")
+    level(ax2, -80, 0, 0.0001, "وجه الأرضية" if steel_base(P) else "وجه الصبة")
     level(ax2, -80, H, H / 100, "أعلى الجدار")
     level(ax2, -80, H + rise, (H + rise) / 100, "أعلى السقف" if P.roof.type == "shed" else "قمة الجملون")
     dim(ax2, (0, -sh), (S, -sh), -35)
@@ -1408,7 +1413,8 @@ def areas_sheet(ctx):
                  bbox=dict(boxstyle="round,pad=0.35", fc=OFFER, ec="none"))
     terms = P.meta.get("terms") or [("السعر لكامل المساحة (الكوخ + التراس المسقوف) حسب المخطط المعتمد."
                                      if all_in else "السعر للمساحة المبنية حسب المخطط المعتمد."),
-                                    "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."]
+                                    ("التمديدات الخارجية وتسوية مكان التركيب على العميل." if steel_base(P) else
+                                     "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك.")]
     fig.text(0.96, 0.175, "ملاحظات:", ha="right", fontsize=9.5, weight="bold", color=BRAND)
     for k, t in enumerate(terms):
         fig.text(0.96, 0.152 - k * 0.02, "• " + t, ha="right", fontsize=9, color="#444")
@@ -1518,7 +1524,8 @@ def perspective_sheet(ctx):
             ("الزجاج", st["glass_ar"], st["glass"]),
             ("إطارات الشبابيك والأبواب", st["frame_ar"], st["frame"]),
             ("الكنار والزوايا", "نفس الصبغة أغمق درجة", st["trim"]),
-            ("الصبة", f"خرسانة {ctx['project'].slab_height:.0f} سم", st["slab"])]
+            (("القاعدة", f"قواعد حديد {ctx['project'].slab_height:.0f} سم (متنقل — بدون صبة)", st["slab"])
+             if steel_base(ctx["project"]) else ("الصبة", f"خرسانة {ctx['project'].slab_height:.0f} سم", st["slab"]))]
     y = 0.84
     fig.text(0.95, y + 0.02, "جدول المواد والألوان", ha="right", fontsize=13, weight="bold")
     for k, v, c in rows:
@@ -1614,7 +1621,7 @@ def bom_rows(ctx):
     p, c, roof = q["pallets"], q["cladding"], q["pallets"]["roof"]
     rows = [["الارتفاع المطلوب / المعتمد", f"{hi['requested']:.0f} / {hi['suggested']:.0f} سم"],
             ["السقف", ("مائل باتجاه واحد" if ctx["project"].roof.type == "shed" else "جملون")
-             + f" {roof['pitch_deg']}° — أعلى نقطة {roof['ridge_level']:.0f} سم من وجه الصبة"],
+             + f" {roof['pitch_deg']}° — أعلى نقطة {roof['ridge_level']:.0f} سم من " + ("وجه الأرضية" if steel_base(ctx["project"]) else "وجه الصبة")],
             ["المدادات 5×15", f"{roof['rafter_count']} مداد ("
              + (f"{roof['rafters_per_side']} خط × قطعتين موصولة فوق " + ("الجسر الحامل" if roof.get("purlins") or ctx["project"].roof.purlins else "الجدار الداخلي") + " بتراكب 60 سم"
                 if roof.get("pieces", 1) == 2 else f"{roof['rafters_per_side']} لكل جهة")
@@ -1646,7 +1653,8 @@ def bom_rows(ctx):
                                      f"(مجموع الصفوف {c['total_run_m']} م، {c['faces']} وجه)"],
              ["أسمنت بورد 12 مم (122×244)", f"{c['cement_board_sheets']} لوح (داخل دورات المياه)"],
              ["العزل", f"{q['insulation']['panels']} لوح فوم صخري 80" if q["insulation"] else "بدون (غير مطلوب)"],
-             ["الصبة", "يجهزها العميل — 20 سم، مفرغة تحت دورات المياه"]]
+             (["القاعدة", f"قواعد حديد {ctx['project'].slab_height:.0f} سم من المصنع (متنقل — بدون صبة)"]
+              if steel_base(ctx["project"]) else ["الصبة", "يجهزها العميل — 20 سم، مفرغة تحت دورات المياه"])]
     return rows
 
 
