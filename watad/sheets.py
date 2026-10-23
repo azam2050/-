@@ -424,6 +424,12 @@ def plan_sheet(ctx, floor=0):
     for pt in P.posts:
         if pt.get("inner") and floor != 0:
             continue
+        if pt.get("kind") == "box":      # صندوق الفازات بين أعمدة البارتشن (خط متقطع — فوق الأرض)
+            w, d = pt.get("w", 60), pt.get("d", 24)
+            bw, bd = (d, w) if pt.get("axis", "y") == "y" else (w, d)
+            ax.add_patch(Rectangle((pt["at"][0] - bw / 2, pt["at"][1] - bd / 2), bw, bd, fc="none", ec="#8b5a2b",
+                                   lw=0.6, ls=(0, (3, 2))))
+            continue
         h_ = pt.get("size", 16) / 2 if pt.get("inner") else 8
         ax.add_patch(Rectangle((pt["at"][0] - h_, pt["at"][1] - h_), 2 * h_, 2 * h_, fc="#8b5a2b", ec="k", lw=0.6))
     _draw_shape(ax, wall_shapes(P, rules), fc="white", ec="k", lw=0.9, hatch="////")
@@ -956,6 +962,8 @@ def peaks_roof_sheet(ctx):
         ax.text(A[0], A[1] - 45, f"قمة {i + 1}\n+{(A[2]) / 100:.2f}", ha="center", va="top", fontsize=7, color="red",
                 bbox=dict(fc="white", ec="none", pad=1))
     for pt in P.posts:
+        if pt.get("inner"):          # أعمدة/صناديق البارتشن الداخلي ما تبان بمسقط السقف
+            continue
         ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
     ex0 = min(e[0] for G in Gs for e in G["E"])
     ex1 = max(e[0] for G in Gs for e in G["E"])
@@ -1033,6 +1041,8 @@ def tent_roof_sheet(ctx):
                 bbox=dict(fc="white", ec="none", pad=1))
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
     for pt in P.posts:
+        if pt.get("inner"):          # أعمدة/صناديق البارتشن الداخلي ما تبان بمسقط السقف
+            continue
         ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
     ex0 = min(g["eave"][0] for g in Us)
     ey0 = min(g["eave"][1] for g in Us)
@@ -1173,6 +1183,8 @@ def roof_sheet(ctx):
     dim(ax, (x0, ry1), (x1, ry1), 15, fs=6)
     dim(ax, (rx1, ry1), (rx1, ry0), 40)
     for pt in P.posts:
+        if pt.get("inner"):          # أعمدة/صناديق البارتشن الداخلي ما تبان بمسقط السقف
+            continue
         ax.add_patch(Rectangle((pt["at"][0] - 8, pt["at"][1] - 8), 16, 16, fc="#8b5a2b", ec="k"))
     from .roof import cross_gables, cross_planes
     for gc in cross_gables(P, rules):               # المثلثات البارزة: سطحين + قمة + وادي
