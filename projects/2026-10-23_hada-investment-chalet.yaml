@@ -237,6 +237,7 @@ interior_decor:
   - {kind: fire_pit, at: [931, -570], z: -85, r: 32}                               # الوحدة 2
 
 render:
+  quality: high      # رندر عالي الواقعية (Normal + حواف + ارتدادات + سماء HDRI نهار)
   night_interior: 2
   exterior:
     - {name: الشاليهين من الشارع, cam: [764, -2550, 950], target: [764, 150, 250], lens: 24}

@@ -270,7 +270,8 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "landscape": plan_landscape(project, keep_clear=[tuple(s[2][:2]) for s in ext]),
             "wood_frames": style.get("frame_ar", "").startswith("إطار خشب"),
             "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35,
-            "decor": decor_items(project), "sadu": bool(rs.get("sadu")), "pano_res": rs.get("pano_res", [2400, 1200]), "ground_holes": ground_holes(project)}
+            "decor": decor_items(project), "sadu": bool(rs.get("sadu")), "pano_res": rs.get("pano_res", [2400, 1200]), "ground_holes": ground_holes(project),
+            "hq": rs.get("quality") == "high"}
     pano = lambda key: [[p_["name"], [v / 100 for v in p_["at"]], p_.get("yaw", 0)]  # noqa: E731
                         for p_ in rs.get("panos", []) if p_.get(key, key == "day")]
     lk = rs.get("ext_lens_k", 1.0)       # تقريب اللقطات الخارجية
@@ -278,7 +279,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     day = ([[s[0], s[2], s[3], s[4], s[5], 0.0] for s in ext] if "exterior" in parts else []) + \
         ([[s[0], s[2], s[3], s[4], s[5], rs.get("day_exposure", 0.6)] for s in inn] if "interior" in parts else [])
     if day:
-        _run({**base, **DAY, "tag": "day", "shots": day, "panos": pano("day") if "pano" in parts else [], "area_lights": _areas(project, 5 if project.decor else 15)}, out)
+        _run({**base, **DAY, **({"sky_hdr": "sky_day.hdr", "sky": 1.0} if base["hq"] and Path(TEX, "sky_day.hdr").exists() else {}), "tag": "day", "shots": day, "panos": pano("day") if "pano" in parts else [], "area_lights": _areas(project, 5 if project.decor else 15)}, out)
     dusk = [["d" + s[0][1:], s[2], s[3], s[4], s[5], 1.2] for s in ext[:2]]
     night_in = [["n" + s[0][1:], s[2], s[3], s[4], s[5], rs.get("night_exposure", 0.4)] for s in inn[:rs.get("night_interior", 0)]]
     dusk += night_in

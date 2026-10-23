@@ -14,6 +14,7 @@ from mathutils import Vector
 
 cfg = json.load(open(sys.argv[sys.argv.index("--") + 1]))
 TEX = cfg["tex_dir"]
+HQ = bool(cfg.get("hq"))      # render.quality: high في المشروع
 
 
 def hex2rgb(h):
@@ -81,7 +82,18 @@ def tex_material(name, asset, tile_m, tint=None, tint_mix=0.85, rough=None, bump
     else:
         bsdf.inputs["Roughness"].default_value = rough if rough is not None else 0.6
     d = img("Displacement", True)
-    if d and bump:
+    nm = img("NormalGL", True) if HQ else None
+    if nm:
+        # جودة عالية: خريطة Normal حقيقية (عروق وشقوق الخشب واضحة) + حواف مشطوفة تلمع مثل الخشب المصنّع
+        nmap = N.new("ShaderNodeNormalMap")
+        nmap.inputs["Strength"].default_value = min(1.0, 0.4 + bump * 2)
+        L.new(nm.outputs["Color"], nmap.inputs["Color"])
+        bev = N.new("ShaderNodeBevel")
+        bev.samples = 6
+        bev.inputs["Radius"].default_value = 0.004
+        L.new(nmap.outputs["Normal"], bev.inputs["Normal"])
+        L.new(bev.outputs["Normal"], bsdf.inputs["Normal"])
+    elif d and bump:
         b = N.new("ShaderNodeBump")
         b.inputs["Strength"].default_value = bump
         b.inputs["Distance"].default_value = 0.01
@@ -197,7 +209,7 @@ scene.world = world
 world.use_nodes = True
 wn = world.node_tree
 env = wn.nodes.new("ShaderNodeTexEnvironment")
-env.image = bpy.data.images.load(f"{TEX}/sky.hdr")
+env.image = bpy.data.images.load(f"{TEX}/{cfg.get('sky_hdr', 'sky.hdr')}")
 wn.links.new(env.outputs["Color"], wn.nodes["Background"].inputs["Color"])
 wn.nodes["Background"].inputs["Strength"].default_value = cfg.get("sky", 1.0)
 sun = bpy.data.lights.new("sun", "SUN")
@@ -264,6 +276,33 @@ scene.view_settings.look = "AgX - Medium High Contrast"
 scene.view_settings.exposure = cfg.get("exposure", 0.0)
 scene.render.image_settings.file_format = "JPEG"
 scene.render.image_settings.quality = 90
+if HQ:
+    # إضاءة غير مباشرة أدق (ارتدادات أكثر) + تنقية OIDN بالألوان والاتجاهات + جودة JPEG أعلى
+    cy = scene.cycles
+    cy.max_bounces, cy.diffuse_bounces, cy.glossy_bounces = 12, 6, 6
+    cy.transmission_bounces, cy.transparent_max_bounces = 12, 12
+    cy.adaptive_threshold = 0.006
+    cy.denoiser = "OPENIMAGEDENOISE"
+    cy.denoising_input_passes = "RGB_ALBEDO_NORMAL"
+    cy.denoising_prefilter = "ACCURATE"
+    cy.blur_glossy = 0.5
+    cy.caustics_reflective = cy.caustics_refractive = False
+    scene.view_settings.look = "AgX - Base Contrast"
+    scene.render.image_settings.quality = 95
+    sun.angle = math.radians(0.8)
+    if cfg.get("night"):
+        # توهّج خفيف حول اللمبات والفوانيس (مثل الكاميرا الحقيقية)
+        scene.use_nodes = True
+        ct = scene.node_tree
+        rl, comp = ct.nodes["Render Layers"], ct.nodes["Composite"]
+        gl = ct.nodes.new("CompositorNodeGlare")
+        gl.glare_type = "FOG_GLOW"
+        gl.quality = "HIGH"
+        gl.threshold = 1.2
+        gl.size = 7
+        gl.mix = -0.75
+        ct.links.new(rl.outputs["Image"], gl.inputs["Image"])
+        ct.links.new(gl.outputs["Image"], comp.inputs["Image"])
 
 cam_data = bpy.data.cameras.new("cam")
 cam_data.lens = cfg.get("lens", 32)
