@@ -245,7 +245,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
     # WATAD_REAL_PARTS=exterior,dusk → يعيد الخارج فقط ويحتفظ بصور الداخل السابقة (تعديل سقف/واجهة)
     parts = set(os.environ.get("WATAD_REAL_PARTS", "exterior,dusk,interior,pano").split(","))
     for old in out.glob("*.jpg"):
-        if (old.name[0] == "i" and "interior" not in parts) or (old.name[0] in "dn" and "dusk" not in parts) or \
+        if (old.name[0] == "x" and "exterior" not in parts) or (old.name[0] == "i" and "interior" not in parts) or (old.name[0] in "dn" and "dusk" not in parts) or \
                 (old.name.startswith("pano") and "pano" not in parts):
             continue
         old.unlink()
