@@ -41,7 +41,7 @@ def band(p, text, sub=""):
 
 def _kind(page):
     t = page.get_text()
-    if "التسعير" in t:
+    if "التسعير" in t or "جدول المساحات" in t:      # صفحة المساحات والتسعير (النص المستخرج أحياناً بترتيب بصري)
         return "price"
     if "جدول" in t:
         return "table"
@@ -69,7 +69,8 @@ def main(autocad, real, url, out, title="", facts=""):
     p.draw_rect(pymupdf.Rect(0, H - 213, W, H - 210), color=None, fill=(0.72, 0.58, 0.35))
     logo = Path(__file__).resolve().parent.parent / "assets" / "watad_logo.png"
     if logo.exists():
-        p.insert_image(pymupdf.Rect(50, H - 190, 210, H - 30), filename=str(logo), keep_proportion=True)
+        p.draw_rect(pymupdf.Rect(50, H - 185, 205, H - 35), color=None, fill=(0.95, 0.92, 0.86), radius=0.08)
+        p.insert_image(pymupdf.Rect(62, H - 175, 193, H - 45), filename=str(logo), keep_proportion=True)
     html(p, (240, H - 195, W - 50, H - 140), "مصنع وتد الأخشاب · ملف التصميم", 18, "#D9C39A", head=True, weight="bold")
     html(p, (240, H - 145, W - 50, H - 80), f"<b>{title}</b>", 34, "#FFFFFF", head=True)
     if facts:
