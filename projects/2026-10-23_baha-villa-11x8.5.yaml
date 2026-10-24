@@ -36,7 +36,7 @@ roof:
   overhang: 35
   purlins: 1
   cross_gables:   # الجملون الزجاج بالنص فوق البلكونة (مثل الصورة)
-    - {side: S, center: 544, width: 440, pitch: 45, overhang: 60, ext: 90, glass: true, beams: 1}   # ممتد 0.90 للأمام فوق البلكونة على عمودين
+    - {side: S, center: 544, width: 440, pitch: 45, overhang: 60, ext: 90, beams: 1, window_width: 180, window_height: 150}   # ممتد 0.90 للأمام فوق البلكونة على عمودين
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -233,8 +233,8 @@ decks:   # برندة المدخل بدرج + بلكونة فوقها على أ�
 
 posts:   # عمودين طرفيين 20×20 من الأرض لين جسر الجملون الممتد (مثل الصورة) + عمودين وسط تحت البلكونة
   - {at: [343, -137], size: 20, top: 563}
-  - {at: [440, -137], size: 18, top: 305}
-  - {at: [648, -137], size: 18, top: 305}
+  - {at: [440, -134], size: 18, top: 296}
+  - {at: [648, -134], size: 18, top: 296}
   - {at: [745, -137], size: 20, top: 563}
 
 skirts:  # رفرف مائل بين الدورين يمين ويسار البرندة (خط السقف الواطي في الصورة) — يحمي شبابيك الأرضي من الشمس والمطر

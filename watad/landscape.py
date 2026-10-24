@@ -56,9 +56,33 @@ def plan_landscape(project, seed=7, keep_clear=()):
         dx0, dy0, dx1, dy1 = (v / 100 for v in d.rect)
         z = (d.level or 0) / 100
         if not d.level:
-            out.append({"model": "outdoor_table_chair_set_01", "at": [dx0 + 1.3, (dy0 + dy1) / 2, z], "H": 0.86,
-                        "rot": 90})
-            out.append({"model": "potted_plant_01", "at": [dx1 - 0.5, dy1 - 0.45, z], "H": 1.3})
+            # ملاحظة المصنع: الجلسة ما تنحط قدام باب ولا على طريق الدرج — نحسب المناطق المحجوزة على طول التراس
+            busy = []
+            for w in project.walls:
+                if not w.exterior or w.floor != 0:
+                    continue
+                for o in w.openings:
+                    if o.kind != "door":
+                        continue
+                    (ax, ay), (bx, by) = w.point(o.offset), w.point(o.offset + o.width)
+                    if min(ay, by) - 30 <= d.rect[3] + 20 and max(ay, by) + 30 >= d.rect[1] - 20 and abs(ay - by) < 1:
+                        busy.append((min(ax, bx) / 100 - 0.6, max(ax, bx) / 100 + 0.6))
+            st = d.stairs if isinstance(d.stairs, dict) else None
+            if st:
+                sx = (d.rect[0] + st.get("offset", 0)) / 100
+                busy.append((sx - 0.2, sx + st.get("width", 100) / 100 + 0.2))
+            spot = None
+            if dy1 - dy0 >= 1.8:                         # التراس عميق كفاية لجلسة (≥ 1.80 م)
+                for cx in _steps(dx0 + 0.9, dx1 - 0.9, 0.25):
+                    if all(cx + 0.85 < b0 or cx - 0.85 > b1 for b0, b1 in busy):
+                        spot = cx
+                        break
+            if spot is not None:
+                out.append({"model": "outdoor_table_chair_set_01", "at": [spot, (dy0 + dy1) / 2, z], "H": 0.86,
+                            "rot": 90})
+            pc = next((x for x in (dx1 - 0.5, dx0 + 0.5) if all(x + 0.3 < b0 or x - 0.3 > b1 for b0, b1 in busy)), None)
+            if pc is not None:
+                out.append({"model": "potted_plant_01", "at": [pc, dy1 - 0.45, z], "H": 1.3})
         else:
             out.append({"model": "planter_box_01", "at": [dx1 - 0.7, dy0 + 0.45, z], "W": 0.9})
             out.append({"model": "potted_plant_02", "at": [dx0 + 0.5, dy0 + 0.5, z], "H": 0.85})
