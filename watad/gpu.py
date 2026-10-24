@@ -44,6 +44,16 @@ def _save(s):
 def pod():
     """يرجع (url, token) لجهاز جاهز — يشغّل جهاز جديد أو يكمّل الموجود."""
     s = _state()
+    if not s.get("id"):              # جلسة جديدة: نرجع للجهاز المطفي المحفوظ (اسمه watad-render) بدل جهاز جديد
+        try:
+            for p_ in _req("GET", f"{API}/pods") or []:
+                tok_ = (p_.get("env") or {}).get("AGENT_TOKEN")
+                if p_.get("name") == "watad-render" and tok_:
+                    s = {"id": p_["id"], "token": tok_, "assets": "sync"}
+                    _save(s)
+                    break
+        except Exception:  # noqa: BLE001
+            pass
     if s.get("id"):
         try:
             p = _req("GET", f"{API}/pods/{s['id']}")
@@ -104,10 +114,18 @@ def _put_tar(url, s, files, dest):
 
 
 def ensure_assets(url, s, tex_dir, models_dir):
-    if s.get("assets"):
+    """الخامات والموديلات على تخزين الجهاز (يبقى بعد الإطفاء): نرفع بس المجلدات الناقصة (خامات جديدة/لوحات)."""
+    if s.get("assets") is True and not os.environ.get("WATAD_GPU_SYNC"):
         return
-    _put_tar(url, s, [(tex_dir, "tex")], "/workspace/assets")
-    _put_tar(url, s, [(models_dir, "models")], "/workspace/assets")
+    for local, name in ((Path(tex_dir), "tex"), (Path(models_dir), "models")):
+        try:
+            have = {Path(f).relative_to(f"/workspace/assets/{name}").parts[0]
+                    for f in _agent(url, s, "GET", f"/ls?path=/workspace/assets/{name}")}
+        except Exception:  # noqa: BLE001
+            have = set()
+        miss = [(c, f"{name}/{c.name}") for c in sorted(local.iterdir()) if c.name not in have]
+        if miss:
+            _put_tar(url, s, miss, "/workspace/assets")
     s["assets"] = True
     _save(s)
 
