@@ -534,6 +534,8 @@ def draw_mezz_on_ground(ax, P):
     for m in P.mezzanines:
         x0, y0, x1, y1 = m["rect"]
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#6b4f3a", lw=0.8, ls=(0, (6, 4)), zorder=2))
+        if m.get("plan_title") or m.get("no_ground_label"):
+            continue
         ax.text((x0 + x1) / 2, y0 + 10, f"حد الميزانين فوق (منسوب +{m['level'] / 100:.2f})"
                 + (" — غرفة مقفلة بجدار" if m.get("walls") else ""), ha="center", va="bottom",
                 fontsize=6.5, color="#6b4f3a", zorder=5)
@@ -563,7 +565,11 @@ def mezz_sheet(ctx):
     ax = drawing_ax(fig, [0.06, 0.08, 0.88, 0.84])
     lv = P.mezzanines[0]["level"] if P.mezzanines else 0
     use = P.mezzanines[0].get("use", "غرفة النوم") if P.mezzanines else "غرفة النوم"
-    title(ax, f"مسقط الميزانين (نص الدور) — {use}", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
+    ptitle = P.mezzanines[0].get("plan_title") if P.mezzanines else None   # دور كامل داخل المثلث (A-frame دورين)
+    if ptitle:
+        title(ax, ptitle, f"منسوب الأرضية +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر  |  الوقفة الكاملة ≥ 2.10 م بين الخطين المتقطعين")
+    else:
+        title(ax, f"مسقط الميزانين (نص الدور) — {use}", f"منسوب أرضية الميزانين +{lv / 100:.2f}  |  الأبعاد بالسنتيمتر")
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec="k", lw=1.6, zorder=0.3))
     ax.add_patch(Rectangle((x0 + 2 * half, y0 + 2 * half), x1 - x0 - 4 * half, y1 - y0 - 4 * half, fc="white", ec="k",
                            lw=0.8, zorder=0.4))
@@ -610,6 +616,15 @@ def mezz_sheet(ctx):
         ax.text((mx0 + mx1) / 2, my1 - 20, f"{m.get('name', 'الميزانين')}  {(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
                 f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
         vy0 = y0 + 2 * half
+        full = any(mm.get("plan_title") for mm in P.mezzanines)   # دور كامل: مافيه فراغ مزدوج
+        if full:
+            hb = m.get("headroom") if m is P.mezzanines[0] else None
+            if hb:
+                for xx in hb:
+                    ax.plot([xx, xx], [P.mezzanines[0]["rect"][1], max(mm["rect"][3] for mm in P.mezzanines)],
+                            color="#c56b1a", lw=0.8, ls="--", zorder=5)
+            dim(ax, (mx1, my0), (mx1, my1), -40, fs=7)
+            continue
         ax.add_patch(Rectangle((mx0, vy0), mx1 - mx0, my0 - vy0, fill=False, ec="#999", lw=0.6, hatch="..", zorder=0.5))
         ax.text((mx0 + mx1) / 2, vy0 + 60 if P.spiral_stairs else (vy0 + my0) / 2 + 40,
                 "فراغ مزدوج الارتفاع (الصالة تحت)\nالواجهة زجاج كامل",
@@ -658,7 +673,7 @@ def mezz_sheet(ctx):
     ax.set_ylim(y0 - 120, y1 + 120)
     ax.set_aspect("equal")
     ax.axis("off")
-    return fig, "مسقط الميزانين"
+    return fig, (ptitle or "مسقط الميزانين")
 
 
 # ---------------------------------------------------------------- بروز مقفل (دورة مياه الميزانين فوق + غرفة تفتيش تحت)
