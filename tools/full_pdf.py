@@ -30,6 +30,16 @@ def html(page, rect, body, size=14, color=INK, align="right", weight="normal", h
                         css=CSS, archive=ARCH)
 
 
+def _jpg(path, max_px=1700, q=84):
+    """صورة مضغوطة للملف (حد الموقع 25 م.ب للملف الواحد) — نفس الشكل بالعين."""
+    from PIL import Image
+    im = Image.open(path).convert("RGB")
+    im.thumbnail((max_px, max_px))
+    b = io.BytesIO()
+    im.save(b, "JPEG", quality=q, optimize=True)
+    return b.getvalue()
+
+
 def band(p, text, sub=""):
     """شريط عنوان الصفحة: خلفية غامقة + خط ذهبي + العنوان بخط عريض (مثل هوية المصنع)."""
     p.draw_rect(pymupdf.Rect(0, 0, W, 62), color=None, fill=(0.17, 0.11, 0.07))
@@ -64,7 +74,7 @@ def main(autocad, real, url, out, title="", facts=""):
     cover = next((real / f for f in ("d1.jpg", "x1.jpg") if (real / f).exists()), None)
     p = doc.new_page(width=W, height=H)
     if cover:
-        p.insert_image(pymupdf.Rect(0, 0, W, H), filename=str(cover), keep_proportion=False)
+        p.insert_image(pymupdf.Rect(0, 0, W, H), stream=_jpg(cover, 2000), keep_proportion=False)
     p.draw_rect(pymupdf.Rect(0, H - 210, W, H), color=None, fill=(0.1, 0.07, 0.05), fill_opacity=0.82)
     p.draw_rect(pymupdf.Rect(0, H - 213, W, H - 210), color=None, fill=(0.72, 0.58, 0.35))
     logo = Path(__file__).resolve().parent.parent / "assets" / "watad_logo.png"
@@ -91,7 +101,7 @@ def main(autocad, real, url, out, title="", facts=""):
                 continue
             p = doc.new_page(width=W, height=H)
             band(p, name, gtitle)
-            p.insert_image(pymupdf.Rect(30, 76, W - 30, H - 40), filename=str(f), keep_proportion=True)
+            p.insert_image(pymupdf.Rect(30, 76, W - 30, H - 40), stream=_jpg(f), keep_proportion=True)
             if vr:
                 p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(300, H - 36, W - 300, H - 10), "uri": url})
     # ---- الجداول ثم التسعيرة بالأخير
@@ -100,7 +110,8 @@ def main(autocad, real, url, out, title="", facts=""):
             if k == want:
                 doc.insert_pdf(src, from_page=i, to_page=i)
     if not vr:
-        doc.save(out, deflate=True, garbage=3)
+        doc.subset_fonts()
+        doc.save(out, deflate=True, garbage=4)
         return doc.page_count
     panos = sorted(real.glob("pano-*.jpg"))
     if panos:
@@ -109,7 +120,7 @@ def main(autocad, real, url, out, title="", facts=""):
             band(p, "صور 360°", "تنعرض متحركة في الواقع الافتراضي — اضغط هنا")
             p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(40, 10, W - 40, 60), "uri": url})
             for k, f in enumerate(panos[i:i + 2]):
-                p.insert_image(pymupdf.Rect(60, 80 + k * 370, W - 60, 430 + k * 370), filename=str(f), keep_proportion=True)
+                p.insert_image(pymupdf.Rect(60, 80 + k * 370, W - 60, 430 + k * 370), stream=_jpg(f, 2000), keep_proportion=True)
     # ---- آخر صفحة: تجربة الواقع الافتراضي (نهار / ليل)
     p = doc.new_page(width=W, height=H)
     p.draw_rect(pymupdf.Rect(0, 0, W, 14), color=None, fill=(0.23, 0.14, 0.09))
@@ -129,10 +140,11 @@ def main(autocad, real, url, out, title="", facts=""):
         p.insert_link({"kind": pymupdf.LINK_URI, "from": btn, "uri": u})
     side = sorted(real.glob("d1.jpg")) or sorted(real.glob("x1.jpg"))
     if side:
-        p.insert_image(pymupdf.Rect(60, 290, W - 900, 640), filename=str(side[0]), keep_proportion=True)
+        p.insert_image(pymupdf.Rect(60, 290, W - 900, 640), stream=_jpg(side[0], 1000), keep_proportion=True)
     html(p, (60, 680, W - 60, 760), f'الرابط: <span style="color:#2F5D4A">{url}</span>', 14, MUTED)
     p.insert_link({"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(60, 680, W - 60, 710), "uri": url})
-    doc.save(out, deflate=True, garbage=3)
+    doc.subset_fonts()
+    doc.save(out, deflate=True, garbage=4)
     return doc.page_count
 
 

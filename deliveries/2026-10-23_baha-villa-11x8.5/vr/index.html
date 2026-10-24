@@ -145,8 +145,8 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": "pano/front-night.jpg"}, {"id": "room2", "name": "غرفة النوم 2", "day": "pano/room2.jpg", "night": "pano/room2-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}]/*END*/;
-const HAS_VIDEO = /*VIDEO*/false/*END*/;
+const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": "pano/front-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}]/*END*/;
+const HAS_VIDEO = /*VIDEO*/true/*END*/;
 let NIGHT = location.hash === "#night";
 const modeHooks = [];
 function setNight(n) {
@@ -159,7 +159,7 @@ function setNight(n) {
 document.getElementById("dn-day").addEventListener("click", () => setNight(false));
 document.getElementById("dn-night").addEventListener("click", () => setNight(true));
 if (HAS_VIDEO) { document.getElementById("video-sec").hidden = false; document.getElementById("walk").src = "walk.mp4"; }
-const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/x1.jpg"}, {"name": "أمامي من اليمين", "file": "shots/x2.jpg"}, {"name": "الواجهة الأمامية", "file": "shots/x3.jpg"}, {"name": "خلفي من اليسار", "file": "shots/x4.jpg"}, {"name": "أمامي من اليسار — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "أمامي من اليمين — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الماستر — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة", "file": "shots/i1.jpg"}, {"name": "الماستر", "file": "shots/i2.jpg"}, {"name": "غرفة النوم 2", "file": "shots/i3.jpg"}]/*END*/;
+const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار — من الحديقة", "file": "shots/x1.jpg"}, {"name": "أمامي من اليمين — من الموقف", "file": "shots/x2.jpg"}, {"name": "من الشارع — السور والبوابة", "file": "shots/x3.jpg"}, {"name": "منظر علوي — الأرض والسور", "file": "shots/x4.jpg"}, {"name": "أمامي من اليسار — من الحديقة — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "أمامي من اليمين — من الموقف — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — الجدار المميز واللوحات — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الطعام والمدخل — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة — الجدار المميز واللوحات", "file": "shots/i1.jpg"}, {"name": "الطعام والمدخل", "file": "shots/i2.jpg"}, {"name": "الماستر", "file": "shots/i3.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
 (function () {
@@ -254,7 +254,8 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   const SKIN = { wood: ["wood.jpg", 1.1], wood_in: ["wood.jpg", 0.9], ceiling: ["wood.jpg", 0.9], sheathing: ["wood.jpg", 0.9],
     floor: ["wood.jpg", 1.3], joist: ["wood_dark.jpg", 1.0], rafters: ["wood_dark.jpg", 1.0], trim: ["wood_dark.jpg", 1.0],
     stair: ["wood_dark.jpg", 1.0], door: ["wood_dark.jpg", 1.0], roof_tiles: ["roof.jpg", 1.2], paver: ["paver.jpg", 1.4],
-    site_wall: ["wall.jpg", 2.2], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
+    site_wall: ["stone.jpg", 1.4], D_stone_clad: ["stone.jpg", 1.4], D_tile_45443F: ["tile.jpg", 1.2],
+    D_slat: ["wood_dark.jpg", 0.6], D_slat_dk: ["wood_dark.jpg", 0.6], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
   const PASS = new Set(["glass", "door", "frame", "water"]);    // تقدر تعبر منها بالمشي (الأبواب والزجاج)
   const solids = [];
   function boxUV(mesh, tile) {
@@ -280,11 +281,35 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
         if (!o.material.userData.dressed) { o.material.map = tex(sk[0], 1); o.material.color.set(0xffffff);
           o.material.roughness = nm === "roof_tiles" ? 0.75 : 0.65; o.material.metalness = 0; o.material.userData.dressed = true; o.material.needsUpdate = true; }
       }
+      if (nm.startsWith("D_paint_")) { o.material = new THREE.MeshStandardMaterial({ color: new THREE.Color("#" + nm.slice(8)).multiplyScalar(0.55), roughness: 0.95, metalness: 0 }); o.material.name = nm; }
+      if (nm === "D_mat_white") { o.material.color.set(0xefeae0); }
       if (nm === "glass") { o.material.transparent = true; o.material.opacity = 0.28; o.material.roughness = 0.05; o.material.metalness = 0.2; o.castShadow = false; }
       if (nm === "water") { o.material.color.set(0x2a8fb8); o.material.roughness = 0.05; o.material.transparent = true; o.material.opacity = 0.85; }
       if (!PASS.has(nm)) solids.push(o);
     });
   }
+  /* إضاءة مخبوزة من Blender (Cycles): كل سطح ينضرب بخريطة إضاءته الحقيقية — نهار وليل — فيطلع مثل الرندر */
+  let LM = null; const lmTex = {}, baked = [];
+  const LMX = { day: 0.62, night: 0.75 };
+  fetch("lm.json").then(r => r.ok ? r.json() : null).then(j => { LM = j; applyLM(); }).catch(() => {});
+  function lmGroup(o) { for (let p = o; p; p = p.parent) if (p.userData && p.userData.lmgroup) return p.userData.lmgroup; return null; }
+  function bakeLM(root) {
+    const cache = {};
+    root.traverse(o => {
+      if (!o.isMesh || !o.geometry.attributes.uv2) return;
+      const g = lmGroup(o); if (!g) return;
+      const om = o.material, key = om.uuid + g;
+      if (!cache[key]) { const m = new THREE.MeshBasicMaterial({ map: om.map || null, color: om.map ? 0xffffff : om.color.clone() });
+        m.userData.g = g; cache[key] = m; baked.push(m); }
+      o.material = cache[key]; o.castShadow = true; o.receiveShadow = false;
+    });
+  }
+  function lmLoad(g, mode) { const k = g + mode; if (lmTex[k]) return lmTex[k];
+    const t = texL.load(LM.groups[g][mode].file); t.flipY = false; if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; return (lmTex[k] = t); }
+  function applyLM() { if (!LM) return; const mode = NIGHT ? "night" : "day";
+    baked.forEach(m => { const gg = LM.groups[m.userData.g]; if (!gg) return;
+      m.lightMap = lmLoad(m.userData.g, mode); m.lightMapIntensity = gg[mode].k * LMX[mode]; m.needsUpdate = true; }); }
+  modeHooks.push(applyLM);
   const hemi = scene.children.find(o => o.isHemisphereLight);
   /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
   const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
@@ -324,7 +349,7 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   function size() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
   const GLB_SRC = ["web.glb", "https://raw.githubusercontent.com/azam2050/-/HEAD/site/baha/web.glb"];
   (function loadGLB(k) { new THREE.GLTFLoader().load(GLB_SRC[k], g => {
-    dress(g.scene); scene.add(g.scene);
+    dress(g.scene); bakeLM(g.scene); scene.add(g.scene); applyLM();
     const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()).length();
     controls.target.copy(c); camera.position.set(c.x - s * 0.55, c.y + s * 0.45, c.z + s * 0.75);
     home = { p: camera.position.clone(), t: c.clone() }; controls.update(); loadEl.hidden = true;

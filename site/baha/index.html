@@ -80,17 +80,17 @@ footer { color: var(--muted); font-size: .85rem }
 <div class="wrap">
   <header>
     <div class="eyebrow">مصنع وتد الأخشاب · الباحة</div>
-    <h1>فيلا خشب دورين — جولة افتراضية</h1>
+    <h1>فيلا خشب دورين بواجهة جملون — جولة افتراضية</h1>
     <p class="lead">امشِ داخل الفيلا بحرية — الدور الأرضي والأول — بالنهار والليل، مع فيديو الجولة ولقطات الرندر وملف الأوتوكاد كامل.</p>
     <div class="dn" role="group" aria-label="وقت المشاهدة">
       <button type="button" id="dn-day" aria-pressed="true">بالنهار</button>
       <button type="button" id="dn-night" aria-pressed="false">بالليل</button>
     </div>
     <div class="facts">
-      <span>7.00 × 10.00 م × دورين = 140 م²</span>
-      <span>صالة ومطبخ وغرفة عاملة</span>
+      <span>11.00 × 8.50 م × دورين = 187 م²</span>
+      <span>صالة وطعام ومطبخ وغرفة عاملة</span>
       <span>3 غرف — ماستر بغرفة ملابس وحمام</span>
-      <span>عزل كامل + جملون 30°</span>
+      <span>أرض بسور حجر + حديقة وجلسة</span>
     </div>
   </header>
 
@@ -141,7 +141,7 @@ footer { color: var(--muted); font-size: .85rem }
 
   <section aria-labelledby="t-files">
     <div class="sec-head"><h2 id="t-files">ملف التصميم كامل (الأوتوكاد)</h2><span class="hint">اضغط على أي لوحة لتكبيرها</span></div>
-    <a class="pdf" href="baha-autocad.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
+    <a class="pdf" href="Baha-Villa-Full.pdf" target="_blank" rel="noopener">فتح ملف المخطط PDF</a>
     <div class="sheets" id="sheets"></div>
   </section>
 
@@ -153,8 +153,8 @@ footer { color: var(--muted); font-size: .85rem }
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": "pano/front-night.jpg"}, {"id": "room2", "name": "غرفة النوم 2", "day": "pano/room2.jpg", "night": "pano/room2-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}]/*END*/;
-const HAS_VIDEO = /*VIDEO*/false/*END*/;
+const PANOS = /*PANOS*/[{"id": "front", "name": "قدام المبنى", "day": "pano/front.jpg", "night": "pano/front-night.jpg"}, {"id": "living", "name": "الصالة", "day": "pano/living.jpg", "night": "pano/living-night.jpg"}, {"id": "master", "name": "غرفة الماستر", "day": "pano/master.jpg", "night": "pano/master-night.jpg"}]/*END*/;
+const HAS_VIDEO = /*VIDEO*/true/*END*/;
 let NIGHT = location.hash === "#night";
 const modeHooks = [];
 function setNight(n) {
@@ -167,7 +167,7 @@ function setNight(n) {
 document.getElementById("dn-day").addEventListener("click", () => setNight(false));
 document.getElementById("dn-night").addEventListener("click", () => setNight(true));
 if (HAS_VIDEO) { document.getElementById("video-sec").hidden = false; document.getElementById("walk").src = "walk.mp4"; }
-const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/x1.jpg"}, {"name": "أمامي من اليمين", "file": "shots/x2.jpg"}, {"name": "الواجهة الأمامية", "file": "shots/x3.jpg"}, {"name": "خلفي من اليسار", "file": "shots/x4.jpg"}, {"name": "أمامي من اليسار — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "أمامي من اليمين — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الماستر — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة", "file": "shots/i1.jpg"}, {"name": "الماستر", "file": "shots/i2.jpg"}, {"name": "غرفة النوم 2", "file": "shots/i3.jpg"}]/*END*/;
+const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار — من الحديقة", "file": "shots/x1.jpg"}, {"name": "أمامي من اليمين — من الموقف", "file": "shots/x2.jpg"}, {"name": "من الشارع — السور والبوابة", "file": "shots/x3.jpg"}, {"name": "منظر علوي — الأرض والسور", "file": "shots/x4.jpg"}, {"name": "أمامي من اليسار — من الحديقة — وقت الغروب", "file": "shots/d1.jpg"}, {"name": "أمامي من اليمين — من الموقف — وقت الغروب", "file": "shots/d2.jpg"}, {"name": "الصالة — الجدار المميز واللوحات — بالليل والإنارة شغالة", "file": "shots/n1.jpg"}, {"name": "الطعام والمدخل — بالليل والإنارة شغالة", "file": "shots/n2.jpg"}, {"name": "الصالة — الجدار المميز واللوحات", "file": "shots/i1.jpg"}, {"name": "الطعام والمدخل", "file": "shots/i2.jpg"}, {"name": "الماستر", "file": "shots/i3.jpg"}]/*END*/;
 
 /* ---------- جولة 360° ---------- */
 (function () {
@@ -262,7 +262,8 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   const SKIN = { wood: ["wood.jpg", 1.1], wood_in: ["wood.jpg", 0.9], ceiling: ["wood.jpg", 0.9], sheathing: ["wood.jpg", 0.9],
     floor: ["wood.jpg", 1.3], joist: ["wood_dark.jpg", 1.0], rafters: ["wood_dark.jpg", 1.0], trim: ["wood_dark.jpg", 1.0],
     stair: ["wood_dark.jpg", 1.0], door: ["wood_dark.jpg", 1.0], roof_tiles: ["roof.jpg", 1.2], paver: ["paver.jpg", 1.4],
-    site_wall: ["wall.jpg", 2.2], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
+    site_wall: ["stone.jpg", 1.4], D_stone_clad: ["stone.jpg", 1.4], D_tile_45443F: ["tile.jpg", 1.2],
+    D_slat: ["wood_dark.jpg", 0.6], D_slat_dk: ["wood_dark.jpg", 0.6], slab: ["wall.jpg", 2.0], lawn_bed: ["grass.jpg", 1.5] };
   const PASS = new Set(["glass", "door", "frame", "water"]);    // تقدر تعبر منها بالمشي (الأبواب والزجاج)
   const solids = [];
   function boxUV(mesh, tile) {
@@ -288,6 +289,8 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
         if (!o.material.userData.dressed) { o.material.map = tex(sk[0], 1); o.material.color.set(0xffffff);
           o.material.roughness = nm === "roof_tiles" ? 0.75 : 0.65; o.material.metalness = 0; o.material.userData.dressed = true; o.material.needsUpdate = true; }
       }
+      if (nm.startsWith("D_paint_")) { o.material = new THREE.MeshStandardMaterial({ color: new THREE.Color("#" + nm.slice(8)).multiplyScalar(0.55), roughness: 0.95, metalness: 0 }); o.material.name = nm; }
+      if (nm === "D_mat_white") { o.material.color.set(0xefeae0); }
       if (nm === "glass") { o.material.transparent = true; o.material.opacity = 0.28; o.material.roughness = 0.05; o.material.metalness = 0.2; o.castShadow = false; }
       if (nm === "water") { o.material.color.set(0x2a8fb8); o.material.roughness = 0.05; o.material.transparent = true; o.material.opacity = 0.85; }
       if (!PASS.has(nm)) solids.push(o);
@@ -318,7 +321,7 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   const hemi = scene.children.find(o => o.isHemisphereLight);
   /* الليل: سماء غامقة + إنارة دافئة بالصالات والبلكونات وتحت الرفرف + المشب بالجلسة المدفونة */
   const lamps = new THREE.Group(); lamps.visible = false; scene.add(lamps);
-  const LAMPS = [[220, 240, 230, 16762250, 2.2, 8], [570, 230, 230, 16762250, 1.4, 6], [340, 512, 230, 16762250, 1.0, 5], [170, 700, 230, 16762250, 1.0, 5], [170, 230, 535, 16762250, 1.6, 6], [510, 140, 535, 16762250, 1.6, 6], [170, 776, 535, 16762250, 1.6, 6], [340, 512, 535, 16762250, 1.0, 5], [344, -60, 250, 16766624, 1.2, 5], [600, -60, 250, 16766624, 0.8, 4]];
+  const LAMPS = [[220, 200, 270, 16762250, 1.8, 7], [544, 200, 270, 16762250, 1.2, 6], [870, 170, 270, 16762250, 1.6, 7], [870, 670, 270, 16762250, 1.4, 6], [220, 540, 270, 16762250, 1.0, 5], [220, 200, 575, 16762250, 1.6, 7], [544, 200, 575, 16762250, 1.0, 5], [870, 170, 575, 16762250, 1.4, 6], [870, 670, 575, 16762250, 1.4, 6], [452, -14, 225, 16766624, 1.0, 5], [636, -14, 225, 16766624, 1.0, 5]];
   LAMPS.forEach(([x, y, z, c, i, d]) => { const L = new THREE.PointLight(c, i, d, 2); L.position.set(x / 100, z / 100, -y / 100); L.userData.i = i; lamps.add(L); });
   lamps.visible = true;   // بالنهار إنارة داخلية خفيفة (مثل الرندر)، وبالليل كاملة
   /* سماء ليل متدرجة (كحلي فوق ← أزرق دافئ عند الأفق) بدل لون مسطح، وضوء قمر بارد بظلال ناعمة */
@@ -364,9 +367,9 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   /* وضع المشي: عين على ارتفاع 1.60 م، اسحب للالتفات، والعصا (أو W/A/S/D والأسهم) للمشي */
   const P = (x, y, z) => new THREE.Vector3(x / 100, z / 100, -y / 100);   // إحداثيات المخطط (سم) → المجسم
   const SPOTS = {
-    front: { p: P(344, -950, 115), yaw: 0 },
-    living: { p: P(380, 60, 160), yaw: -0.8 },
-    upper: { p: P(300, 512, 465), yaw: -Math.PI / 2 },
+    front: { p: P(544, -1150, 165), yaw: 0 },
+    living: { p: P(400, 60, 160), yaw: -0.8 },
+    upper: { p: P(544, 150, 465), yaw: Math.PI / 2 },
   };
   let walk = false, yaw = 0, pitch = -0.05, look = null;
   const ray = new THREE.Raycaster(), DOWN = new THREE.Vector3(0, -1, 0), EYE = 1.6;
@@ -381,7 +384,7 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
     camera.updateProjectionMatrix();
   }
   /* الجولة التلقائية: من برا للمدخل وتدخل الصالة (نفس مسار الفيديو) */
-  const TOUR = [{"path": [[344, -1600, 600], [344, -900, 300], [344, -400, 170], [344, -140, 160], [344, 100, 160], [300, 300, 155], [160, 340, 150]], "look": [[344, 400, 300], [344, 400, 250], [344, 300, 180], [344, 300, 160], [200, 350, 140], [60, 300, 120], [120, 60, 130]], "frames": 300}];   // أجزاء الجولة (نفس مسار الفيديو) — بينها انتقال مباشر
+  const TOUR = [{"path": [[544, -2600, 520], [544, -1700, 260], [544, -900, 170], [544, -320, 165], [544, -60, 165], [544, 180, 160], [420, 260, 155], [250, 260, 150]], "look": [[544, 400, 330], [544, 400, 280], [544, 300, 200], [544, 300, 170], [544, 400, 160], [300, 330, 140], [100, 330, 130], [60, 100, 130]], "frames": 320}];   // أجزاء الجولة (نفس مسار الفيديو) — بينها انتقال مباشر
   const curves = TOUR.map(sg => ({ p: new THREE.CatmullRomCurve3(sg.path.map(q => P(...q)), false, "centripetal"),
     l: new THREE.CatmullRomCurve3(sg.look.map(q => P(...q)), false, "centripetal"), w: sg.frames }));
   const wsum = curves.reduce((a, c) => a + c.w, 0);
@@ -473,6 +476,33 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
   });
 })();
 setNight(NIGHT);
+</script>
+
+<style>
+body.direct { overflow: hidden }
+body.direct #model-stage { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important;
+  height: 100dvh !important; max-height: none !important; aspect-ratio: auto !important; z-index: 50; border-radius: 0; margin: 0 }
+body.direct #walkbar { position: fixed; left: 8px; right: 8px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 60;
+  display: flex; gap: 6px; overflow-x: auto; justify-content: center }
+body.direct #walkbar button { backdrop-filter: blur(6px); background: rgba(20, 14, 9, .62); color: #fff; border-color: rgba(216, 190, 140, .55) }
+body.direct #walkbar button[aria-pressed="true"] { background: #B8955A; color: #1a120b }
+body.direct .dn { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 10px; z-index: 60 }
+#dx-info { display: none }
+body.direct #dx-info { display: block; position: fixed; top: calc(10px + env(safe-area-inset-top)); right: 10px; z-index: 60;
+  font: inherit; font-size: .95rem; padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(216, 190, 140, .6);
+  background: rgba(20, 14, 9, .62); color: #fff; backdrop-filter: blur(6px); cursor: pointer }
+body.direct #model-stage .tools { bottom: auto; top: calc(58px + env(safe-area-inset-top)) }
+body.direct #joy { bottom: calc(118px + env(safe-area-inset-bottom)) !important }
+</style>
+<button type="button" id="dx-info">تفاصيل المشروع والصور</button>
+<script>
+(function () {
+  if (/page/.test(location.hash)) return;
+  document.body.classList.add("direct");
+  document.getElementById("dx-info").addEventListener("click", function () {
+    document.body.classList.remove("direct"); window.scrollTo(0, 0);
+  });
+})();
 </script>
 
 </body>
