@@ -344,6 +344,24 @@ def _wallbox(mat, d, a0, a1, z0, z1, s0, s1, bevel=0.002):
     return dbox(mat, x0 + nx * s0, a0, z0, x0 + nx * s1, a1, z1, bevel)
 
 
+def _wallquad(mat, d, a0, a1, zb, zt0, zt1, s0, s1):
+    """لوح على الجدار برأس مائل (يلحق بطن السقف المائل): zt0 عند a0 و zt1 عند a1."""
+    (x0, y0, x1, y1), (nx, ny) = d["line"], d["n"]
+    alongx = abs(x1 - x0) >= abs(y1 - y0)
+
+    def P(a, s_, z):
+        return (a, y0 + ny * s_, z) if alongx else (x0 + nx * s_, a, z)
+    V = [P(a0, s0, zb), P(a1, s0, zb), P(a1, s0, zt1), P(a0, s0, zt0),
+         P(a0, s1, zb), P(a1, s1, zb), P(a1, s1, zt1), P(a0, s1, zt0)]
+    me = bpy.data.meshes.new("wq")
+    me.from_pydata(V, [], [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)])
+    me.update()
+    o = bpy.data.objects.new("wq", me)
+    scene.collection.objects.link(o)
+    o.data.materials.append(DM[mat] if isinstance(mat, str) else mat)
+    return o
+
+
 def _sconce(name, at, n, w=40, updown=True):
     """أبليك جداري أسطوانة سوداء بنور فوق وتحت (مثل الفيديو)."""
     x, y, z = at
@@ -378,13 +396,23 @@ def d_feature_wall(i, d):
     sw = d.get("slat_w", 0.36)
     paint = _tmat("paint_" + d.get("color", "#3A3D40").lstrip("#"), "Plaster001", 1.2, d.get("color", "#3A3D40"), 0.92,
                   rough=0.92, bump=0.08)
-    _wallbox(paint, d, a0 + sw, a1 - sw, z0, z1, 0.0, 0.012, 0)
+    # رأس الجدار: أفقي، أو مائل يلحق بطن السقف (top = [عند بداية الخط، عند نهايته]) — ما يوقف بنص الجدار
+    tops = d.get("top")
+    la0 = x0 if alongx else y0
+    la1 = x1 if alongx else y1
+
+    def ztop(a):
+        if not tops:
+            return z1
+        f = (a - la0) / ((la1 - la0) or 1)
+        return tops[0] + (tops[1] - tops[0]) * f
+    _wallquad(paint, d, a0 + sw, a1 - sw, z0, ztop(a0 + sw), ztop(a1 - sw), 0.0, 0.012)
     for b0, b1 in ((a0, a0 + sw), (a1 - sw, a1)):                   # شرائح خشب رأسية (فلوتنق) على الطرفين
-        _wallbox("slat_dark", d, b0, b1, z0, z1, 0.0, 0.01, 0)
+        _wallquad("slat_dark", d, b0, b1, z0, ztop(b0), ztop(b1), 0.0, 0.01)
         n = max(3, int((b1 - b0) / 0.06))
         for k in range(n):
             c = b0 + (k + 0.5) * (b1 - b0) / n
-            _wallbox("slat", d, c - 0.017, c + 0.017, z0, z1, 0.01, 0.045)
+            _wallquad("slat", d, c - 0.017, c + 0.017, z0, ztop(c - 0.017), ztop(c + 0.017), 0.01, 0.045)
     # لوحات: صف أو صفين حسب الارتفاع المتاح فوق الكنب
     arts = d.get("arts", [1, 2, 3, 4])
     rows = d.get("rows", 1 if len(arts) <= 3 else 2)

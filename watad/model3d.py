@@ -134,6 +134,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     S.material("ceiling", style["wood"])
     S.material("joist", style["wood"])
     S.material("door", style["frame"])
+    S.material("hardware", "#1E1E1E")          # مقابض ومفصلات معدن
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(project, rules)
     sh = project.slab_height
@@ -173,6 +174,23 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             if z1 < Hc:
                 S.wbox(wm, w, a, b, -half, half, z1, Hc)
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
+        if not w.exterior and w.floor == top and not cut and project.roof.type in ("gable",) and \
+                project.roof.ridge_axis in ("x", "y"):
+            # جدار داخلي بالدور الأخير يكمل لين بطن السقف المائل (الغرفة مقفلة بالكامل — ملاحظة المصنع)
+            from .features import roof_z
+            ts = [0.0, L]
+            tc_ = None
+            px0, py0 = w.point(0, 0)
+            px1, py1 = w.point(L, 0)
+            rc = (y0 + y1) / 2 if project.roof.ridge_axis == "x" else (x0 + x1) / 2
+            c0, c1 = (py0, py1) if project.roof.ridge_axis == "x" else (px0, px1)
+            if (c0 - rc) * (c1 - rc) < 0:
+                tc_ = L * (rc - c0) / (c1 - c0)
+                ts = [0.0, tc_, L]
+            zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
+            if max(zs) > H + 5:
+                poly = [(0, H), (L, H)] + [(t_, max(z_, H)) for t_, z_ in reversed(list(zip(ts, zs)))]
+                S.wprism(wm, w, poly, -half, half)
         ux, uy = w.u
         gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y) and \
             project.roof.type not in ("peaks", "tent_hip")
@@ -554,75 +572,150 @@ def _cross_gables(S, project, rules, half):
                     (a0[0], a0[1], H - 50), (a0[0], a1[1], H + 5), (a1[0], a1[1], H + 5), (a1[0], a0[1], H - 50)])
 
 
+def _casing(S, w, a, b, z0, z1, s0, s1, cw=7, sill=True):
+    """حلق/برواز خشب حول الفتحة على وجه الجدار (s0..s1 = سماكته برا الوجه)."""
+    S.wbox("trim", w, a - cw, a, s0, s1, z0 - (cw if sill else 0), z1 + cw)
+    S.wbox("trim", w, b, b + cw, s0, s1, z0 - (cw if sill else 0), z1 + cw)
+    S.wbox("trim", w, a, b, s0, s1, z1, z1 + cw)              # الأفقي بين القائمين (بدون تداخل = بدون بقع سوداء)
+    if sill:
+        S.wbox("trim", w, a, b, s0, s1, z0 - cw, z0)
+
+
+def _handle(S, w, t, z, s_face, sg, lever=True):
+    """مقبض باب: صفيحة + ذراع (lever) بارز عن وجه الضلفة. sg = اتجاه الوجه (+1 للداخل، -1 للخارج)."""
+    s0, s1 = sorted((s_face, s_face + sg * 1.0))
+    S.wbox("hardware", w, t - 2.2, t + 2.2, s0, s1, z - 9, z + 9)               # الصفيحة
+    s2, s3 = sorted((s_face + sg * 1.0, s_face + sg * 5.0))
+    S.wbox("hardware", w, t - 0.9, t + 0.9, s2, s3, z - 0.9, z + 0.9)          # الرقبة
+    if lever:
+        e0, e1 = sorted((s_face + sg * 5.0, s_face + sg * 6.6))
+        S.wbox("hardware", w, t - 12 if t > 0 else t, t + 0.9, e0, e1, z - 1.0, z + 1.0)   # الذراع
+
+
 def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
+    """فتحات واقعية (ملاحظة المصنع): حلق بعمق الجدار + ضلف (sash) لكل لوح + زجاج رقيق + عتبة خارجية بارزة
+    + برواز خشب داخلي، والأبواب بحشوات بارزة ومقابض ومفصلات وبرواز من الجهتين."""
     out = -half
     fw = 6
     if o.kind == "window":
-        S.wbox("glass", w, a, b, -1, 1, z0, z1)
-        for (ta, tb, za, zb_) in ((a, a + fw, z0, z1), (b - fw, b, z0, z1), (a, b, z0, z0 + fw), (a, b, z1 - fw, z1)):
-            S.wbox("frame", w, ta, tb, out - 2, half, za, zb_)
+        for (ta, tb, za, zb_) in ((a, a + 4, z0, z1), (b - 4, b, z0, z1), (a + 4, b - 4, z0, z0 + 4), (a + 4, b - 4, z1 - 4, z1)):
+            S.wbox("frame", w, ta, tb, out, half, za, zb_)                   # الحلق بعمق الجدار
         grid = style["window_grid"]
-        if o.grid:                  # شبكة خشب بالعدد المطلوب (أعمدة × صفوف)
+        if o.grid:
             cols, rows = o.grid
-            for k in range(1, cols):
-                t = a + (b - a) * k / cols
-                S.wbox("frame", w, t - 2, t + 2, -3, 3, z0, z1)
-            for k in range(1, rows):
-                z = z0 + (z1 - z0) * k / rows
-                S.wbox("frame", w, a, b, -3, 3, z - 2, z + 2)
-        elif grid in ("mullion", "grid") and o.width >= 90:
-            m = (a + b) / 2
-            S.wbox("frame", w, m - 2.5, m + 2.5, -3, 3, z0, z1)
-        if grid == "grid" and o.height >= 90:
-            m = (z0 + z1) / 2
-            S.wbox("frame", w, a, b, -3, 3, m - 2.5, m + 2.5)
+        else:
+            cols = 2 if grid in ("mullion", "grid") and o.width >= 90 else 1
+            rows = 2 if grid == "grid" and o.height >= 90 else 1
+        fixed = getattr(o, "style", "") == "fixed"
+        nsash = 1 if fixed or o.width < 70 else (2 if o.width < 200 else 3)
+        sw_ = (b - a - 8) / nsash
+        for k in range(nsash):                                                # الضلف: إطار 5 سم + زجاج + تقسيم
+            sa, sb = a + 4 + k * sw_, a + 4 + (k + 1) * sw_
+            za, zb_ = z0 + 4, z1 - 4
+            sf = 5
+            for (ta, tb, zz0, zz1) in ((sa, sa + sf, za, zb_), (sb - sf, sb, za, zb_), (sa + sf, sb - sf, za, za + sf),
+                                       (sa + sf, sb - sf, zb_ - sf, zb_)):
+                S.wbox("frame", w, ta, tb, -2.5, 2.5, zz0, zz1)
+            S.wbox("glass", w, sa + sf, sb - sf, -0.6, 0.6, za + sf, zb_ - sf)
+            sc = max(1, round(cols / nsash))
+            for kk in range(1, sc):                                           # قواطع رفيعة 3 سم بارزة من الجهتين
+                t = sa + sf + (sb - sa - 2 * sf) * kk / sc
+                S.wbox("frame", w, t - 1.5, t + 1.5, -1.8, 1.8, za + sf, zb_ - sf)
+            for kk in range(1, rows):
+                z = za + sf + (zb_ - za - 2 * sf) * kk / rows
+                S.wbox("frame", w, sa + sf, sb - sf, -1.6, 1.6, z - 1.5, z + 1.5)
+            if not fixed and o.width >= 50:                                   # مقبض الضلفة (داخلي)
+                hz = (za + zb_) / 2 if zb_ - za < 160 else za + 110
+                ht = sb - sf - 2 if k % 2 == 0 else sa + sf + 2
+                S.wbox("hardware", w, ht - 1.2, ht + 1.2, 2.5, 4.0, hz - 6, hz + 6)
+                S.wbox("hardware", w, ht - 1.0, ht + 1.0, 4.0, 5.2, hz - 1, hz + 9)
         if getattr(o, "transom", 0):
             S.wbox("frame", w, a, b, -3, 3, o.transom - 3, o.transom + 3)
         tr = style["trims"]["window_trim"]
         if exterior:
-            for (ta, tb, za, zb_) in ((a - tr["w"], a, z0 - tr["w"], z1 + tr["w"]),
-                                      (b, b + tr["w"], z0 - tr["w"], z1 + tr["w"]),
-                                      (a, b, z0 - tr["w"], z0), (a, b, z1, z1 + tr["w"])):
+            for (ta, tb, za, zb_) in ((a - tr["w"], a, z0, z1 + tr["w"]),
+                                      (b, b + tr["w"], z0, z1 + tr["w"]),
+                                      (a, b, z1, z1 + tr["w"])):
                 S.wbox("trim", w, ta, tb, out - tr["t"], out, za, zb_)
+            S.wbox("trim", w, a - tr["w"] - 4, b + tr["w"] + 4, out - 6, out, z0 - 6, z0)      # عتبة خارجية بارزة
+            _casing(S, w, a, b, z0, z1, half, half + 1.6, 6, sill=False)
+            S.wbox("trim", w, a - 8, b + 8, half, half + 4, z0 - 3, z0)                         # جلسة داخلية
+        else:
+            _casing(S, w, a, b, z0, z1, half, half + 1.6, 6)
+            _casing(S, w, a, b, z0, z1, out - 1.6, out, 6)
     else:
-        if o.leaves == 0:           # فتحة بدون باب — إطار خشب جانبي فقط
-            for (ta, tb) in ((a, a + 4), (b - 4, b)):
+        if o.leaves == 0:           # فتحة بدون باب — حلق خشب بعمق الجدار + برواز من الجهتين
+            for (ta, tb) in ((a, a + 3), (b - 3, b)):
                 S.wbox("trim", w, ta, tb, -half, half, 0, z1)
+            S.wbox("trim", w, a + 3, b - 3, -half, half, z1 - 3, z1)
+            _casing(S, w, a, b, 0, z1, half, half + 1.6, 7, sill=False)
+            _casing(S, w, a, b, 0, z1, out - 1.6, out, 7, sill=False)
             return
-        for (ta, tb, za, zb_) in ((a, a + fw, 0, z1), (b - fw, b, 0, z1), (a, b, z1 - fw, z1)):
-            S.wbox("frame", w, ta, tb, out - 2, half, za, zb_)
+        for (ta, tb, za, zb_) in ((a, a + 4, 0, z1), (b - 4, b, 0, z1), (a + 4, b - 4, z1 - 4, z1)):
+            S.wbox("frame" if exterior else "trim", w, ta, tb, out, half, za, zb_)
+        S.wbox("trim", w, a + 4, b - 4, out, half, 0, 1.2)                      # عتبة
+        _casing(S, w, a, b, 0, z1, half, half + 1.6, 7, sill=False)
+        if not exterior:
+            _casing(S, w, a, b, 0, z1, out - 1.6, out, 7, sill=False)
         if getattr(o, "style", "") in ("sliding", "fixed"):
-            S.wbox("glass", w, a + fw, b - fw, -1, 1, 0, z1 - fw)
             n = max(2, round(o.width / 100))
-            for k in range(1, n):
-                t = a + (b - a) * k / n
-                S.wbox("frame", w, t - 3, t + 3, -3, 3, 0, z1)
-            S.wbox("frame", w, a, b, -3, 3, 0, 5)
+            pw = (b - a - 8) / n
+            for k in range(n):                                                  # ضلف سحاب متداخلة (مسارين)
+                la, lb = a + 4 + k * pw - (2 if k else 0), a + 4 + (k + 1) * pw + (2 if k < n - 1 else 0)
+                s0 = -3.5 if k % 2 == 0 else 0.5
+                for (ta, tb, za, zb_) in ((la, la + 6, 1, z1 - 4), (lb - 6, lb, 1, z1 - 4), (la + 6, lb - 6, 1, 9), (la + 6, lb - 6, z1 - 10, z1 - 4)):
+                    S.wbox("frame", w, ta, tb, s0, s0 + 3, za, zb_)
+                S.wbox("glass", w, la + 6, lb - 6, s0 + 1.2, s0 + 1.8, 9, z1 - 10)
+                ht = lb - 9 if k % 2 == 0 else la + 9                           # مقبض سحاب رأسي
+                S.wbox("hardware", w, ht - 1, ht + 1, s0 + 3, s0 + 5.5, 85, 125)
+            S.wbox("hardware", w, a, b, -4, 4, 0, 1.5)                        # مسار السحاب
         else:
             n = o.leaves
-            lw = (o.width - 2 * fw) / n
+            lw = (o.width - 8) / n
+            hinge_left = getattr(o, "swing", "left") == "left"
             for k in range(n):
-                la, lb = a + fw + k * lw, a + fw + (k + 1) * lw
+                la, lb = a + 4 + k * lw, a + 4 + (k + 1) * lw
                 if (style["door_style"] == "french" or o.grid) and exterior:
-                    S.wbox("glass", w, la + 8, lb - 8, -1, 1, 10, z1 - fw - 8)
-                    if o.grid:                # تقسيم خشب للضلفة الزجاج
+                    S.wbox("glass", w, la + 10, lb - 10, -0.6, 0.6, 22, z1 - 4 - 10)
+                    if o.grid:
                         cols, rows = o.grid
                         cols = max(1, round(cols / n))
                         for kk in range(1, cols):
-                            t = la + 8 + (lb - la - 16) * kk / cols
-                            S.wbox("door", w, t - 2, t + 2, -2.5, 2.5, 10, z1 - fw - 8)
+                            t = la + 10 + (lb - la - 20) * kk / cols
+                            S.wbox("door", w, t - 1.5, t + 1.5, -2, 2, 22, z1 - 14)
                         for kk in range(1, rows):
-                            z = 10 + (z1 - fw - 18) * kk / rows
-                            S.wbox("door", w, la + 8, lb - 8, -2.5, 2.5, z - 2, z + 2)
-                    for (ta, tb, za, zb_) in ((la, la + 8, 0, z1 - fw), (lb - 8, lb, 0, z1 - fw),
-                                              (la, lb, 0, 10), (la, lb, z1 - fw - 8, z1 - fw)):
+                            z = 22 + (z1 - 36) * kk / rows
+                            S.wbox("door", w, la + 10, lb - 10, -1.8, 1.8, z - 1.5, z + 1.5)
+                    for (ta, tb, za, zb_) in ((la, la + 10, 1, z1 - 4), (lb - 10, lb, 1, z1 - 4),
+                                              (la + 10, lb - 10, 1, 12), (la + 10, lb - 10, z1 - 14, z1 - 4)):
                         S.wbox("door", w, ta, tb, -2.5, 2.5, za, zb_)
-                    for zz in np.linspace(10, z1 - fw - 8, 5)[1:-1]:
-                        S.wbox("door", w, la + 8, lb - 8, -1.5, 1.5, zz - 1.5, zz + 1.5)
-                    mm = (la + lb) / 2
-                    S.wbox("door", w, mm - 1.5, mm + 1.5, -1.5, 1.5, 10, z1 - fw - 8)
-                else:
-                    S.wbox("door", w, la, lb, -2, 2, 0, z1 - fw)
+                    S.wbox("door", w, la + 10, lb - 10, -2.2, 2.2, 12, 22)          # وزرة سفلية مصمتة
+                elif not exterior:                                                  # باب داخلي ألواح خشب (مثل منتج المصنع)
+                    S.wbox("wood_in", w, la, lb, -2, 2, 1, z1 - 4)
+                else:                                                               # باب خشب بحشوات بارزة
+                    S.wbox("door", w, la, lb, -2, 2, 1, z1 - 4)
+                    st, rl = 11, 12
+                    zt = z1 - 4
+                    for sgn in (-1, 1):                                             # إطار الحشوات بالوجهين
+                        f0, f1 = sorted((sgn * 2, sgn * 2.9))
+                        for (ta, tb, za, zb_) in ((la, la + st, 1, zt), (lb - st, lb, 1, zt), (la + st, lb - st, zt - rl, zt),
+                                                  (la + st, lb - st, 1, 1 + rl * 1.6), (la + st, lb - st, 95, 95 + rl)):
+                            S.wbox("door", w, ta, tb, f0, f1, za, zb_)
+                        if lb - la > 60:
+                            m = (la + lb) / 2
+                            for (za, zb_) in ((1 + rl * 1.6, 95), (95 + rl, zt - rl)):
+                                S.wbox("door", w, m - st / 2, m + st / 2, f0, f1, za, zb_)
+                        g0, g1 = sorted((sgn * 2, sgn * 2.5))                       # بروز الحشوة نفسها
+                        for (za, zb_) in ((1 + rl * 1.6 + 4, 95 - 4), (95 + rl + 4, zt - rl - 4)):
+                            cols = [(la + st + 4, lb - st - 4)] if lb - la <= 60 else \
+                                [(la + st + 4, (la + lb) / 2 - st / 2 - 4), ((la + lb) / 2 + st / 2 + 4, lb - st - 4)]
+                            for c0, c1 in cols:
+                                S.wbox("door", w, c0, c1, g0, g1, za, zb_)
+                hinge = (k == 0 and hinge_left) or (n == 1 and not hinge_left and False)
+                ht = lb - 8 if (n == 1 and hinge_left) or (n > 1 and k == 0) else la + 8
+                for sg in (-1, 1):                                                 # مقبض من الجهتين
+                    _handle(S, w, ht, 100, sg * 3.0, sg)
+                del hinge
     if getattr(o, "transom", 0):
         zt = o.transom
         S.wbox("frame", w, a, b, out - 2, half, zt - 3, zt + 3)
@@ -1159,10 +1252,10 @@ def _subdivide(P, maxlen, strip):
 
 
 def render_preview(scene, path, views=((20, -55), (20, 125)), size=(16, 7), strip=18.67,
-                   hidden=("rafters", "wood_in", "sheathing"), zoom=1.0, tight=False, dpi=130):
-    """معاينة منظور بالراسم البرمجي (z-buffer)."""
+                   hidden=("rafters", "wood_in", "sheathing"), zoom=1.0, tight=False, dpi=130, labels=None):
+    """معاينة منظور بالراسم البرمجي (z-buffer). labels: [(x, y, z, نص)] تنكتب بالأبيض على الصورة."""
     from .raster import render
-    render(scene, path, views, int(size[0] * dpi), int(size[1] * dpi), hidden, strip, tight, zoom)
+    render(scene, path, views, int(size[0] * dpi), int(size[1] * dpi), hidden, strip, tight, zoom, labels)
 
 
 def railing_catalog(out_dir, style):

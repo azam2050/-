@@ -18,7 +18,7 @@ def _camera(elev, azim):
 
 
 def rasterize(scene, elev, azim, width, height, hidden=(), strip=18.67, pad=0.06,
-              bg=(0.902, 0.929, 0.949)):
+              bg=(0.902, 0.929, 0.949), want_proj=False):
     r, up, d = _camera(elev, azim)
     light = np.array([-0.35, -0.75, 0.85])
     light /= np.linalg.norm(light)
@@ -124,19 +124,51 @@ def rasterize(scene, elev, azim, width, height, hidden=(), strip=18.67, pad=0.06
         edge[:H - dy, :W - dx] |= e
     img[edge & hit] *= 0.45
     img = img.reshape(height, SS, width, SS, 3).mean(axis=(1, 3))
-    return np.clip(img, 0, 1), hit.reshape(height, SS, width, SS).any(axis=(1, 3))
+    mask = hit.reshape(height, SS, width, SS).any(axis=(1, 3))
+    if want_proj:                      # إسقاط نقطة ثلاثية → بكسل (لكتابة أسماء الغرف على الصورة)
+        def proj(p):
+            p = np.asarray(p, float)
+            return (float(p @ r) * s + ox) / SS, (oy - float(p @ up) * s) / SS
+        return np.clip(img, 0, 1), mask, proj
+    return np.clip(img, 0, 1), mask
 
 
-def render(scene, path, views, width_px, height_px, hidden=(), strip=18.67, tight=False, zoom=1.0):
+def _labels(img, pts, proj, dx, dy):
+    """أسماء الغرف بالأبيض بخط عربي عريض مع ظل غامق (ملاحظة المصنع) فوق صورة المقطع العلوي."""
+    from pathlib import Path
+    from PIL import Image, ImageDraw, ImageFont
+    im = Image.fromarray((img * 255).astype("uint8"))
+    dr = ImageDraw.Draw(im)
+    fdir = Path(__file__).resolve().parent.parent / "assets" / "fonts"
+    size = max(14, im.width // 55)
+    try:
+        font = ImageFont.truetype(str(fdir / "Tajawal-Bold.ttf"), size, layout_engine=ImageFont.Layout.RAQM)
+    except Exception:
+        font = ImageFont.load_default()
+    for x, y, z, txt in pts:
+        u, v = proj((x, y, z))
+        u, v = u - dx, v - dy
+        if not (0 <= u < im.width and 0 <= v < im.height):
+            continue
+        dr.text((u, v), txt, font=font, fill=(255, 255, 255), anchor="mm", direction="rtl",
+                stroke_width=max(2, size // 7), stroke_fill=(35, 26, 18))
+    return np.asarray(im).astype(float) / 255
+
+
+def render(scene, path, views, width_px, height_px, hidden=(), strip=18.67, tight=False, zoom=1.0, labels=None):
     import matplotlib.pyplot as plt
     pad = max(0.01, 0.06 / zoom)
     imgs = []
     for el, az in views:
-        img, mask = rasterize(scene, el, az, width_px // len(views), height_px, hidden, strip, pad)
+        img, mask, proj = rasterize(scene, el, az, width_px // len(views), height_px, hidden, strip, pad, want_proj=True)
+        dx = dy = 0
         if tight:
             ys, xs = np.where(mask)
             p = 8
-            img = img[max(ys.min() - p, 0):ys.max() + p, max(xs.min() - p, 0):xs.max() + p]
+            dy, dx = max(ys.min() - p, 0), max(xs.min() - p, 0)
+            img = img[dy:ys.max() + p, dx:xs.max() + p]
+        if labels:
+            img = _labels(img, labels, proj, dx, dy)
         imgs.append(img)
     if len(imgs) > 1:
         h = max(i.shape[0] for i in imgs)

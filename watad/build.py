@@ -87,8 +87,10 @@ def build(project_path, out_dir, rules_path=None, real=False):
     for f, fl_ in enumerate(project.floor_list):
         cut_scene = build_scene(project, rules, style, heights, cut=fl_["level"] + 190, furniture=True)
         pth = rdir / f"cutaway-{f}.png"
+        names = [((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2, fl_["level"] + 8, r.name)
+                 for r in project.rooms if r.floor == f and r.kind != "stair"]
         render_preview(cut_scene, pth, views=((58, -62),), size=(10, 8), tight=True, hidden=(),
-                       strip=rules["cladding"]["effective_cover"])
+                       strip=rules["cladding"]["effective_cover"], labels=names)
         nm = "المقطع العلوي بالفرش" + (f" — {fl_['name']}" if len(project.floor_list) > 1 else "")
         renders.append((pth, nm, True))
     from .realistic import available, load_shots, render_real
