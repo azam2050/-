@@ -164,7 +164,19 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             cuts = [(t_lo, t_hi)]
         else:
             cuts = [(o.offset, o.offset + o.width) for o in shown]
-        for a, b in _segments(t_lo, t_hi, cuts):
+        clipped = False
+        if not w.exterior and w.height and not w.openings and not cut and project.roof.type in ("gable",) and \
+                project.roof.ridge_axis in ("x", "y"):
+            # جدار داخلي تحت سقف مائل واطي (A-frame): رأسه يتقص على بطن السقف بدل ما يطلع منه
+            from .features import roof_z
+            n = 24
+            ts = [L * k / n for k in range(n + 1)]
+            zs = [min(Hc, roof_z(project, rules, *w.point(t_, 0)) - lev - 4) for t_ in ts]
+            if min(zs) < Hc - 1:
+                poly = [(0, 0), (L, 0)] + [(t_, max(z_, 1)) for t_, z_ in reversed(list(zip(ts, zs)))]
+                S.wprism(wm, w, poly, -half, half)
+                clipped = True
+        for a, b in ([] if clipped else _segments(t_lo, t_hi, cuts)):
             S.wbox(wm, w, a, b, -half, half, 0, Hc)
         for o in shown:
             a, b = o.offset, o.offset + o.width
