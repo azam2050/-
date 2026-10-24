@@ -344,3 +344,34 @@ render:
     - {name: front, at: [544, -700, 160], day: true, night: true}
     - {name: living, at: [220, 200, 140], day: true, night: true}
     - {name: master, at: [130, 200, 445], day: true, night: true}
+
+# ---------------- الأرض والسور (مفترضة — طلب المصنع) ----------------
+# أرض 21.00 × 26.00 م ≈ 546 م² والشارع جنوب: سور حجر فاتح 2.20 م بكاب خشب، بوابة سيارة 4.00 م + بوابة مشاة على محور المدخل،
+# ممر حجر للبرندة، موقف سيارتين، حديقة أمامية، وجلسة خلفية ببرجولة.
+site:
+  plot: [-500, -1300, 1588, 1300]
+  street: S
+  street_width: 1600
+  wall: {t: 20, h: 220, finish: stone}
+  gates:
+    - {x: 1130, width: 400, kind: car}
+    - {x: 489, width: 110, kind: person}
+  zones:
+    - {kind: parking, rect: [1110, -1290, 1578, -380], name: موقف سيارتين}
+    - {kind: path, rect: [484, -1290, 604, -146], name: ممر المدخل}
+    - {kind: lawn, rect: [-490, -1290, 470, -200], name: الحديقة الأمامية}
+    - {kind: lawn, rect: [620, -1290, 1090, -400], name: ""}
+    - {kind: paving, rect: [-490, 860, 1578, 1290], name: الحوش الخلفي}
+    - {kind: seating, rect: [-400, 900, 300, 1250], name: الجلسة الخارجية, label: [-50, 1080]}
+    - {kind: planter, rect: [-490, -190, -40, 830], name: أحواض زراعة}
+  pergolas:
+    - {rect: [-380, 920, 280, 1230], name: برجولة الجلسة, h: 270,
+       furniture: [{rect: [-370, 930, -290, 1220]}, {rect: [-290, 1140, 260, 1220]}, {rect: [-150, 1000, -30, 1090]}]}
+  trees:
+    - {at: [-330, -1050], kind: tree, r: 160}
+    - {at: [150, -900], kind: tree, r: 140}
+    - {at: [-300, -500], kind: palm, r: 140}
+    - {at: [800, -1000], kind: tree, r: 130}
+    - {at: [1400, 1100], kind: tree, r: 150}
+    - {at: [-420, 300], kind: shrub, r: 50}
+    - {at: [-420, 650], kind: shrub, r: 50}

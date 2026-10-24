@@ -149,7 +149,9 @@ MATS = {
 MATS["joist"] = MATS["ceiling"]
 # الموقع العام: بلاط، سور، مسبح، مساند الجلسات
 MATS["paver"] = tex_material("W_paver", "Concrete034", 1.2, "#9C8F7A", 0.85, rough=0.85, bump=0.3)
-MATS["site_wall"] = tex_material("W_site_wall", "Concrete034", 2.0, "#DCD4C6", 0.55, rough=0.9, bump=0.2)
+MATS["site_wall"] = (tex_material("W_site_wall", "Bricks111A", 1.4, "#D9CBB0", 0.55, rough=0.85, bump=0.6)
+                     if cfg.get("site_wall") == "stone" else
+                     tex_material("W_site_wall", "Concrete034", 2.0, "#DCD4C6", 0.55, rough=0.9, bump=0.2))
 MATS["pool_edge"] = flat_material("W_pool_edge", "#E8E4DC", rough=0.45)
 MATS["water"] = flat_material("W_water", "#1E7FA6", rough=0.03, transmission=0.55, ior=1.33)
 MATS["cushion"] = flat_material("W_cushion", "#7B5B44", rough=0.95)
