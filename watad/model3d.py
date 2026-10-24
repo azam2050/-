@@ -135,6 +135,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
     S.material("joist", style["wood"])
     S.material("door", style["frame"])
     S.material("hardware", "#1E1E1E")          # مقابض ومفصلات معدن
+    S.material("door_in", style["wood"])       # ضلفة الباب الداخلي (نفس خشب الجدار — تنعبر بالجولة)
     half = wall_thickness(rules) / 2
     x0, y0, x1, y1 = outer_bbox(project, rules)
     sh = project.slab_height
@@ -691,7 +692,7 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
                         S.wbox("door", w, ta, tb, -2.5, 2.5, za, zb_)
                     S.wbox("door", w, la + 10, lb - 10, -2.2, 2.2, 12, 22)          # وزرة سفلية مصمتة
                 elif not exterior:                                                  # باب داخلي ألواح خشب (مثل منتج المصنع)
-                    S.wbox("wood_in", w, la, lb, -2, 2, 1, z1 - 4)
+                    S.wbox("door_in", w, la, lb, -2, 2, 1, z1 - 4)
                 else:                                                               # باب خشب بحشوات بارزة
                     S.wbox("door", w, la, lb, -2, 2, 1, z1 - 4)
                     st, rl = 11, 12

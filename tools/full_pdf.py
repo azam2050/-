@@ -113,7 +113,7 @@ def main(autocad, real, url, out, title="", facts=""):
         doc.subset_fonts()
         doc.save(out, deflate=True, garbage=4)
         return doc.page_count
-    panos = sorted(real.glob("pano-*.jpg"))
+    panos = []        # ملاحظة المصنع: صور 360 مكانها الواقع الافتراضي بس — الملف يكتفي بالصور العادية
     if panos:
         for i in range(0, len(panos), 2):
             p = doc.new_page(width=W, height=H)

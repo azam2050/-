@@ -144,6 +144,7 @@ MATS = {
     "dark": flat_material("W_dark", "#2B2B2B", rough=0.3),
     "frame": flat_material("W_frame", C["frame"], rough=0.35, metal=0.7),
     "hardware": flat_material("W_hw", "#202020", rough=0.22, metal=1.0),
+    "door_in": tex_material("W_door_in", "WoodSiding008", 2.4, C["wood"], cfg.get("wood_in_mix", 0.7)),
     "glass": flat_material("W_glass", "#A7B6BE", rough=0.02, transmission=0.93, ior=1.52),
 }
 MATS["joist"] = MATS["ceiling"]
