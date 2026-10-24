@@ -166,3 +166,68 @@ furniture:
   - {name: دش, rect: [452, 556, 542, 646], shape: shower, floor: -1, z: 300}
   - {name: "", rect: [570, 600, 616, 646], shape: basin, floor: -1, z: 300}
   - {name: "", rect: [640, 606, 680, 646], shape: wc, floor: -1, z: 300}
+
+# ---------------- التصميم الداخلي (سيدر عسلي: كنب كريمي، جدار أزرق ليلي + رمادي حجري، لمسات نحاسي) ----------------
+interior_decor:
+  # الصالة: جدار أزرق ليلي بشرائح خلف الدرج + جدار الطعام بلوحة صحراء
+  - {kind: feature_wall, line: [446, 472, 882, 472], n: [0, -1], z: [0, 300], color: "#26364A", arts: [], slat_w: 34, sconces: false}
+  - {kind: feature_wall, line: [6, 466, 6, 292], n: [1, 0], z: [0, 300], color: "#26364A", arts: [2], rows: 1, fw: 80, fh: 60, art_z: 165, slat_w: 32}
+  - {kind: rug, rect: [600, 110, 780, 270]}
+  - {kind: tile_floor, rect: [6, 6, 882, 472], color: "#6F6A63"}
+  - {kind: tile_floor, rect: [6, 478, 440, 982], color: "#6F6A63"}
+  - {kind: downlights, rect: [6, 6, 882, 376], z: 296, spacing: 150}
+  - {kind: downlights, rect: [6, 478, 440, 982], z: 296, spacing: 140}
+  # غرفة 1: جدار رمادي حجري خلف راس السرير يكمل لين بطن السقف المائل + لوحتين طبيعة
+  - {kind: feature_wall, line: [304, 370, 444, 370], n: [0, -1], z: [300, 782], top: [626, 782], color: "#8E877C", arts: [6], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
+  - {kind: feature_wall, line: [444, 370, 584, 370], n: [0, -1], z: [300, 782], top: [782, 626], color: "#8E877C", arts: [8], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
+  # غرفة 2: أزرق رمادي هادي
+  - {kind: feature_wall, line: [304, 652, 444, 652], n: [0, 1], z: [300, 782], top: [626, 782], color: "#5F7182", arts: [4], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
+  - {kind: feature_wall, line: [444, 652, 584, 652], n: [0, 1], z: [300, 782], top: [782, 626], color: "#5F7182", arts: [7], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
+  # الخارج: قاعدة حجر + أباليك على الأعمدة وأطراف الواجهة
+  - {kind: stone, line: [-6, -6, -6, 994], n: [-1, 0], z: [0, 60]}
+  - {kind: stone, line: [894, -6, 894, 994], n: [1, 0], z: [0, 60]}
+  - {kind: stone, line: [894, 994, -6, 994], n: [0, 1], z: [0, 60]}
+  - {kind: sconce, at: [-10, 40, 240], n: [-1, 0], w: 40}
+  - {kind: sconce, at: [898, 40, 240], n: [1, 0], w: 40}
+
+# ---------------- الأرض والسور (مفترضة) ----------------
+# أرض 19.00 × 27.00 م والشارع جنوب: سور حجر 2.20 م، بوابة مشاة على محور المدخل الزجاج + بوابة سيارة شرق،
+# حديقة أمامية تطل عليها الواجهة الزجاج، وحوش خلفي بجلسة وبرجولة.
+site:
+  plot: [-500, -1300, 1400, 1400]
+  street: S
+  street_width: 1600
+  wall: {t: 20, h: 220, finish: stone}
+  gates:
+    - {x: 960, width: 400, kind: car}
+    - {x: 389, width: 110, kind: person}
+  zones:
+    - {kind: parking, rect: [920, -1290, 1390, -150], name: موقف سيارتين}
+    - {kind: path, rect: [389, -1290, 499, -206], name: ممر المدخل}
+    - {kind: lawn, rect: [-490, -1290, 370, -300], name: الحديقة الأمامية}
+    - {kind: lawn, rect: [520, -1290, 900, -300], name: ""}
+    - {kind: paving, rect: [-490, 1010, 1390, 1390], name: الحوش الخلفي}
+    - {kind: seating, rect: [-380, 1040, 380, 1360], name: الجلسة الخارجية, label: [0, 1200]}
+  pergolas:
+    - {rect: [-360, 1060, 360, 1340], name: برجولة الجلسة, h: 270,
+       furniture: [{rect: [-350, 1070, -270, 1330]}, {rect: [-270, 1250, 340, 1330]}, {rect: [-100, 1130, 40, 1210]}]}
+  trees:
+    - {at: [-400, -200], kind: tree, r: 150}
+    - {at: [-150, -1050], kind: tree, r: 130}
+    - {at: [-420, 600], kind: palm, r: 130}
+    - {at: [1250, 1200], kind: tree, r: 140}
+
+render:
+  night_interior: 2
+  palette: {majlis: "#E9E1D2", majlis_trim: "#A8743F", majlis_rug: "#B9A88E", rug: "#CFC3AE"}   # كريمي + نحاسي مع السيدر العسلي
+  exterior:
+    - {name: أمامي من الحديقة, cam: [-420, -1150, 170], target: [444, 400, 400], lens: 20}
+    - {name: أمامي من الموقف, cam: [1320, -1150, 170], target: [444, 400, 400], lens: 20}
+    - {name: من الشارع — السور والبوابة, cam: [444, -2700, 500], target: [444, 0, 380], lens: 30}
+    - {name: منظر علوي — الأرض والسور, cam: [-1500, -2500, 1300], target: [444, 300, 200], lens: 26}
+  interior:
+    - {name: الصالة والدرج, cam: [60, 40, 150], target: [800, 420, 140], lens: 17}
+    - {name: الصالة — ركن الطعام, cam: [840, 300, 150], target: [60, 260, 120], lens: 17}
+    - {name: المطبخ الأمريكي, cam: [420, 500, 160], target: [100, 950, 100], lens: 17}
+    - {name: غرفة نوم 1, cam: [700, 60, 450], target: [444, 376, 420], lens: 17}
+    - {name: غرفة نوم 2, cam: [650, 950, 450], target: [444, 652, 420], lens: 17}
