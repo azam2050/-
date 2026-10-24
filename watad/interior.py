@@ -14,6 +14,13 @@ KINDS = [("مشب", "fireplace"), ("جلسة عربية", "majlis_seat"), ("كن
 def _room_of(project, f):
     cx, cy = (f.rect[0] + f.rect[2]) / 2, (f.rect[1] + f.rect[3]) / 2
     best = None
+    if f.floor == -1:             # فرش الميزانين/الدور داخل المثلث: الغرفة = مستطيل الميزانين
+        from types import SimpleNamespace
+        for m in project.mezzanines:
+            x0, y0, x1, y1 = m["rect"]
+            if x0 - 1 <= cx <= x1 + 1 and y0 - 1 <= cy <= y1 + 1:
+                return SimpleNamespace(rect=m["rect"], floor=-1, name=m.get("name", ""))
+        return None
     for r in project.rooms:
         if r.floor != f.floor:
             continue

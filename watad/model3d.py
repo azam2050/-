@@ -175,7 +175,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             if z1 < Hc:
                 S.wbox(wm, w, a, b, -half, half, z1, Hc)
             _opening(S, w, o, a, b, z0, z1, half, style, exterior=w.exterior)
-        if not w.exterior and w.floor == top and not cut and project.roof.type in ("gable",) and \
+        if not w.exterior and w.floor == top and not cut and w.height is None and project.roof.type in ("gable",) and \
                 project.roof.ridge_axis in ("x", "y"):
             # جدار داخلي بالدور الأخير يكمل لين بطن السقف المائل (الغرفة مقفلة بالكامل — ملاحظة المصنع)
             from .features import roof_z

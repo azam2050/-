@@ -63,21 +63,23 @@ walls:
     openings:
       - {kind: window, code: ش2, name: ش2 المطبخ, offset: 150, width: 120, height: 80, sill: 115, grid: [2, 1]}
       - {kind: window, code: ش1, name: ش1 الصالة, offset: 708, width: 160, height: 140, sill: 70, grid: [3, 2]}
-  - {name: جدار خلف الدرج, exterior: false, start: [446, 478], end: [888, 478]}
+  - {name: جدار خلف الدرج, exterior: false, height: 280, start: [446, 478], end: [888, 478]}
   - name: جدار المطبخ — الممر
     exterior: false
+    height: 280
     start: [446, 478]
     end: [446, 988]
     openings:
       - {kind: door, code: ف1, name: ف1 فتحة الممر, offset: 30, width: 90, height: 220, leaves: 0}
   - name: جدار الحمامات
     exterior: false
+    height: 280
     start: [566, 478]
     end: [566, 988]
     openings:
       - {kind: door, code: ب3, name: ب3 حمام 1, offset: 150, width: 70, height: 210}
       - {kind: door, code: ب3, name: ب3 حمام 2, offset: 320, width: 70, height: 210}
-  - {name: فاصل الحمامين, exterior: false, start: [566, 730], end: [888, 730]}
+  - {name: فاصل الحمامين, exterior: false, height: 280, start: [566, 730], end: [888, 730]}
 
 rooms:
   - {name: الصالة, rect: [6, 6, 882, 472], label: [444, 200]}
@@ -180,6 +182,10 @@ interior_decor:
   # غرفة 1: جدار رمادي حجري خلف راس السرير يكمل لين بطن السقف المائل + لوحتين طبيعة
   - {kind: feature_wall, line: [304, 370, 444, 370], n: [0, -1], z: [300, 782], top: [626, 782], color: "#8E877C", arts: [6], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
   - {kind: feature_wall, line: [444, 370, 584, 370], n: [0, -1], z: [300, 782], top: [782, 626], color: "#8E877C", arts: [8], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
+  # إنارة الدور الأول تحت السقف المائل: ثريا خشب بالنص فوق كل سرير (القمة) + الأباجورات
+  - {kind: pendant, at: [444, 190], z: 520, dia: 55, hgt: 40, ceil: 782, w: 180}
+  - {kind: pendant, at: [444, 800], z: 520, dia: 55, hgt: 40, ceil: 782, w: 180}
+  - {kind: pendant, at: [330, 510], z: 520, dia: 40, hgt: 30, ceil: 740, w: 60}
   # غرفة 2: أزرق رمادي هادي
   - {kind: feature_wall, line: [304, 652, 444, 652], n: [0, 1], z: [300, 782], top: [626, 782], color: "#5F7182", arts: [4], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
   - {kind: feature_wall, line: [444, 652, 584, 652], n: [0, 1], z: [300, 782], top: [782, 626], color: "#5F7182", arts: [7], rows: 1, fw: 60, fh: 45, art_z: 440, slat_w: 30, sconces: false}
@@ -213,7 +219,7 @@ site:
        furniture: [{rect: [-350, 1070, -270, 1330]}, {rect: [-270, 1250, 340, 1330]}, {rect: [-100, 1130, 40, 1210]}]}
   trees:
     - {at: [-400, -200], kind: tree, r: 150}
-    - {at: [-150, -1050], kind: tree, r: 130}
+    - {at: [-430, -650], kind: tree, r: 130}
     - {at: [-420, 600], kind: palm, r: 130}
     - {at: [1250, 1200], kind: tree, r: 140}
 
@@ -230,4 +236,4 @@ render:
     - {name: الصالة — ركن الطعام, cam: [840, 300, 150], target: [60, 260, 120], lens: 17}
     - {name: المطبخ الأمريكي, cam: [420, 500, 160], target: [100, 950, 100], lens: 17}
     - {name: غرفة نوم 1, cam: [700, 60, 450], target: [444, 376, 420], lens: 17}
-    - {name: غرفة نوم 2, cam: [650, 950, 450], target: [444, 652, 420], lens: 17}
+    - {name: غرفة نوم 2, cam: [600, 960, 430], target: [380, 652, 400], lens: 17}
