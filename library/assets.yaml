@@ -16,6 +16,19 @@ textures:    # ambientCG 2K-JPG → tex/<id>/
   RoofingTiles006: قرميد السقف
   Grass004:        العشب
   Concrete034:     القاعدة الخرسانية
+  Tiles107:        بلاط أرضيات كبير (يصبغ رمادي) — باقة التصميم الداخلي
+  Bricks111A:      تكسية حجر فاتح للواجهات
+  Plaster001:      دهان الجدار المميز (رمادي فحمي مطفي) وخلفية اللوحات
+
+art:         # لوحات الجدار (ملكية عامة — متحف المتروبوليتان Open Access) → tex/art/artN.jpg
+  1: 436419  The Arab Falconer — Fromentin
+  2: 437764  Duke of Dorset's Hunter — Stubbs
+  3: 436420  Arabs Crossing a Ford — Fromentin
+  4: 435702  The Horse Fair — Rosa Bonheur
+  5: 437642  Arabs Making a Detour — Schreyer
+  6: 435983  River with a Distant Tower — Corot
+  7: 435962  Hagar in the Wilderness — Corot
+  8: 437994  Race Horses — Degas
 
 models:      # Poly Haven glTF 1k → models/<id>/
   furniture:

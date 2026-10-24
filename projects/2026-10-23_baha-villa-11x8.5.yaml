@@ -291,3 +291,55 @@ furniture:
   - {name: دش, floor: 1, rect: [992, 342, 1082, 432], shape: shower}
   - {name: "", floor: 1, rect: [1042, 450, 1082, 500], shape: wc}
   - {name: "", floor: 1, rect: [940, 454, 986, 500], shape: basin}
+
+# ---------------- باقة التصميم الداخلي والخارجي (مرجع فيديو المصنع) ----------------
+interior_decor:
+  # الصالة: جدار مميز رمادي فحمي خلف الكنب بشرائح خشب على الطرفين + 4 لوحات + أباليك
+  - {kind: feature_wall, line: [6, 408, 324, 408], n: [0, -1], z: [0, 280], arts: [2, 3, 6, 7], rows: 2, slat_w: 40}
+  # جدار التلفزيون (جدار المدخل) شرائح + دهان بدون لوحات
+  - {kind: feature_wall, line: [430, 6, 430, 205], n: [-1, 0], z: [0, 280], arts: [], slat_w: 34, sconces: false}
+  # الطعام: لوحتين كبار على الجدار الشرقي
+  - {kind: feature_wall, line: [1082, 20, 1082, 320], n: [-1, 0], z: [0, 280], arts: [1, 4], rows: 1, fw: 80, fh: 95, art_z: 165, slat_w: 30, sconces: false}
+  # بلاط رمادي كبير بالأرضي (الصالة + المدخل + الطعام + الموزع + المطبخ)
+  - {kind: tile_floor, rect: [6, 6, 430, 408]}
+  - {kind: tile_floor, rect: [436, 6, 652, 414]}
+  - {kind: tile_floor, rect: [658, 6, 1082, 330]}
+  - {kind: tile_floor, rect: [652, 330, 882, 506]}
+  - {kind: tile_floor, rect: [658, 506, 1082, 832]}
+  # سبوت لايت غاطس بالسقف الخشب
+  - {kind: downlights, rect: [6, 6, 430, 408], z: 278, spacing: 130}
+  - {kind: downlights, rect: [442, 6, 646, 414], z: 278, spacing: 130}
+  - {kind: downlights, rect: [658, 6, 1082, 330], z: 278, spacing: 130}
+  - {kind: downlights, rect: [658, 512, 1082, 832], z: 278, spacing: 130}
+  - {kind: downlights, rect: [6, 6, 430, 408], z: 583, spacing: 140}
+  - {kind: downlights, rect: [442, 6, 646, 414], z: 583, spacing: 140}
+  - {kind: rug, rect: [110, 140, 300, 300]}
+  # الماستر: جدار مميز خلف رأس السرير + لوحتين + أباليك
+  - {kind: feature_wall, line: [430, 6, 430, 300], n: [-1, 0], z: [305, 585], arts: [6, 8], rows: 1, fw: 70, fh: 55, art_z: 470, slat_w: 34, sconce_z: 420}
+  # الخارج: قاعدة حجر فاتح + حجر حول شبابيك الأرضي + أركان حجر، وأباليك أب/داون جنب الباب وعلى الأركان
+  - {kind: stone, line: [-6, -6, 1094, -6], n: [0, -1], z: [0, 50]}
+  - {kind: stone, line: [-6, -6, -6, 844], n: [-1, 0], z: [0, 50]}
+  - {kind: stone, line: [1094, -6, 1094, 844], n: [1, 0], z: [0, 50]}
+  - {kind: stone, line: [-6, -6, 40, -6], n: [0, -1], z: [50, 300]}
+  - {kind: stone, line: [300, -6, 334, -6], n: [0, -1], z: [50, 300]}
+  - {kind: stone, line: [40, -6, 300, -6], n: [0, -1], z: [240, 300]}
+  - {kind: stone, line: [754, -6, 788, -6], n: [0, -1], z: [50, 300]}
+  - {kind: stone, line: [1028, -6, 1094, -6], n: [0, -1], z: [50, 300]}
+  - {kind: stone, line: [788, -6, 1028, -6], n: [0, -1], z: [240, 300]}
+  - {kind: sconce, at: [452, -10, 225], n: [0, -1], w: 55}
+  - {kind: sconce, at: [636, -10, 225], n: [0, -1], w: 55}
+  - {kind: sconce, at: [17, -10, 225], n: [0, -1], w: 45}
+  - {kind: sconce, at: [1065, -10, 225], n: [0, -1], w: 45}
+  - {kind: sconce, at: [17, -10, 520], n: [0, -1], w: 40}
+  - {kind: sconce, at: [1065, -10, 520], n: [0, -1], w: 40}
+render:
+  night_interior: 2
+  interior:
+    - {name: الصالة — الجدار المميز واللوحات, cam: [410, 40, 140], target: [60, 400, 130], lens: 17}
+    - {name: الطعام والمدخل, cam: [1060, 300, 140], target: [560, 60, 120], lens: 17}
+    - {name: الماستر, cam: [40, 380, 445], target: [430, 120, 420], lens: 17}
+  pano_res: [2400, 1200]
+  panos:
+    - {name: front, at: [544, -700, 160], day: true, night: true}
+    - {name: living, at: [220, 200, 140], day: true, night: true}
+    - {name: master, at: [130, 200, 445], day: true, night: true}

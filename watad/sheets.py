@@ -19,7 +19,12 @@ from shapely.ops import unary_union
 from .model import outer_bbox, wall_thickness
 from .roof import cross_gables, rafter_positions, roof_geometry
 
-plt.rcParams["font.family"] = "DejaVu Sans"
+from matplotlib import font_manager as _fm   # noqa: E402
+from pathlib import Path as _P   # noqa: E402
+for _f in sorted((_P(__file__).resolve().parent.parent / "assets" / "fonts").glob("*.ttf")):
+    _fm.fontManager.addfont(str(_f))
+# خط عربي احترافي (ملاحظة المصنع: ما يبان إن الملف مطلع آلياً) + DejaVu احتياط للرموز
+plt.rcParams["font.family"] = ["IBM Plex Sans Arabic", "DejaVu Sans"]
 plt.rcParams["pdf.fonttype"] = 42      # خطوط TrueType مضمّنة — تفتح في كل برامج PDF والجوالات
 plt.rcParams["hatch.linewidth"] = 0.5
 A3 = (16.54, 11.69)

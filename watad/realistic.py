@@ -182,7 +182,7 @@ def ext_lights(project, rules, spacing=0.9):
 
 
 CM_KEYS = ("rect", "line", "at", "from", "to", "z", "top", "ceil", "r", "dia", "hgt", "pitch", "sw", "sd", "bw", "bh",
-           "aw", "ah")
+           "aw", "ah", "slat_w", "fw", "fh", "gap", "spacing", "thick", "tile", "drop", "art_z", "sconce_z")
 
 
 def ground_holes(project):

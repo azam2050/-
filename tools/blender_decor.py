@@ -90,6 +90,9 @@ if cfg.get("sadu"):                     # قماش الجلسة والسجادة
 def dbox(mat, x0, y0, z0, x1, y1, z1, bevel=0.003):
     o = fbox(None, DM[mat] if isinstance(mat, str) else mat, min(x0, x1), min(y0, y1), min(z0, z1),
              max(x0, x1), max(y0, y1), max(z0, z1), bevel, 2)
+    if not bevel:                      # صندوق بدون شطف: تظليل مسطح (الناعم يقلب الإضاءة على الألواح الرقيقة)
+        for p_ in o.data.polygons:
+            p_.use_smooth = False
     return o
 
 
@@ -293,8 +296,209 @@ def d_lantern(i, d):
     point(f"ln{i}", (x, y, z - 0.17), d.get("w", 60), 0.08)
 
 
+# ------------------------------------------------ باقة التصميم الداخلي (مرجع فيديو المصنع)
+def _tmat(key, asset, tile, tint, mix=0.85, rough=None, bump=0.2):
+    if key not in DM:
+        DM[key] = tex_material(f"D_{key}", asset, tile, tint, mix, rough=rough, bump=bump)
+    return DM[key]
+
+
+def _art_mat(k):
+    key = f"art{k}"
+    if key not in DM:
+        m = bpy.data.materials.new(f"D_{key}")
+        m.use_nodes = True
+        N, L = m.node_tree.nodes, m.node_tree.links
+        b = N["Principled BSDF"]
+        b.inputs["Roughness"].default_value = 0.55
+        t = N.new("ShaderNodeTexImage")
+        t.image = bpy.data.images.load(f"{TEX}/art/art{k}.jpg", check_existing=True)
+        uv = N.new("ShaderNodeTexCoord")
+        L.new(uv.outputs["UV"], t.inputs["Vector"])
+        L.new(t.outputs["Color"], b.inputs["Base Color"])
+        DM[key] = m
+        DM[key + "_ar"] = t.image.size[0] / max(1, t.image.size[1])
+    return DM[key]
+
+
+def _plane(mat, p0, u, v):
+    """مستطيل رقيق (صورة اللوحة) بإحداثيات UV كاملة: p0 + s*u + t*v."""
+    me = bpy.data.meshes.new("pl")
+    P = [p0, tuple(p0[i] + u[i] for i in range(3)), tuple(p0[i] + u[i] + v[i] for i in range(3)), tuple(p0[i] + v[i] for i in range(3))]
+    me.from_pydata(P, [], [(0, 1, 2, 3)])
+    uvl = me.uv_layers.new()
+    for li, (a_, b_) in enumerate(((0, 0), (1, 0), (1, 1), (0, 1))):
+        uvl.data[li].uv = (a_, b_)
+    o = bpy.data.objects.new("pl", me)
+    scene.collection.objects.link(o)
+    o.data.materials.append(mat)
+    return o
+
+
+def _wallbox(mat, d, a0, a1, z0, z1, s0, s1, bevel=0.002):
+    """صندوق على جدار: a على طول الجدار، s بعيد عن وجه الجدار للداخل (اتجاه n)."""
+    (x0, y0, x1, y1), (nx, ny) = d["line"], d["n"]
+    alongx = abs(x1 - x0) >= abs(y1 - y0)
+    if alongx:
+        return dbox(mat, a0, y0 + ny * s0, z0, a1, y0 + ny * s1, z1, bevel)
+    return dbox(mat, x0 + nx * s0, a0, z0, x0 + nx * s1, a1, z1, bevel)
+
+
+def _sconce(name, at, n, w=40, updown=True):
+    """أبليك جداري أسطوانة سوداء بنور فوق وتحت (مثل الفيديو)."""
+    x, y, z = at
+    nx, ny = n
+    cx, cy = x + nx * 0.07, y + ny * 0.07
+    dbox("black", x + nx * 0.0 - (0.04 if abs(ny) > 0 else 0), y - (0.04 if abs(nx) > 0 else 0), z - 0.05,
+         x + nx * 0.03 + (0.04 if abs(ny) > 0 else 0), y + ny * 0.03 + (0.04 if abs(nx) > 0 else 0), z + 0.05)
+    fcyl(None, "black", cx, cy, z - 0.11, z + 0.11, 0.035, 20)
+    dbox("led", cx - 0.03, cy - 0.03, z + 0.108, cx + 0.03, cy + 0.03, z + 0.112, 0)
+    dbox("led", cx - 0.03, cy - 0.03, z - 0.112, cx + 0.03, cy + 0.03, z - 0.108, 0)
+    for k, dz in enumerate((1, -1) if updown else (-1,)):
+        L_ = bpy.data.lights.new(f"{name}{k}", "SPOT")
+        L_.energy = w * DIM
+        L_.color = LED
+        L_.spot_size = math.radians(55)
+        L_.spot_blend = 0.6
+        L_.shadow_soft_size = 0.02
+        o = bpy.data.objects.new(f"{name}{k}", L_)
+        o.location = (cx, cy, z + dz * 0.12)
+        o.rotation_euler = (0 if dz > 0 else math.pi, 0, 0)
+        o.visible_camera = False
+        scene.collection.objects.link(o)
+
+
+def d_feature_wall(i, d):
+    """جدار مميز: دهان رمادي فحمي مطفي + شرائح خشب رأسية على الطرفين + لوحات ببراويز موزعة + أباليك."""
+    (x0, y0, x1, y1) = d["line"]
+    nx, ny = d["n"]
+    alongx = abs(x1 - x0) >= abs(y1 - y0)
+    a0, a1 = (min(x0, x1), max(x0, x1)) if alongx else (min(y0, y1), max(y0, y1))
+    z0, z1 = d.get("z", [0.0, 2.7])
+    sw = d.get("slat_w", 0.36)
+    paint = _tmat("paint_" + d.get("color", "#3A3D40").lstrip("#"), "Plaster001", 1.2, d.get("color", "#3A3D40"), 0.92,
+                  rough=0.92, bump=0.08)
+    _wallbox(paint, d, a0 + sw, a1 - sw, z0, z1, 0.0, 0.012, 0)
+    for b0, b1 in ((a0, a0 + sw), (a1 - sw, a1)):                   # شرائح خشب رأسية (فلوتنق) على الطرفين
+        _wallbox("slat_dark", d, b0, b1, z0, z1, 0.0, 0.01, 0)
+        n = max(3, int((b1 - b0) / 0.06))
+        for k in range(n):
+            c = b0 + (k + 0.5) * (b1 - b0) / n
+            _wallbox("slat", d, c - 0.017, c + 0.017, z0, z1, 0.01, 0.045)
+    # لوحات: صف أو صفين حسب الارتفاع المتاح فوق الكنب
+    arts = d.get("arts", [1, 2, 3, 4])
+    rows = d.get("rows", 1 if len(arts) <= 3 else 2)
+    per = math.ceil(len(arts) / rows)
+    span = (a1 - a0) - 2 * sw - 0.5
+    fh = d.get("fh", 0.55 if rows == 2 else 0.8)
+    zc0 = d.get("art_z", 1.55 if rows == 2 else 1.75)
+    k = 0
+    for r in range(rows):
+        cnt = min(per, len(arts) - k)
+        fw = min(d.get("fw", 0.75), (span - (cnt - 1) * 0.25) / max(cnt, 1))
+        gap = (span - cnt * fw) / (cnt + 1)
+        zc = zc0 + (rows - 1 - r) * (fh + 0.22) - (rows - 1) * (fh + 0.22) / 2
+        for j in range(cnt):
+            art = arts[k]
+            k += 1
+            m = _art_mat(art)
+            ar = DM[f"art{art}_ar"]
+            w_, h_ = (fw, min(fh, fw / ar)) if fw / ar <= fh else (fh * ar, fh)
+            c = a0 + sw + 0.25 + gap * (j + 1) + fw * j + fw / 2
+            fr = 0.035
+            _wallbox("black", d, c - w_ / 2 - fr, c + w_ / 2 + fr, zc - h_ / 2 - fr, zc + h_ / 2 + fr, 0.012, 0.045)
+            _wallbox(_tmat("mat_white", "Plaster001", 1.0, "#EFEAE0", 0.9, rough=0.9, bump=0.0), d,
+                     c - w_ / 2 - 0.004, c + w_ / 2 + 0.004, zc - h_ / 2 - 0.004, zc + h_ / 2 + 0.004, 0.045, 0.047, 0)
+            s_ = 0.049
+            if alongx:
+                y_ = y0 + ny * s_
+                sgn = 1 if ny < 0 else -1          # الصورة مواجهة للغرفة
+                p0 = (c - sgn * w_ / 2, y_, zc - h_ / 2)
+                _plane(m, p0, (sgn * w_, 0, 0), (0, 0, h_))
+            else:
+                x_ = x0 + nx * s_
+                sgn = 1 if nx > 0 else -1
+                p0 = (x_, c - sgn * w_ / 2, zc - h_ / 2)
+                _plane(m, p0, (0, sgn * w_, 0), (0, 0, h_))
+    if d.get("sconces", True):                  # أبليكين على الشرائح
+        for c in (a0 + sw / 2, a1 - sw / 2):
+            at = (c, y0 + ny * 0.045, d.get("sconce_z", 1.9)) if alongx else (x0 + nx * 0.045, c, d.get("sconce_z", 1.9))
+            _sconce(f"fw{i}_{c:.2f}", at, (nx, ny), 35)
+
+
+def d_downlights(i, d):
+    """سبوت لايت غاطس بالسقف موزع منتظم (حلقة سوداء + قرص منير + سبوت للأسفل)."""
+    x0, y0, x1, y1 = d["rect"]
+    z = d["z"]
+    sp = d.get("spacing", 1.2)
+    nx_, ny_ = max(1, round((x1 - x0) / sp)), max(1, round((y1 - y0) / sp))
+    for a in range(nx_):
+        for b in range(ny_):
+            x = x0 + (a + 0.5) * (x1 - x0) / nx_
+            y = y0 + (b + 0.5) * (y1 - y0) / ny_
+            fcyl(None, "black", x, y, z - 0.012, z - 0.002, 0.05, 24)
+            bpy.ops.mesh.primitive_cylinder_add(radius=0.035, depth=0.004, vertices=24, location=(x, y, z - 0.014))
+            bpy.context.active_object.data.materials.append(DM["led"])
+            L_ = bpy.data.lights.new(f"dl{i}_{a}_{b}", "SPOT")
+            L_.energy = d.get("w", 22) * DIM
+            L_.color = (1.0, 0.82, 0.62)
+            L_.spot_size = math.radians(80)
+            L_.spot_blend = 0.8
+            L_.shadow_soft_size = 0.03
+            o = bpy.data.objects.new(f"dl{i}_{a}_{b}", L_)
+            o.location = (x, y, z - 0.03)
+            o.rotation_euler = (math.pi, 0, 0)
+            o.visible_camera = False
+            scene.collection.objects.link(o)
+
+
+def d_tile_floor(i, d):
+    """بلاط رمادي كبير فوق أرضية الفراغ (الصالة/الطعام/المطبخ)."""
+    x0, y0, x1, y1 = d["rect"]
+    z = d.get("z", 0.026)               # فوق تشطيب أرضية الخشب (وجهها ≈ +2 سم)
+    m = _tmat("tile_" + d.get("color", "#45443F").lstrip("#"), "Tiles107", d.get("tile", 1.2), d.get("color", "#45443F"),
+              0.95, rough=0.3, bump=0.1)
+    dbox(m, x0, y0, z, x1, y1, z + 0.01, 0)
+
+
+def d_slat_column(i, d):
+    """عمود/فاصل مكسو شرائح خشب رأسية من الأرض للسقف."""
+    x0, y0, x1, y1 = d["rect"]
+    z0, z1 = d.get("z", [0.0, 2.7])
+    dbox("slat_dark", x0 + 0.02, y0 + 0.02, z0, x1 - 0.02, y1 - 0.02, z1, 0)
+    for alongx, (a0, a1, s0, s1) in ((True, (x0, x1, y0, y0 + 0.03)), (True, (x0, x1, y1 - 0.03, y1)),
+                                     (False, (y0, y1, x0, x0 + 0.03)), (False, (y0, y1, x1 - 0.03, x1))):
+        n = max(3, int((a1 - a0) / 0.06))
+        for k in range(n):
+            c = a0 + (k + 0.5) * (a1 - a0) / n
+            if alongx:
+                dbox("slat", c - 0.017, s0, z0, c + 0.017, s1, z1)
+            else:
+                dbox("slat", s0, c - 0.017, z0, s1, c + 0.017, z1)
+
+
+def d_stone(i, d):
+    """تكسية حجر فاتح على الوجه الخارجي (حول الشبابيك/الدور الأرضي). line = الوجه الخارجي، n = للخارج."""
+    m = _tmat("stone_clad", "Bricks111A", d.get("tile", 1.4), d.get("color", "#D9CBB0"), 0.55, rough=0.85, bump=0.6)
+    (x0, y0, x1, y1), (nx, ny) = d["line"], d["n"]
+    z0, z1 = d.get("z", [0.0, 1.0])
+    t = d.get("thick", 0.035)
+    alongx = abs(x1 - x0) >= abs(y1 - y0)
+    if alongx:
+        dbox(m, min(x0, x1), y0, z0, max(x0, x1), y0 + ny * t, z1, 0.004)
+    else:
+        dbox(m, x0, min(y0, y1), z0, x0 + nx * t, max(y0, y1), z1, 0.004)
+
+
+def d_sconce(i, d):
+    """أبليك أب/داون (داخلي أو على الواجهة)."""
+    _sconce(f"sc{i}", d["at"], d["n"], d.get("w", 45), d.get("updown", True))
+
+
 DECOR = {"slats": d_slats, "beam": d_beam, "cove": d_cove, "pendant": d_pendant, "rug": d_rug, "art": d_art,
-         "hanging_fire": d_hanging_fire, "fire_pit": d_fire_pit, "lantern": d_lantern}
+         "hanging_fire": d_hanging_fire, "fire_pit": d_fire_pit, "lantern": d_lantern,
+         "feature_wall": d_feature_wall, "downlights": d_downlights, "tile_floor": d_tile_floor,
+         "slat_column": d_slat_column, "stone": d_stone, "sconce": d_sconce}
 for _i, _d in enumerate(cfg.get("decor", [])):
     if _d.get("night_only") and not cfg.get("night"):
         continue
