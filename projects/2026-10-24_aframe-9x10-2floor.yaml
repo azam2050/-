@@ -144,7 +144,7 @@ furniture:
 # ---------------- التصميم الداخلي (سيدر عسلي: كنب كريمي، جدار أزرق ليلي + رمادي حجري، لمسات نحاسي) ----------------
 interior_decor:
   # الصالة: جدار أزرق ليلي بشرائح خلف الدرج + لوحتين صحراء
-  - {kind: feature_wall, line: [6, 472, 374, 472], n: [0, -1], z: [0, 280], color: "#26364A", arts: [2, 5], rows: 1, fw: 70, fh: 50, art_z: 200, slat_w: 32, sconces: false}
+  - {kind: feature_wall, line: [155, 472, 374, 472], n: [0, -1], z: [0, 280], color: "#26364A", arts: [2, 5], rows: 1, fw: 70, fh: 50, art_z: 200, slat_w: 32, sconces: false}
   - {kind: rug, rect: [210, 130, 410, 280]}
   - {kind: tile_floor, rect: [6, 6, 882, 472], color: "#6F6A63"}
   - {kind: tile_floor, rect: [386, 478, 882, 982], color: "#6F6A63"}
