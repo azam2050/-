@@ -275,6 +275,7 @@ def render_real(project, rules, style, heights, out_dir, samples=64, res=(1600, 
             "samples": samples, "res": list(res), "ground_z": -project.slab_height / 100, "lights": [], "lens": 35,
             "decor": decor_items(project), "sadu": bool(rs.get("sadu")), "pano_res": rs.get("pano_res", [2400, 1200]), "ground_holes": ground_holes(project),
             "site_wall": ((project.site or {}).get("wall") or {}).get("finish", "plaster"),
+            "palette": rs.get("palette", {}),
             "hq": rs.get("quality", "high") != "draft"}
     pano = lambda key: [[p_["name"], [v / 100 for v in p_["at"]], p_.get("yaw", 0)]  # noqa: E731
                         for p_ in rs.get("panos", []) if p_.get(key, key == "day")]

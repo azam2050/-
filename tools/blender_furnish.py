@@ -63,6 +63,9 @@ FM = {
     "glass": MATS["glass"],
     "wood": tex_material("F_wood", "WoodFloor043", 1.2, None, bump=0.05),
 }
+for _k, _c in (cfg.get("palette") or {}).items():   # لوحة ألوان المشروع (ذوق مصمم): تلوين قطع الفرش
+    if _k in FM and FM[_k].use_nodes:
+        FM[_k].node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = hex2rgb(_c)
 
 
 def fbox(parent, mat, x0, y0, z0, x1, y1, z1, bevel=0.008, seg=3):

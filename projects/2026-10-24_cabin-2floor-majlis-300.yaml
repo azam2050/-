@@ -321,13 +321,14 @@ site:
        furniture: [{rect: [-370, 1090, -290, 1410]}, {rect: [-290, 1330, 360, 1410]}, {rect: [-120, 1180, 20, 1270]}]}
   trees:
     - {at: [-420, -300], kind: tree, r: 160}
-    - {at: [300, -1200], kind: tree, r: 140}
-    - {at: [-300, -900], kind: palm, r: 140}
+    - {at: [430, -700], kind: tree, r: 140}
+    - {at: [-430, -150], kind: palm, r: 140}
     - {at: [1100, -1150], kind: tree, r: 130}
     - {at: [1850, 1350], kind: tree, r: 150}
 
 render:
   night_interior: 2
+  palette: {majlis: "#E6DBC8", majlis_trim: "#A8743F", majlis_rug: "#C9B79C", rug: "#D8CCB8"}   # كريمي + نحاسي مع السيدر العسلي
   exterior:
     - {name: أمامي من اليسار — من الحديقة, cam: [-420, -1280, 170], target: [720, 400, 350], lens: 20}
     - {name: أمامي من اليمين — من الموقف, cam: [1900, -1280, 170], target: [720, 400, 350], lens: 20}
