@@ -96,7 +96,15 @@ def pod():
 
 
 def _agent(url, s, method, path, data=None, timeout=300):
-    return _req(method, url + path, data, {"X-Token": s["token"]}, timeout)
+    # بعد تشغيل الجهاز من الإيقاف أحياناً يرد البروكسي 404/5xx لثواني — نعيد المحاولة
+    import urllib.error
+    for k in range(8):
+        try:
+            return _req(method, url + path, data, {"X-Token": s["token"]}, timeout)
+        except urllib.error.HTTPError as e:
+            if e.code not in (404, 502, 503, 504) or k == 7:
+                raise
+            time.sleep(15)
 
 
 def _put_tar(url, s, files, dest):
