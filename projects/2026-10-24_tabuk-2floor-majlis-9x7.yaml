@@ -234,8 +234,8 @@ interior_decor:
   - {kind: feature_wall, line: [656, 376, 882, 376], n: [0, -1], z: [0, 280], color: "#4E5642", arts: [5], rows: 1, fw: 100, fh: 70, art_z: 170, slat_w: 34}
   - {kind: rug, rect: [120, 130, 330, 270]}
   - {kind: rug, rect: [560, 130, 770, 270]}
-  # صالة العائلة: جدار التلفزيون رمادي دافي بشرائح
-  - {kind: feature_wall, line: [656, 388, 882, 388], n: [0, 1], z: [0, 280], color: "#6E6760", arts: [], slat_w: 32, sconces: false}
+  # صالة العائلة: جدار رمادي دافي بشرائح + لوحتين + أباليك
+  - {kind: feature_wall, line: [656, 388, 882, 388], n: [0, 1], z: [0, 280], color: "#6E6760", arts: [2, 6], rows: 1, fw: 75, fh: 55, art_z: 160, slat_w: 32}
   # بلاط رمادي فاتح دافي بالأرضي
   - {kind: tile_floor, rect: [6, 6, 882, 376], color: "#8E8982"}
   - {kind: tile_floor, rect: [656, 388, 882, 682], color: "#8E8982"}
