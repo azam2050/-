@@ -475,5 +475,31 @@ const SHOTS = /*SHOTS*/[{"name": "أمامي من اليسار", "file": "shots/
 setNight(NIGHT);
 </script>
 
+<style>
+body.direct { overflow: hidden }
+body.direct #model-stage { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important;
+  height: 100dvh !important; max-height: none !important; aspect-ratio: auto !important; z-index: 50; border-radius: 0; margin: 0 }
+body.direct #walkbar { position: fixed; left: 8px; right: 8px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 60;
+  display: flex; gap: 6px; overflow-x: auto; justify-content: center }
+body.direct #walkbar button { backdrop-filter: blur(6px); background: rgba(20, 14, 9, .62); color: #fff; border-color: rgba(216, 190, 140, .55) }
+body.direct #walkbar button[aria-pressed="true"] { background: #B8955A; color: #1a120b }
+body.direct .dn { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 10px; z-index: 60 }
+#dx-info { display: none }
+body.direct #dx-info { display: block; position: fixed; top: calc(10px + env(safe-area-inset-top)); right: 10px; z-index: 60;
+  font: inherit; font-size: .95rem; padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(216, 190, 140, .6);
+  background: rgba(20, 14, 9, .62); color: #fff; backdrop-filter: blur(6px); cursor: pointer }
+body.direct #model-stage .tools { bottom: 64px }
+</style>
+<button type="button" id="dx-info">تفاصيل المشروع والصور</button>
+<script>
+(function () {
+  if (/page/.test(location.hash)) return;
+  document.body.classList.add("direct");
+  document.getElementById("dx-info").addEventListener("click", function () {
+    document.body.classList.remove("direct"); window.scrollTo(0, 0);
+  });
+})();
+</script>
+
 </body>
 </html>
