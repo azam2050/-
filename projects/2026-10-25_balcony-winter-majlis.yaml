@@ -1,0 +1,84 @@
+# تصميم جلسة شتوية لبلكونة قائمة (فيديو من صاحب المصنع): بلاط رمادي فاتح، أحواض زرع حجر، درابزين زجاج، باب سحاب أسود،
+#   وجدار مكسو حجر. المساحة ~36 م² (من الصوت بالفيديو) — مفترضة 9.00 × 4.00 م لين يوصل المقاس الفعلي.
+# فكرة التصميم الشتوي:
+#   - مظلة خشب ممتدة فوق البلكونة كاملة على عمودين (تحمي من البرد والمطر) وسقفها خشب دافي.
+#   - جلسة عربية L على الجدار والجهة الغربية + سجادة + طاولة قهوة خشب، وجدار شرائح خشب غامق خلف الجلسة بأباليك.
+#   - مشب نار حجري بالجهة الشرقية مع كرسيين حوله، وفوانيس معلّقة — باب السحاب وممره فاضي.
+# الإحداثيات بالسنتيمتر، الجدار 12 سم، +y = داخل البيت، البلكونة جنوب.
+name: balcony-winter-majlis
+title: جلسة شتوية — بلكونة 9.00 × 4.00 م (36 م²)
+client: "مشروع — جلسة شتوية"
+meta:
+  location: "—"
+  usage: جلسة خارجية شتوية
+  date: 2026-10-25
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: french}
+wall_height: 300
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 20, overhang: 30, ext_start: 400}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: جدار البيت على البلكونة
+    start: [0, 0]
+    end: [888, 0]
+    openings:
+      - {kind: door, code: ب1, name: ب1 باب سحاب البلكونة, offset: 580, width: 240, height: 230, style: sliding, leaves: 2}
+  - {name: شرق, start: [888, 0], end: [888, 388]}
+  - {name: شمال, start: [888, 388], end: [0, 388]}
+  - {name: غرب, start: [0, 388], end: [0, 0]}
+
+rooms:
+  - {name: داخل البيت, rect: [6, 6, 882, 382], label: [444, 200]}
+
+decks:
+  - name: البلكونة (الجلسة الشتوية)
+    rect: [-6, -406, 894, -6]
+    height: 45
+    railing: [S, E, W]
+    railing_style: glass_panel
+    stairs: null
+
+posts:   # عمودين خشب يحملون المظلة فوق البلكونة
+  - {at: [3, -397], size: 20, top: 300}
+  - {at: [885, -397], size: 20, top: 300}
+
+furniture:
+  # الجلسة العربية L على الجدار والجهة الغربية — ممر باب السحاب فاضي
+  - {name: جلسة عربية, rect: [6, -86, 540, -6]}
+  - {name: جلسة عربية, rect: [6, -380, 86, -86]}
+  - {name: طاولة, rect: [190, -260, 370, -150]}
+  # حول مشب النار (شرق)
+  - {name: كرسي, rect: [570, -310, 645, -235]}
+  - {name: كرسي, rect: [800, -330, 875, -255]}
+  - {name: "", rect: [600, -390, 645, -345]}
+
+interior_decor:
+  - {kind: tile_floor, rect: [-6, -406, 894, -6], color: "#C9C3B8"}
+  - {kind: rug, rect: [110, -330, 520, -110]}
+  # جدار البيت: شرائح خشب غامق بأباليك خلف الجلسة + حجر فاتح بالباقي
+  - {kind: feature_wall, line: [40, -6, 540, -6], n: [0, -1], z: [0, 300], color: "#4B4A3F", arts: [3], rows: 1, fw: 110, fh: 70, art_z: 165, slat_w: 34, sconce_z: 200}
+  - {kind: stone, line: [540, -6, 572, -6], n: [0, -1], z: [0, 300]}
+  - {kind: stone, line: [828, -6, 894, -6], n: [0, -1], z: [0, 300]}
+  - {kind: stone, line: [572, -6, 828, -6], n: [0, -1], z: [238, 300]}
+  - {kind: stone, line: [-6, -6, 40, -6], n: [0, -1], z: [0, 300]}
+  # مشب نار حجري + فوانيس معلّقة تحت المظلة
+  - {kind: fire_pit, at: [720, -250], z: 0, r: 50}
+  - {kind: lantern, at: [200, -220, 270]}
+  - {kind: lantern, at: [420, -220, 270]}
+  - {kind: lantern, at: [720, -250, 280]}
+
+render:
+  night_interior: 2
+  palette: {majlis: "#E4D8C4", majlis_trim: "#8C5A33", majlis_rug: "#9B4A3A", rug: "#B8A48A"}   # كريمي + سدو أحمر دافي
+  exterior:
+    - {name: البلكونة من الحديقة, cam: [444, -1300, 220], target: [444, -150, 160], lens: 24}
+  interior:
+    - {name: الجلسة الشتوية, cam: [860, -390, 150], target: [150, -60, 80], lens: 18}
+    - {name: من الجلسة على المشب, cam: [40, -60, 120], target: [760, -300, 60], lens: 18}

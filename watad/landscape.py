@@ -65,6 +65,10 @@ def plan_landscape(project, seed=7, keep_clear=()):
 
 def _deck_set(project, d, out, dx0, dy0, dx1, dy1, z, ox=0.0, oy=0.0):
     """جلسة التراس الأرضي: بعيد عن الأبواب وطريق الدرج (ملاحظة المصنع)."""
+    for f in project.furniture:                  # التراس مفروش بالتصميم (جلسة مصممة) — لا نضيف طاولة تلقائية
+        fx, fy = (f.rect[0] + f.rect[2]) / 2, (f.rect[1] + f.rect[3]) / 2
+        if d.rect[0] <= fx <= d.rect[2] and d.rect[1] <= fy <= d.rect[3]:
+            return
     # ملاحظة المصنع: الجلسة ما تنحط قدام باب ولا على طريق الدرج — نحسب المناطق المحجوزة على طول التراس
     busy = []
     for w in project.walls:
