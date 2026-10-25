@@ -224,7 +224,8 @@ def d_pendant(i, d):
 
 def d_rug(i, d):
     x0, y0, x1, y1 = d["rect"]
-    fbox(None, FM["majlis_rug"] if d.get("sadu") else FM["rug"], x0, y0, 0.012, x1, y1, 0.026, 0.006, 2)
+    z = d.get("z", 0.012)               # فوق البلاط إذا انحط بلاط (z ≈ 0.04)
+    fbox(None, FM["majlis_rug"] if d.get("sadu") else FM["rug"], x0, y0, z, x1, y1, z + 0.014, 0.006, 2)
 
 
 def d_art(i, d):
