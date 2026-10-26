@@ -184,3 +184,31 @@ def stop_pod(terminate=False):
         STATE.unlink(missing_ok=True)
     else:
         _req("POST", f"{API}/pods/{s['id']}/stop", {})
+
+
+def run_script(script, files, args, out):
+    """يشغّل سكربت Blender مستقل على الكرت: يرفع السكربت + ملفاته، ويمرر بعد -- : out tex models + args، ويرجّع المخرجات."""
+    url, s = pod()
+    ensure_assets(url, s, "/opt/blender/tex", "/opt/blender/models")
+    jid = secrets.token_hex(5)
+    jd = f"/workspace/jobs/{jid}"
+    _put_tar(url, s, [(Path(script), Path(script).name)] + [(Path(f), Path(f).name) for f in files], jd)
+    j = _agent(url, s, "POST", "/run", {"cmd": ["BLENDER", "-b", "-P", f"{jd}/{Path(script).name}", "--", f"{jd}/out",
+                                                 "/workspace/assets/tex", "/workspace/assets/models"] + [str(a) for a in args],
+                                        "cwd": jd})
+    while True:
+        time.sleep(8)
+        st = _agent(url, s, "GET", f"/job?id={j['id']}")
+        if st.get("done"):
+            break
+    Path(out).mkdir(parents=True, exist_ok=True)
+    (Path(out) / f"gpu-{jid}.log").write_text(st.get("tail", ""))
+    t = _agent(url, s, "POST", "/run", {"cmd": ["tar", "cf", f"{jd}/out.tar", "-C", f"{jd}/out", "."], "cwd": jd})
+    while not _agent(url, s, "GET", f"/job?id={t['id']}").get("done"):
+        time.sleep(2)
+    raw = _agent(url, s, "GET", f"/file?path={jd}/out.tar", timeout=900)
+    with tarfile.open(fileobj=io.BytesIO(raw)) as tf:
+        tf.extractall(out)
+    _agent(url, s, "POST", "/rm", {"path": jd})
+    if st.get("rc"):
+        raise RuntimeError(f"GPU script failed rc={st.get('rc')}: {st.get('tail', '')[-800:]}")
