@@ -1350,6 +1350,12 @@ def areas_sheet(ctx):
     same = all(abs(b[k] - fbs[0][k]) < 1 for b in fbs for k in range(4))
     net = sum(r.area_m2 for r in P.rooms if r.kind != "stair" or r.floor == 0)
     terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
+    from .model import mezz_area
+    mz = mezz_area(P)                         # الدور الأول داخل المثلث / الميزانين = مساحة مبنية (ملاحظة المصنع)
+    gross0 = gross
+    gross += mz
+    net += mz
+    full_up = any(m.get("plan_title") for m in P.mezzanines)
     fig = new_page()
     hide_price = bool(P.meta.get("hide_pricing"))
     fig.text(0.5, 0.945, "جدول المساحات وبيانات المشروع" + ("" if hide_price else " والتسعير"), ha="center",
@@ -1360,6 +1366,12 @@ def areas_sheet(ctx):
     rooms_ = [r for r in P.rooms if not (r.kind == "stair" and r.floor > 0)]
     rows = [[i + 1, (f"{short.get(r.floor, r.floor)} — " if nfl > 1 else "") + r.name,
              f"{r.w / 100:.2f} × {r.h / 100:.2f}", f"{r.area_m2:.2f}"] for i, r in enumerate(rooms_)]
+    for m in P.mezzanines:
+        mx0, my0, mx1, my1 = m["rect"]
+        ha = sum((h["rect"][2] - h["rect"][0]) * (h["rect"][3] - h["rect"][1]) for h in m.get("holes", [])) / 1e4
+        rows.append([len(rows) + 1, ("أول — " if full_up else "ميزانين — ") + m.get("name", ""),
+                     f"{(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f}" + (" − فتحة الدرج" if ha else ""),
+                     f"{(mx1 - mx0) * (my1 - my0) / 1e4 - ha:.2f}"])
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
     free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price and \
         not P.meta.get("price_items") else ""
@@ -1375,9 +1387,13 @@ def areas_sheet(ctx):
         for f, b in enumerate(fbs):
             rows.append(["", "مسطح " + P.floor_list[f]["name"], f"{(b[2] - b[0]) / 100:.2f} × {(b[3] - b[1]) / 100:.2f}",
                          f"{(b[2] - b[0]) * (b[3] - b[1]) / 1e4:.2f}"])
-    rows.append(["", "المساحة الإجمالية المبنية",
-                 (f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else ""))
-                 if same else "مجموع الأدوار", f"{gross:.2f}"])
+    if mz:
+        rows.append(["", "مسطح الأرضي", f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}", f"{gross0:.2f}"])
+        rows.append(["", "مسطح " + ("الدور الأول (داخل المثلث)" if full_up else "الميزانين"), "", f"{mz:.2f}"])
+    rows.append(["", "المساحة الإجمالية المبنية" + (" (الأرضي + الأول)" if mz and full_up else " (مع الميزانين)" if mz else ""),
+                 "مجموع الأدوار" if mz or not same else
+                 (f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else "")),
+                 f"{gross:.2f}"])
     if terrace and P.meta.get("price_scope") != "built":
         dk = ("التراس والبلكونة" if any("بلكون" in d.name for d in P.decks) else "التراسات") if len(P.decks) > 1 \
             else "التراس"

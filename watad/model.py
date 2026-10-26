@@ -282,3 +282,15 @@ def outer_bbox(project, rules):
     xs = [p[0] for w in project.exterior_walls for p in (w.start, w.end)]
     ys = [p[1] for w in project.exterior_walls for p in (w.start, w.end)]
     return min(xs) - t, min(ys) - t, max(xs) + t, max(ys) + t
+
+
+def mezz_area(P):
+    """مسطح الميزانين/الدور داخل المثلث (م²) — مستطيلات الأرضية ناقص فتحات الدرج. يدخل بالمساحة المبنية."""
+    a = 0.0
+    for m in P.mezzanines:
+        x0, y0, x1, y1 = m["rect"]
+        a += (x1 - x0) * (y1 - y0)
+        for h in m.get("holes", []):
+            hx0, hy0, hx1, hy1 = h["rect"]
+            a -= (hx1 - hx0) * (hy1 - hy0)
+    return a / 1e4
