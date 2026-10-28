@@ -194,13 +194,13 @@ def elevation(ax, front=True):
         ax.add_patch(Rectangle((c - 0.08, 0), 0.16, top, fc=C_STEEL, ec="k", lw=0.5))
     if front:
         ax.add_patch(Rectangle((0, top), span, 0.12, fc=C_STEEL, ec="k", lw=0.5))
-        ax.add_patch(Rectangle((0, top + 0.12), span, Y.H_RIDGE - top - 0.12, fc="#E9D9B8", ec="#8A7448", lw=0.7))
+        ax.add_patch(Rectangle((0, top + 0.12), span, Y.H_RIDGE - top - 0.12, fc="#C9955E", ec="#7A5232", lw=0.7))
         a = Y.AIRLOCK
         ax.add_patch(Rectangle((a[0], 0), a[2] - a[0], 2.4, fc="#E6E6E6", ec=C_STEEL, lw=1.2))
         ax.add_patch(Rectangle((Y.DOOR_OUT[0], 0), Y.DOOR_OUT[1] - Y.DOOR_OUT[0], 2.1, fc="white", ec=SH.C_DOOR, lw=1.2))
         ax.text(15, 2.6, "غرفة الأمان", ha="center", fontsize=7)
     else:
-        ax.add_patch(Polygon([(0, top), (span / 2, Y.H_RIDGE), (span, top)], closed=True, fc="#E9D9B8", ec="#8A7448", lw=0.8))
+        ax.add_patch(Polygon([(0, top), (span / 2, Y.H_RIDGE), (span, top)], closed=True, fc="#C9955E", ec="#7A5232", lw=0.8))
     dim(ax, (0, 0), (span, 0), -0.9, f"{span:.2f}", fs=8)
     dim(ax, (span, 0), (span, top), -0.8, f"{top:.2f}", fs=7)
     dim(ax, (span + 0.9, 0), (span + 0.9, Y.H_RIDGE), -0.6, f"{Y.H_RIDGE:.2f}", fs=7)
@@ -223,7 +223,7 @@ def section(ax):
     for my in Y.MIST_Y:
         ax.add_patch(Circle((my, Y.H_EAVE - 0.2), 0.06, fc="#2F78A8"))
     ax.add_patch(Ellipse((Y.POND[1] + 0.0, -0.15), 2 * Y.POND[3], 0.3, fc=C_WATER, ec="#2F78A8"))
-    ax.text(span / 2, Y.H_RIDGE + 0.25, "بولي كربونيت بيج (تظليل كامل) على مدادات حديد مجلفن", ha="center", fontsize=7.5)
+    ax.text(span / 2, Y.H_RIDGE + 0.25, "سقف خشب: ألواح خشب معالج + عزل مائي على جسور ومدادات خشب", ha="center", fontsize=7.5)
     ax.text(0.3, 1.7, "شبك حديد مجلفن\nفتحة 12.5 × 12.5 مم", fontsize=7)
     ax.text(span - 0.3, -0.45, "قاعدة خرسانية\n+ جدار حجر 50 سم", ha="right", fontsize=6.5)
     dim(ax, (0, 0), (span, 0), -1.1, "15.00", fs=8)
@@ -239,7 +239,7 @@ SPEC = [
     ["الهيكل", "تيوبات حديد مجلفن: أعمدة 100×100×3 مم كل 3.00 م، جسور 100×50، مدادات 50×50"],
     ["الشبك", "شبك حديد مجلفن ملحوم 12.5 × 12.5 مم (يمنع العصافير الصغيرة والثعابين)"],
     ["القاعدة", "قواعد خرسانية + جدار حجر 50 سم على المحيط (ضد الحفر والقوارض)"],
-    ["تغطية السقف", "بولي كربونيت بيج متعدد الجدران 10 مم — تظليل كامل + شبك تحته"],
+    ["تغطية السقف", "خشب: ألواح خشب معالج (لسان ومجرى) + عزل مائي وطبقة حماية، على جسور خشب كل 3.00 م ومدادات خشب — تظليل كامل"],
     ["التهوية والتلطيف", "3 مراوح سقف + خطين رذاذ ماء بطول 30 م (اختياري)"],
     ["الماء", "شلال صخري + مجرى 10 م + بحيرة ضحلة 6.6 × 3.8 م (30–40 سم) بمضخة وفلتر"],
     ["الإضاءة", "LED: إنارة أرضية على الممر كل 3.2 م + شريط دافي تحت الجسور + سبوت للشلال"],

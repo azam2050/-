@@ -1,4 +1,4 @@
-"""محمية طيور 30 × 15 م — مشهد Blender واقعي (هيكل حديد مجلفن + شبك + سقف بولي كربونيت بيج + شلال وبحيرة + ممر حجري
+"""محمية طيور 30 × 15 م — مشهد Blender واقعي (هيكل حديد مجلفن + شبك + سقف خشب + شلال وبحيرة + ممر حجري
 + أشجار مثمرة ومجاثم وطيور + إنارة LED).
 تشغيل: blender -b -P aviary_scene.py -- <out_dir> <tex_dir> <models_dir> <samples> <gpu 0/1> [pct]
 """
@@ -238,7 +238,8 @@ def model(mid, at, H=None, W=None, rot=0.0):
 M_STEEL = mat("steel", "#8E959C", 0.35, 0.9)
 M_MESH = mesh_mat(("X", "Z"), "mesh_x")
 M_MESHY = mesh_mat(("Y", "Z"), "mesh_y")
-M_POLY = mat("poly", "#EBDDBE", 0.3, trans=0.75)
+M_POLY = texmat("roofwood", "Planks037A", 1.4, tint="#C08A55", bump=0.5)   # سقف خشب (طلب العميل)
+M_GLU = texmat("glulam", "Planks037A", 1.0, tint="#9A6538", bump=0.4)
 M_STONEW = texmat("stonewall", "Bricks111A", 1.2, tint="#E6D9C3", bump=1.0)
 M_PATH = texmat("path", "Bricks111A", 0.8, tint="#CDBEA5", bump=0.9)
 M_SOIL = texmat("soil", "Grass004", 2.0, tint="#B8A27E", bump=0.6)
@@ -330,14 +331,14 @@ for y in Y.COL_Y[1:-1]:
 for y in (0.0, Y.W):
     box(M_STEEL, 0, y - 0.05, Y.H_EAVE - 0.1, Y.L, y + 0.05, Y.H_EAVE)
 for x in Y.COL_X:
-    rod(M_STEEL, (x, 0, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE), 0.04)
-    rod(M_STEEL, (x, Y.W, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE), 0.04)
+    rod(M_GLU, (x, 0, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE - 0.04), 0.08)
+    rod(M_GLU, (x, Y.W, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE - 0.04), 0.08)
 for k in range(1, 4):
     for y0 in (Y.W / 2 * k / 4, Y.W - Y.W / 2 * k / 4):
         z = Y.H_EAVE + (Y.H_RIDGE - Y.H_EAVE) * (k / 4)
-        rod(M_STEEL, (0, y0, z), (Y.L, y0, z), 0.025)
-rod(M_STEEL, (0, Y.W / 2, Y.H_RIDGE), (Y.L, Y.W / 2, Y.H_RIDGE), 0.04)
-# السقف بولي كربونيت بيج (سطحين)
+        rod(M_GLU, (0, y0, z - 0.03), (Y.L, y0, z - 0.03), 0.045)
+rod(M_GLU, (0, Y.W / 2, Y.H_RIDGE - 0.05), (Y.L, Y.W / 2, Y.H_RIDGE - 0.05), 0.09)
+# السقف خشب: ألواح خشب معالج على جسور ومدادات خشب (سطحين)
 for (ya, yb) in ((0.0, Y.W / 2), (Y.W, Y.W / 2)):
     me = bpy.data.meshes.new("roof")
     me.from_pydata([(-0.2, ya, Y.H_EAVE + 0.02), (Y.L + 0.2, ya, Y.H_EAVE + 0.02), (Y.L + 0.2, yb, Y.H_RIDGE + 0.02),
@@ -346,7 +347,7 @@ for (ya, yb) in ((0.0, Y.W / 2), (Y.W, Y.W / 2)):
     scene.collection.objects.link(o)
     o.data.materials.append(M_POLY)
     sol = o.modifiers.new("s", "SOLIDIFY")
-    sol.thickness = 0.01
+    sol.thickness = 0.04
 # الشبك: الجدران الأربعة (فوق قاعدة الحجر) + مثلثات الجملون
 box(M_STONEW, -0.1, -0.12, 0.0, Y.L + 0.1, 0.12, Y.PLINTH)
 box(M_STONEW, -0.1, Y.W - 0.12, 0.0, Y.L + 0.1, Y.W + 0.12, Y.PLINTH)
