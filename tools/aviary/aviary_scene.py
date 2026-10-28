@@ -238,7 +238,7 @@ def model(mid, at, H=None, W=None, rot=0.0):
 M_STEEL = mat("steel", "#8E959C", 0.35, 0.9)
 M_MESH = mesh_mat(("X", "Z"), "mesh_x")
 M_MESHY = mesh_mat(("Y", "Z"), "mesh_y")
-M_POLY = texmat("roofwood", "Planks037A", 1.4, tint="#C08A55", bump=0.5)   # سقف خشب (طلب العميل)
+M_POLY = texmat("roofwood", "Planks037A", 1.4, tint="#E2B784", bump=0.5)   # سقف خشب (طلب العميل)
 M_GLU = texmat("glulam", "Planks037A", 1.0, tint="#9A6538", bump=0.4)
 M_STONEW = texmat("stonewall", "Bricks111A", 1.2, tint="#E6D9C3", bump=1.0)
 M_PATH = texmat("path", "Bricks111A", 0.8, tint="#CDBEA5", bump=0.9)
@@ -496,6 +496,19 @@ for k, p in enumerate(sp[1:]):
         plight((bx, by, 0.5), 8, "#FFC47A", 0.03)
     last = p
 
+# إضاءة داخلية ناعمة تحت السقف الخشب (السقف مصمت): ألواح ضوء مخفية عن الكاميرا
+AREAS = []
+for x in (5.0, 15.0, 25.0):
+    for y in (4.0, 11.0):
+        L_ = bpy.data.lights.new("fill", "AREA")
+        L_.shape, L_.size, L_.size_y = "RECTANGLE", 8.0, 5.5
+        L_.color = hexc("#FFF1DC")[:3]
+        o = bpy.data.objects.new("fill", L_)
+        o.location = (x, y, 2.85)
+        o.visible_camera = o.visible_glossy = o.visible_transmission = False
+        scene.collection.objects.link(o)
+        AREAS.append(L_)
+
 # ---------------------------------------------------------------- الإضاءة والكاميرات
 world = bpy.data.worlds.new("W")
 scene.world = world
@@ -556,6 +569,8 @@ for name, cam, tgt, lens, night in SHOTS:
     scene.camera = co
     WN["Background"].inputs["Strength"].default_value = 0.08 if night else 1.0
     sun_d.energy = 0.0 if night else 3.2
+    for L_ in AREAS:
+        L_.energy = 60 if night else 900
     scene.view_settings.exposure = 1.0 if night else 0.0
     scene.render.filepath = os.path.join(OUT, name + ".jpg")
     bpy.ops.render.render(write_still=True)
