@@ -156,6 +156,21 @@ def rod(m, a, b, r):
     return o
 
 
+def beam(m, a, b, w, h):
+    """جسر خشب مستطيل بين نقطتين (عرض w وارتفاع h، معلّق تحت الخط)."""
+    a, b = Vector(a), Vector(b)
+    v = b - a
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(a + b) / 2 - Vector((0, 0, h / 2)))
+    o = bpy.context.active_object
+    o.scale = (v.length, w, h)
+    o.rotation_mode = "QUATERNION"
+    o.rotation_quaternion = Vector((1, 0, 0)).rotation_difference(v.normalized())
+    bv = o.modifiers.new("bv", "BEVEL")
+    bv.width, bv.segments = 0.006, 2
+    o.data.materials.append(m)
+    return o
+
+
 def plight(loc, w, color="#FFC47A", r=0.05):
     d = bpy.data.lights.new("L", "POINT")
     d.energy, d.shadow_soft_size, d.color = w, r, hexc(color)[:3]
@@ -238,8 +253,9 @@ def model(mid, at, H=None, W=None, rot=0.0):
 M_STEEL = mat("steel", "#8E959C", 0.35, 0.9)
 M_MESH = mesh_mat(("X", "Z"), "mesh_x")
 M_MESHY = mesh_mat(("Y", "Z"), "mesh_y")
-M_POLY = texmat("roofwood", "Planks037A", 1.4, tint="#E2B784", bump=0.5)   # سقف خشب (طلب العميل)
-M_GLU = texmat("glulam", "Planks037A", 1.0, tint="#9A6538", bump=0.4)
+M_POLY = texmat("roofwood", "japanese_cedar_planks", 1.6, tint="#F2D3A6", bump=0.8)   # سقف خشب سيدر (لسان ومجرى)
+M_GLU = texmat("glulam", "hinoki_planks", 1.2, tint="#B07A45", bump=0.6)          # جسور خشب مصفّح
+M_SHINGLE = texmat("shingle", "WoodSiding008", 1.0, tint="#B07A48", bump=1.0)    # الوجه الخارجي: ألواح خشب معالج
 M_STONEW = texmat("stonewall", "Bricks111A", 1.2, tint="#E6D9C3", bump=1.0)
 M_PATH = texmat("path", "Bricks111A", 0.8, tint="#CDBEA5", bump=0.9)
 M_SOIL = texmat("soil", "Grass004", 2.0, tint="#B8A27E", bump=0.6)
@@ -331,13 +347,13 @@ for y in Y.COL_Y[1:-1]:
 for y in (0.0, Y.W):
     box(M_STEEL, 0, y - 0.05, Y.H_EAVE - 0.1, Y.L, y + 0.05, Y.H_EAVE)
 for x in Y.COL_X:
-    rod(M_GLU, (x, 0, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE - 0.04), 0.08)
-    rod(M_GLU, (x, Y.W, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE - 0.04), 0.08)
+    beam(M_GLU, (x, 0, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE), 0.12, 0.28)
+    beam(M_GLU, (x, Y.W, Y.H_EAVE), (x, Y.W / 2, Y.H_RIDGE), 0.12, 0.28)
 for k in range(1, 4):
     for y0 in (Y.W / 2 * k / 4, Y.W - Y.W / 2 * k / 4):
         z = Y.H_EAVE + (Y.H_RIDGE - Y.H_EAVE) * (k / 4)
-        rod(M_GLU, (0, y0, z - 0.03), (Y.L, y0, z - 0.03), 0.045)
-rod(M_GLU, (0, Y.W / 2, Y.H_RIDGE - 0.05), (Y.L, Y.W / 2, Y.H_RIDGE - 0.05), 0.09)
+        beam(M_GLU, (0, y0, z), (Y.L, y0, z), 0.08, 0.12)
+beam(M_GLU, (0, Y.W / 2, Y.H_RIDGE), (Y.L, Y.W / 2, Y.H_RIDGE), 0.16, 0.32)
 # السقف خشب: ألواح خشب معالج على جسور ومدادات خشب (سطحين)
 for (ya, yb) in ((0.0, Y.W / 2), (Y.W, Y.W / 2)):
     me = bpy.data.meshes.new("roof")
@@ -346,8 +362,11 @@ for (ya, yb) in ((0.0, Y.W / 2), (Y.W, Y.W / 2)):
     o = bpy.data.objects.new("roof", me)
     scene.collection.objects.link(o)
     o.data.materials.append(M_POLY)
+    o2 = o.copy(); o2.data = o.data.copy(); scene.collection.objects.link(o2)
+    o2.location.z += 0.05
+    o2.data.materials[0] = M_SHINGLE
     sol = o.modifiers.new("s", "SOLIDIFY")
-    sol.thickness = 0.04
+    sol.thickness = 0.03
 # الشبك: الجدران الأربعة (فوق قاعدة الحجر) + مثلثات الجملون
 box(M_STONEW, -0.1, -0.12, 0.0, Y.L + 0.1, 0.12, Y.PLINTH)
 box(M_STONEW, -0.1, Y.W - 0.12, 0.0, Y.L + 0.1, Y.W + 0.12, Y.PLINTH)
@@ -423,7 +442,7 @@ def _free(x, y, r=1.0):
     for s_ in Y.SPURS:
         if any(math.hypot(x - px, y - py) < Y.PATH_W / 2 + r * 0.7 for px, py in smooth(s_)):
             return False
-    if ((x - cx) / (rx + 0.6)) ** 2 + ((y - cy) / (ry + 0.6)) ** 2 < 1:
+    if ((x - cx) / (rx + 1.0)) ** 2 + ((y - cy) / (ry + 1.0)) ** 2 < 1:
         return False
     if d[0] - 0.4 < x < d[2] + 0.4 and d[1] - 0.4 < y < d[3] + 0.4:
         return False
@@ -441,8 +460,10 @@ while len(extra) < 70 and tries < 4000:
     if _free(x, y, 0.6) and all(math.hypot(x - a_, y - b_) > 0.9 for a_, b_ in extra):
         extra.append((x, y))
 for i, (x, y) in enumerate(extra):
-    model(("shrub_01", "shrub_02", "shrub_04", "potted_plant_04")[i % 4], (x, y, 0), H=random.uniform(0.6, 1.5), rot=random.uniform(0, 6))
+    model(("shrub_01", "shrub_02", "shrub_04")[i % 3], (x, y, 0), H=random.uniform(0.6, 1.4), rot=random.uniform(0, 6))
 for i, (x, y) in enumerate(Y.SHRUBS):
+    if not _free(x, y, 0.5):
+        continue
     model(("shrub_01", "shrub_02", "shrub_04")[i % 3], (x, y, 0), H=random.uniform(0.7, 1.1), rot=random.uniform(0, 6))
 # مجاثم جذوع + طيور
 birds = []
@@ -555,7 +576,7 @@ SHOTS = [  # (اسم, كاميرا, هدف, عدسة, ليل؟)
     ("a1", (-9.0, -13.0, 11.0), (15.0, 7.0, 0.5), 24, False),       # جوي: المحمية كاملة
     ("a2", (15.0, -9.0, 1.7), (15.0, 2.0, 1.6), 24, False),          # من قدام: المدخل وغرفة الأمان
     ("a3", (15.0, 3.0, 1.65), (27.0, 12.5, 1.0), 18, False),         # من الداخل: الممر والبحيرة والشلال
-    ("a4", (14.8, 6.4, 1.55), (24.0, 9.5, 0.9), 18, False),          # من منصة المشاهدة
+    ("a4", (15.3, 6.3, 1.6), (24.0, 9.5, 0.9), 18, False),          # من منصة المشاهدة
     ("a5", (3.0, 4.0, 1.7), (27.0, 11.0, 1.0), 18, True),            # ليل: إنارة الممر وتحت الجسور
     ("a6", (34.0, -7.0, 2.2), (15.0, 7.5, 1.6), 22, True),           # ليل من الخارج
 ]
