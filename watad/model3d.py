@@ -674,7 +674,7 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
         if not exterior:
             _casing(S, w, a, b, 0, z1, out - 1.6, out, 7, sill=False)
         if getattr(o, "style", "") in ("sliding", "fixed"):
-            n = max(2, round(o.width / 100))
+            n = o.leaves if o.leaves >= 2 else max(2, round(o.width / 100))     # عدد الضلف المطلوب
             pw = (b - a - 8) / n
             for k in range(n):                                                  # ضلف سحاب متداخلة (مسارين)
                 la, lb = a + 4 + k * pw - (2 if k else 0), a + 4 + (k + 1) * pw + (2 if k < n - 1 else 0)
