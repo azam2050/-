@@ -42,7 +42,7 @@ def gable_rafters(project, rules):
     roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1
     shed = r.type == "shed"
-    length = ((g["span"] + 2 * r.overhang + r.ext_low) if shed else (g["span"] / 2 + r.overhang)) / math.cos(g["pitch"])
+    length = ((g["span"] + 2 * r.overhang + r.ext_low + r.ext_high) if shed else (g["span"] / 2 + r.overhang)) / math.cos(g["pitch"])
     pieces = 1
     if shed and r.splice is not None:     # المداد قطعتين تتراكب 60 سم فوق الجدار الداخلي الحامل
         x0, y0, x1, y1 = g["bbox"]

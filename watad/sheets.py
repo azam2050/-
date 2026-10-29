@@ -572,7 +572,8 @@ def elevation(ax, ctx, w):
         top = max(za, zb_)
         if gable_end:              # الجدار الجانبي: لوح السقف المائل بالرفرف
             xl_ = P.roof.ext_low
-            ta, tb = -ov - (xl_ if zt(0) < zt(L) else 0), L + ov + (xl_ if zt(L) < zt(0) else 0)
+            xh_ = P.roof.ext_high
+            ta, tb = -ov - (xl_ if zt(0) < zt(L) else xh_), L + ov + (xl_ if zt(L) < zt(0) else xh_)
             lower = [(ta, zt(ta)), (tb, zt(tb))]
             ax.add_patch(Polygon(lower + [(x, z + depth) for x, z in lower][::-1], closed=True, fc="#fff3e0",
                                  ec=C_ROOF, lw=0.9))
@@ -581,8 +582,8 @@ def elevation(ax, ctx, w):
             d_out = ov                    # الرفرف خارج هذا الجدار
             nx_, ny_ = w.n
             z_e = shed_z(P, rules, w.start[0] - nx_ * (half + d_out), w.start[1] - ny_ * (half + d_out))
-            if z_e < H + 1 and P.roof.ext_low:      # الحافة الواطية ممتدة قدام (جلسة مسقوفة)
-                d_out = ov + P.roof.ext_low
+            if (z_e < H + 1 and P.roof.ext_low) or (z_e > H + 1 and P.roof.ext_high):   # الحافة ممتدة قدام (جلسة مسقوفة)
+                d_out = ov + (P.roof.ext_low if z_e < H + 1 else P.roof.ext_high)
                 z_e = shed_z(P, rules, w.start[0] - nx_ * (half + d_out), w.start[1] - ny_ * (half + d_out))
             x_l, x_r = -ov - ext_l, L + ov + ext_r
             hg = roof_geometry(P, rules)["rise"]
@@ -1143,12 +1144,14 @@ def roof_sheet(ctx):
     else:
         rx0, ry0, rx1, ry1 = x0 - ov - es, y0 - ov, x1 + ov + ee, y1 + ov
     xl_ = P.roof.ext_low if P.roof.type == "shed" else 0
-    if xl_:                               # المائل: امتداد الحافة الواطية
+    xh_ = P.roof.ext_high if P.roof.type == "shed" else 0
+    if xl_ or xh_:                        # المائل: امتداد الحافة الواطية / العالية
         lowS = P.roof.high_side in ("N", "E")
+        e0, e1 = (xl_, xh_) if lowS else (xh_, xl_)       # امتداد الجهة الصغرى (S/W) والكبرى (N/E)
         if P.roof.ridge_axis == "x":
-            ry0, ry1 = (ry0 - xl_, ry1) if lowS else (ry0, ry1 + xl_)
+            ry0, ry1 = ry0 - e0, ry1 + e1
         else:
-            rx0, rx1 = (rx0 - xl_, rx1) if lowS else (rx0, rx1 + xl_)
+            rx0, rx1 = rx0 - e0, rx1 + e1
     ax.add_patch(Rectangle((rx0, ry0), rx1 - rx0, ry1 - ry0, fc="#fff8ee", ec=C_ROOF, lw=1))
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
     ridge_y = P.roof.ridge_axis == "y"
@@ -1264,8 +1267,9 @@ def roof_sheet(ctx):
     if P.roof.type == "shed":
         hiS = P.roof.high_side in ("S", "W")
         zz = lambda x: H + ((S - x) if hiS else x) * math.tan(p)  # noqa: E731
-        xl_ = P.roof.ext_low
-        lower = [(-ov - (0 if hiS else xl_), zz(-ov - (0 if hiS else xl_))), (S + ov + (xl_ if hiS else 0), zz(S + ov + (xl_ if hiS else 0)))]
+        xl_, xh_ = P.roof.ext_low, P.roof.ext_high
+        ea, eb = (xh_, xl_) if hiS else (xl_, xh_)
+        lower = [(-ov - ea, zz(-ov - ea)), (S + ov + eb, zz(S + ov + eb))]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     for a in purlin_positions(P, rules):            # مقطع الجسور الحاملة تحت المدادات

@@ -20,7 +20,7 @@ style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: bl
 wall_height: 330
 height_exact: true
 slab_height: 45
-roof: {type: shed, ridge_axis: x, high_side: N, pitch_deg: 5, low_pitch_approved: true, overhang: 40, ext_low: 200, purlins: 1, soffit: true}   # مائل واحد: العالي على جدار الحوش الخلفي، ينزل للحوش
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 5, low_pitch_approved: true, overhang: 40, ext_high: 200, purlins: 1, soffit: true}   # مستقيم مرفوع قدام: العالي على الجلسة الخارجية وينزل بميل خفيف للجدار الخلفي (مزراب خلفي)
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -68,8 +68,8 @@ decks:
     stairs: {side: S, offset: 520, width: 160}
 
 posts:
-  - {at: [3, -197], size: 20, top: 305}
-  - {at: [685, -197], size: 20, top: 305}
+  - {at: [3, -197], size: 20, top: 388}
+  - {at: [685, -197], size: 20, top: 388}
 
 furniture:
   # جلسة U متصلة (غرب + خلف + أمام تحت الشبابيك) — المدخل والممر لدورة المياه على الطرف الشرقي فاضي
