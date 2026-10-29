@@ -571,7 +571,9 @@ def elevation(ax, ctx, w):
             y += cover
         top = max(za, zb_)
         if gable_end:              # الجدار الجانبي: لوح السقف المائل بالرفرف
-            lower = [(-ov, zt(-ov)), (L + ov, zt(L + ov))]
+            xl_ = P.roof.ext_low
+            ta, tb = -ov - (xl_ if zt(0) < zt(L) else 0), L + ov + (xl_ if zt(L) < zt(0) else 0)
+            lower = [(ta, zt(ta)), (tb, zt(tb))]
             ax.add_patch(Polygon(lower + [(x, z + depth) for x, z in lower][::-1], closed=True, fc="#fff3e0",
                                  ec=C_ROOF, lw=0.9))
             roof_top = max(z for _, z in lower) + depth
@@ -579,6 +581,9 @@ def elevation(ax, ctx, w):
             d_out = ov                    # الرفرف خارج هذا الجدار
             nx_, ny_ = w.n
             z_e = shed_z(P, rules, w.start[0] - nx_ * (half + d_out), w.start[1] - ny_ * (half + d_out))
+            if z_e < H + 1 and P.roof.ext_low:      # الحافة الواطية ممتدة قدام (جلسة مسقوفة)
+                d_out = ov + P.roof.ext_low
+                z_e = shed_z(P, rules, w.start[0] - nx_ * (half + d_out), w.start[1] - ny_ * (half + d_out))
             x_l, x_r = -ov - ext_l, L + ov + ext_r
             hg = roof_geometry(P, rules)["rise"]
             if z_e > H + hg / 2:          # الجهة العالية: يبان لوح الواجهة بس
@@ -1137,6 +1142,13 @@ def roof_sheet(ctx):
         rx0, ry0, rx1, ry1 = x0 - ov, y0 - ov - es, x1 + ov, y1 + ov + ee
     else:
         rx0, ry0, rx1, ry1 = x0 - ov - es, y0 - ov, x1 + ov + ee, y1 + ov
+    xl_ = P.roof.ext_low if P.roof.type == "shed" else 0
+    if xl_:                               # المائل: امتداد الحافة الواطية
+        lowS = P.roof.high_side in ("N", "E")
+        if P.roof.ridge_axis == "x":
+            ry0, ry1 = (ry0 - xl_, ry1) if lowS else (ry0, ry1 + xl_)
+        else:
+            rx0, rx1 = (rx0 - xl_, rx1) if lowS else (rx0, rx1 + xl_)
     ax.add_patch(Rectangle((rx0, ry0), rx1 - rx0, ry1 - ry0, fc="#fff8ee", ec=C_ROOF, lw=1))
     ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555", ls="--", lw=0.7))
     ridge_y = P.roof.ridge_axis == "y"
@@ -1151,13 +1163,13 @@ def roof_sheet(ctx):
         if ridge_y:
             a0_, a1_ = (x0 + 40, x1 - 40) if hiS else (x1 - 40, x0 + 40)
             ax.annotate("", (a1_, cy), (a0_, cy), arrowprops=dict(arrowstyle="->", color="red", lw=1.4))
-            ax.text(cx, cy + 15, f"ميل واحد {P.roof.pitch_deg}° — المويه تنزل للخلف", ha="center", fontsize=9, color="red")
+            ax.text(cx, cy + 15, f"ميل واحد {P.roof.pitch_deg}° — المويه تنزل " + ("للخلف" if hiS else "للأمام"), ha="center", fontsize=9, color="red")
         else:
             a0_, a1_ = (y0 + 40, y1 - 40) if hiS else (y1 - 40, y0 + 40)
             ax.annotate("", (cx, a1_), (cx, a0_), arrowprops=dict(arrowstyle="->", color="red", lw=1.4))
-            ax.text(cx + 12, cy, f"ميل واحد {P.roof.pitch_deg}°\nالمويه تنزل للخلف", ha="left", fontsize=9, color="red")
+            ax.text(cx + 12, cy, f"ميل واحد {P.roof.pitch_deg}°\nالمويه تنزل " + ("للخلف" if hiS else "للأمام"), ha="left", fontsize=9, color="red")
         ax.text(cx, (y0 if not hiS else y1) + (25 if not hiS else -25), "الحافة الواطية", ha="center", fontsize=7, color=C_ROOF)
-        ax.text(cx, (y1 if not hiS else y0) + (-25 if not hiS else 25), "الحافة العالية (الواجهة الزجاج)", ha="center",
+        ax.text(cx, (y1 if not hiS else y0) + (-25 if not hiS else 25), "الحافة العالية" + (" (الواجهة الزجاج)" if hiS else ""), ha="center",
                 fontsize=7, color=C_ROOF)
     elif ridge_y:
         ax.plot([cx, cx], [y0 - ov - 20, y1 + ov + 20], color=C_ROOF, lw=1.2)
@@ -1252,7 +1264,8 @@ def roof_sheet(ctx):
     if P.roof.type == "shed":
         hiS = P.roof.high_side in ("S", "W")
         zz = lambda x: H + ((S - x) if hiS else x) * math.tan(p)  # noqa: E731
-        lower = [(-ov, zz(-ov)), (S + ov, zz(S + ov))]
+        xl_ = P.roof.ext_low
+        lower = [(-ov - (0 if hiS else xl_), zz(-ov - (0 if hiS else xl_))), (S + ov + (xl_ if hiS else 0), zz(S + ov + (xl_ if hiS else 0)))]
     upper = [(x, yy + depth) for x, yy in lower]
     ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     for a in purlin_positions(P, rules):            # مقطع الجسور الحاملة تحت المدادات

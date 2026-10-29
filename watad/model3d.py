@@ -316,7 +316,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             hi_lo = project.roof.high_side in ("S", "W")
             a_low = a_hi if hi_lo else a_lo
             zsh = lambda a: H + ((a_low - a) if hi_lo else (a - a_low)) * tp  # noqa: E731
-            e_lo, e_hi = a_lo - ov, a_hi + ov
+            xl = project.roof.ext_low
+            e_lo, e_hi = a_lo - ov - (xl if a_low == a_lo else 0), a_hi + ov + (xl if a_low == a_hi else 0)
 
             def sh_hexa(mat, bb0, bb1, z_off0, z_off1, aa=e_lo, ab=e_hi):
                 pts = []
