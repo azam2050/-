@@ -100,7 +100,7 @@ class Room:
 class Furniture:
     name: str
     rect: list
-    shape: str = "rect"  # rect | circle | wc | basin | shower
+    shape: str = "rect"  # rect | circle | wc | basin | shower | slats (بارتشن شرائح خشب رأسية من الأرض للسقف)
     floor: int = 0
     z: float = None      # منسوب القطعة (للميزانين: floor: -1 + z = منسوب أرضية الميزانين)
 

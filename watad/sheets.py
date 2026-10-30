@@ -312,6 +312,20 @@ def draw_furniture(ax, P):
             ax.add_patch(Rectangle((x0, y0), w, h, fill=False, ec=C_FURN, lw=0.6))
             ax.add_patch(Ellipse(((x0 + x1) / 2, (y0 + y1) / 2), w * .6, h * .6, fill=False,
                                  ec=C_FURN, lw=0.5))
+        elif f.shape == "slats":                       # بارتشن شرائح خشب: مربعات الشرائح على خط
+            ax.add_patch(Rectangle((x0, y0), w, h, fill=False, ec="#8B5A2B", lw=0.5, ls="--"))
+            along = w >= h
+            L = w if along else h
+            for k in range(int(L // 10) + 1):
+                t = (x0 if along else y0) + k * 10
+                if along:
+                    ax.add_patch(Rectangle((t, y0 + 2), 4, h - 4, fc="#8B5A2B", ec="none"))
+                else:
+                    ax.add_patch(Rectangle((x0 + 2, t), w - 4, 4, fc="#8B5A2B", ec="none"))
+            if f.name:
+                ax.text((x0 + x1) / 2, (y1 + 14) if along else (y0 + y1) / 2, f.name, ha="center",
+                        va="bottom", fontsize=7, color="#8B5A2B")
+            continue
         else:
             ax.add_patch(Rectangle((x0, y0), w, h, fill=False, ec=C_FURN, lw=0.6))
             if f.shape == "shower":

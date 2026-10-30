@@ -45,6 +45,8 @@ def plan_furniture(project):
     beds = [f for f in project.furniture if "سرير" in f.name]
     items = []
     for f in project.furniture:
+        if f.shape == "slats":        # البارتشن جزء من المبنى (model3d) مو قطعة أثاث
+            continue
         x0, y0, x1, y1 = f.rect
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
         room = _room_of(project, f)

@@ -825,6 +825,9 @@ def add_interior(S, project, style, cut=None, pieces=True):
         if f.shape in ("shower", "wc", "basin"):
             _bath_fixture(S, project, f)
             continue
+        if f.shape == "slats":
+            _slat_partition(S, project, f)
+            continue
         h, m = 50, "furn"
         for key, hh, mm in FURN_H:
             if key in f.name:
@@ -845,6 +848,27 @@ def add_interior(S, project, style, cut=None, pieces=True):
             continue
         S.box(m, x0, y0, 1.2, x1, y1, h)
     S.zoff = 0
+
+
+def _slat_partition(S, project, f, slat=4, pitch=10):
+    """بارتشن شرائح خشب رأسية (فلوتنق مفرّغ) من الأرض لين السقف + مدرة تحت وفوق."""
+    x0, y0, x1, y1 = f.rect
+    H = project.wall_height
+    along_x = (x1 - x0) >= (y1 - y0)
+    a, b = (x0, x1) if along_x else (y0, y1)
+    c0, c1 = (y0, y1) if along_x else (x0, x1)
+    def box(t0, t1, z0, z1):
+        if along_x:
+            S.box("wood_in", t0, c0, z0, t1, c1, z1)
+        else:
+            S.box("wood_in", c0, t0, z0, c1, t1, z1)
+    box(a, b, 0, 8)                                     # مدرة سفلية
+    box(a, b, H - 8, H)                                 # عارضة علوية تحت السقف
+    n = max(1, int((b - a - slat) // pitch))
+    off = a + ((b - a) - (n * pitch + slat)) / 2
+    for k in range(n + 1):
+        t = off + k * pitch
+        box(t, t + slat, 8, H - 8)
 
 
 def stair_geometry(project, st):
