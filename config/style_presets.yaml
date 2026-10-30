@@ -16,6 +16,7 @@ materials:
     sand:           {ar: صاج معدني رملي فاتح (لون قماش بيت الشعر), color: "#E3D5BC"}
   glass:
     dark_tinted:    {ar: زجاج عاكس غامق,               color: "#1F262C", alpha: 0.85}
+    blue:           {ar: زجاج أزرق (بلو) عاكس,         color: "#3A78A8", alpha: 0.7}
     clear:          {ar: زجاج شفاف,                    color: "#9FB7C4", alpha: 0.45}
   frame:
     wood_dark:      {ar: إطار خشب بنفس الصبغة أغمق}
