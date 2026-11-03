@@ -1,0 +1,119 @@
+# عميل جديد (مخطط مرجعي + رسالة): مجلس منفصل 6 × 4 بمدخل ودورة مياه (مع كوخ 9×9 — 2026-11-03_cabin-9x9-3br.yaml).
+# التصميم على المرجع: المبنى 6.00 × 6.00 = 36 م²:
+#  - المجلس 4.00 × 6.00 صافي بجلسة U متصلة (غرب + خلف + أمام)، الباب على الجهة الشرقية من المدخل (ما يقطع الجلسة)،
+#    وثلاث شبابيك: قدام + غرب + شباك قوسي بالجدار الخلفي (مثل المرجع) فوق الجلسة.
+#  - الشريحة الشرقية 1.88 م: مدخل 1.88 × 2.30 تقريباً (مغسلة + جزامة) ومنه دورة مياه 1.88 × 1.70 بالخلف على جدار خارجي.
+#  - مظلة المدخل: السقف ممتد 1.50 م قدام فوق عتبة المدخل.
+# السقف: جملون 30° محوره بالعمق (المثلث على الواجهة) وممتد للأمام على عمودين — جلسة صغيرة قدام المجلس.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: majlis-6x4-wc
+title: مجلس خشب منفصل 4.00 × 6.00 م بمدخل ودورة مياه — المبنى 6.00 × 6.00 م
+client: "عميل — مجلس منفصل"
+meta:
+  location: "—"
+  usage: مجلس ضيافة
+  date: 2026-11-03
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: pine_charcoal, glass: clear, railing: B04, window_grid: grid, door_style: french}
+wall_height: 290
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 40, ext_start: 150}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [600, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 120, width: 160, height: 150, sill: 70, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 مدخل المجلس, offset: 450, width: 100, height: 230, leaves: 1, grid: [1, 5]}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [600, 0]
+    end: [600, 600]
+    openings:
+      - {kind: window, code: ش3, name: ش3 دورة المياه, offset: 500, width: 50, height: 50, sill: 170}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [600, 600]
+    end: [0, 600]
+    openings:
+      - {kind: window, code: ش2, name: ش2 شباك المجلس الخلفي, offset: 340, width: 130, height: 150, sill: 80, grid: [3, 4]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 600]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 المجلس, offset: 220, width: 160, height: 150, sill: 70, grid: [3, 3]}
+  - name: جدار المجلس الشرقي
+    exterior: false
+    start: [406, 0]
+    end: [406, 600]
+    openings:
+      - {kind: door, code: ب2, name: ب2 المدخل — المجلس, offset: 120, width: 90, height: 220}
+  - name: جدار دورة المياه
+    exterior: false
+    start: [406, 424]
+    end: [600, 424]
+    openings:
+      - {kind: door, code: ب3, name: ب3 دورة المياه, offset: 30, width: 70, height: 210}
+
+rooms:
+  - {name: المجلس, rect: [6, 6, 400, 594], label: [230, 450]}
+  - {name: المدخل والمغسلة, rect: [412, 6, 594, 418], kind: corridor, label: [503, 300]}
+  - {name: دورة مياه, rect: [412, 430, 594, 594], wet: true, label: [503, 500]}
+
+decks:
+  - {name: الجلسة الأمامية, rect: [-6, -156, 606, -6], height: 45, railing: [W], stairs: {side: S, offset: 430, width: 140}}
+
+posts:
+  - {at: [3, -147], size: 18}
+  - {at: [597, -147], size: 18}
+
+furniture:
+  # ---- المجلس: جلسة U متصلة (غرب + خلف + أمام) — الجهة الشرقية فاضية للباب
+  - {name: جلسة عربية, rect: [6, 6, 86, 594]}
+  - {name: جلسة عربية, rect: [86, 514, 400, 594]}
+  - {name: جلسة عربية, rect: [86, 6, 330, 86]}
+  - {name: طاولة, rect: [160, 220, 290, 380]}
+  # ---- المدخل: مغسلة + جزامة
+  - {name: "", rect: [548, 360, 594, 406], shape: basin}
+  - {name: دولاب أحذية, rect: [554, 120, 594, 300]}
+  # ---- دورة المياه
+  - {name: "", rect: [554, 544, 594, 594], shape: wc}
+  - {name: دش, rect: [412, 504, 502, 594], shape: shower}
+
+# ---------------- التصميم الداخلي (صنوبر فاتح: جلسة أوف وايت، جدار زيتي مقابل الجلسة بلوحات خيل، طاولة جوز غامق) ----------------
+interior_decor:
+  - {kind: feature_wall, line: [400, 260, 400, 594], n: [-1, 0], z: [0, 290], color: "#4E5642", arts: [1, 3], rows: 1, fw: 85, fh: 60, art_z: 175, slat_w: 34}
+  - {kind: rug, rect: [110, 140, 340, 460]}
+  - {kind: tile_floor, rect: [6, 6, 400, 594], color: "#8E8982"}
+  - {kind: tile_floor, rect: [412, 6, 594, 418], color: "#8E8982"}
+  - {kind: downlights, rect: [6, 6, 400, 594], z: 288, spacing: 130}
+  - {kind: downlights, rect: [412, 6, 594, 418], z: 288, spacing: 130}
+  - {kind: stone, line: [-6, -6, 606, -6], n: [0, -1], z: [0, 50]}
+  - {kind: sconce, at: [430, -10, 235], n: [0, -1], w: 40}
+  - {kind: sconce, at: [570, -10, 235], n: [0, -1], w: 40}
+
+site:
+  plot: [-400, -900, 1000, 1000]
+  street: S
+  street_width: 1400
+  wall: {t: 20, h: 220, finish: stone}
+  gates:
+    - {x: 445, width: 110, kind: person}
+  zones:
+    - {kind: path, rect: [445, -890, 555, -156], name: الممر}
+    - {kind: lawn, rect: [-390, -890, 430, -250], name: الحديقة}
+  trees:
+    - {at: [-250, -300], kind: tree, r: 130}
+    - {at: [850, -600], kind: palm, r: 120}
+
+render:
+  night_interior: 1
+  palette: {majlis: "#ECE6D8", majlis_trim: "#4A3826", majlis_rug: "#9A9C84"}

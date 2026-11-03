@@ -1,0 +1,176 @@
+# عميل جديد (مخطط مرجعي + رسالة): كوخ 9 × 9 — مطبخ سيرفس + ثلاث غرف + صالة واسعة + حمامين.
+#  (معه مجلس منفصل 6 × 4 بمدخل ودورة مياه — مشروع ثاني: 2026-11-03_majlis-6x4-wc.yaml)
+# التصميم 9.00 × 9.00 = 81 م² (على المرجع مع تصحيح المصمم):
+#  - الصالة الواسعة 5.40 × 5.20 قدام غرب بزجاج سحاب على الدكة + المدخل، والمطبخ السيرفس L بركنها الخلفي مع جزيرة.
+#  - خلف الصالة: الغرفة الرئيسية 3.44 × 3.44 بحمامها الخاص (المرجع كان فيه حمامين بعرض متر — ضيقة، صارت حمام خاص 1.84 × 1.82)،
+#    وممر قصير يوزّع للرئيسية وغرفة 2.
+#  - الشرق: غرفة 3 قدام + الحمام المشترك على الجدار الخارجي + غرفة 2 خلف.
+# السقف (فكرة المشروع): جملون محوره موازي للواجهة 30° + جملون متقاطع صغير بارز فوق المدخل على عمودين (مظلة مدخل).
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
+name: cabin-9x9-3br
+title: كوخ خشب 9.00 × 9.00 م — ثلاث غرف وصالة واسعة ومطبخ سيرفس
+client: "عميل — كوخ 9×9"
+meta:
+  location: "—"
+  usage: سكن — ثلاث غرف
+  date: 2026-11-03
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: grid, door_style: french}
+wall_height: 280
+slab_height: 45
+roof:
+  ridge_axis: x
+  pitch_deg: 30
+  overhang: 40
+  purlins: 1
+  cross_gables:
+    - {side: S, center: 450, width: 300, pitch: 40, overhang: 30, ext: 160, beams: 0}   # مظلة المدخل
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [888, 0]
+    openings:
+      - {kind: door, code: ب1, name: ب1 سحاب الصالة — الدكة, offset: 40, width: 320, height: 230, style: sliding, leaves: 3}
+      - {kind: door, code: ب2, name: ب2 المدخل الرئيسي, offset: 400, width: 100, height: 230, leaves: 1, grid: [1, 5]}
+      - {kind: window, code: ش1, name: ش1 غرفة 3, offset: 650, width: 160, height: 140, sill: 80}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [888, 0]
+    end: [888, 888]
+    openings:
+      - {kind: window, code: ش3, name: ش3 الحمام المشترك, offset: 436, width: 60, height: 60, sill: 160}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [888, 888]
+    end: [0, 888]
+    openings:
+      - {kind: window, code: ش1, name: ش1 غرفة 2, offset: 60, width: 140, height: 140, sill: 80}
+      - {kind: window, code: ش3, name: ش3 حمام الرئيسية, offset: 400, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش1, name: ش1 الرئيسية, offset: 620, width: 140, height: 140, sill: 80}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 888]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 410, width: 120, height: 90, sill: 115}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 680, width: 140, height: 140, sill: 80}
+  - name: جدار الغرف الشرقي
+    exterior: false
+    start: [552, 0]
+    end: [552, 888]
+    openings:
+      - {kind: door, code: ب3, name: ب3 غرفة 3, offset: 300, width: 80, height: 210}
+      - {kind: door, code: ب4, name: ب4 الحمام المشترك, offset: 420, width: 76, height: 210}
+      - {kind: door, code: ب3, name: ب3 غرفة 2, offset: 560, width: 80, height: 210}
+  - {name: جدار غرفة 3, exterior: false, start: [552, 400], end: [888, 400]}
+  - {name: جدار غرفة 2, exterior: false, start: [552, 532], end: [888, 532]}
+  - {name: جدار الرئيسية/المطبخ, exterior: false, start: [0, 532], end: [356, 532]}
+  - name: جدار الرئيسية الشرقي
+    exterior: false
+    start: [356, 532]
+    end: [356, 888]
+    openings:
+      - {kind: door, code: ب3, name: ب3 الغرفة الرئيسية, offset: 28, width: 80, height: 210}
+      - {kind: door, code: ب4, name: ب4 حمام الرئيسية, offset: 188, width: 76, height: 210}
+  - {name: جدار حمام الرئيسية, exterior: false, start: [356, 694], end: [552, 694]}
+
+rooms:
+  - {name: الصالة والمطبخ, rect: [6, 6, 546, 526], label: [430, 320]}
+  - {name: غرفة 3, rect: [558, 6, 882, 394], label: [720, 340]}
+  - {name: حمام مشترك, rect: [558, 406, 882, 526], wet: true, label: [640, 466]}
+  - {name: غرفة 2, rect: [558, 538, 882, 882], label: [760, 600]}
+  - {name: الغرفة الرئيسية, rect: [6, 538, 350, 882], label: [250, 850]}
+  - {name: الممر, rect: [362, 532, 546, 688], kind: corridor, label: [454, 610]}
+  - {name: حمام الرئيسية, rect: [362, 700, 546, 882], wet: true, label: [454, 760]}
+
+decks:
+  - {name: الدكة, rect: [-6, -166, 612, -6], height: 45, railing: [W], stairs: {side: S, offset: 400, width: 140}}
+
+posts:   # عمودين تحت مظلة المدخل
+  - {at: [310, -151], size: 18}
+  - {at: [590, -151], size: 18, top: 280}
+
+furniture:
+  # ---- الصالة: كنبة L مواجهة للتلفزيون على الجدار الشرقي — طريق المدخل للممر فاضي
+  - {name: كنبة, rect: [150, 40, 230, 280]}
+  - {name: كنبة, rect: [230, 220, 340, 290]}
+  - {name: طاولة, rect: [260, 80, 360, 190]}
+  - {name: تلفزيون, rect: [506, 50, 546, 230]}
+  - {name: كرسي, rect: [20, 40, 90, 110]}
+  # ---- المطبخ السيرفس L بالركن الخلفي + جزيرة
+  - {name: كاونتر, rect: [6, 340, 66, 526]}
+  - {name: كاونتر, rect: [66, 466, 330, 526]}
+  - {name: ثلاجة, rect: [6, 272, 66, 336]}
+  - {name: طاولة طعام, rect: [150, 340, 300, 410]}
+  # ---- الرئيسية: راس السرير على الجدار الغربي المصمت
+  - {name: سرير 180×200, rect: [6, 630, 206, 810]}
+  - {name: "", rect: [6, 582, 50, 626]}
+  - {name: "", rect: [6, 814, 50, 858]}
+  - {name: دولاب, rect: [60, 538, 250, 598]}
+  # ---- حمام الرئيسية
+  - {name: دش, rect: [456, 792, 546, 882], shape: shower}
+  - {name: "", rect: [362, 842, 402, 882], shape: wc}
+  - {name: "", rect: [500, 704, 546, 750], shape: basin}
+  # ---- غرفة 2: راس السرير على الجدار الشرقي + دولاب على الجدار الغربي
+  - {name: سرير 160×200, rect: [682, 650, 882, 810]}
+  - {name: "", rect: [838, 602, 882, 646]}
+  - {name: "", rect: [838, 814, 882, 858]}
+  - {name: دولاب, rect: [558, 680, 618, 880]}
+  # ---- الحمام المشترك
+  - {name: دش, rect: [792, 406, 882, 526], shape: shower}
+  - {name: "", rect: [700, 486, 740, 526], shape: wc}
+  - {name: "", rect: [700, 410, 746, 456], shape: basin}
+  # ---- غرفة 3: راس السرير على الجدار الشرقي + دولاب
+  - {name: سرير 160×200, rect: [682, 120, 882, 280]}
+  - {name: "", rect: [838, 72, 882, 116]}
+  - {name: "", rect: [838, 284, 882, 328]}
+  - {name: دولاب, rect: [558, 40, 618, 280]}
+
+# ---------------- التصميم الداخلي (خشب عسلي: كنب كريمي، جدار فحمي خلف التلفزيون، طاولات خشب فاتح، لمسات نحاسي) ----------------
+interior_decor:
+  - {kind: feature_wall, line: [546, 6, 546, 290], n: [-1, 0], z: [0, 280], color: "#33373A", arts: [], rows: 1, fw: 80, fh: 60, art_z: 170, slat_w: 34}
+  - {kind: art, at: [8, 300], n: [1, 0], z: 165, aw: 90, ah: 65}
+  - {kind: rug, rect: [230, 60, 400, 260]}
+  - {kind: tile_floor, rect: [6, 6, 546, 526], color: "#8E8A84"}
+  - {kind: downlights, rect: [6, 6, 546, 526], z: 278, spacing: 130}
+  # الرئيسية: جدار أزرق ليلي خلف راس السرير + لوحتين طبيعة
+  - {kind: feature_wall, line: [6, 600, 6, 840], n: [1, 0], z: [0, 280], color: "#2E3A4A", arts: [6, 8], rows: 1, fw: 55, fh: 42, art_z: 150, slat_w: 30, sconces: false}
+  - {kind: downlights, rect: [6, 538, 350, 882], z: 278, spacing: 120}
+  # غرفة 2 و 3: جدار سيج / ترابي خلف راس السرير
+  - {kind: feature_wall, line: [882, 620, 882, 840], n: [-1, 0], z: [0, 280], color: "#8C9A84", arts: [7], rows: 1, fw: 60, fh: 45, art_z: 150, slat_w: 30, sconces: false}
+  - {kind: feature_wall, line: [882, 90, 882, 310], n: [-1, 0], z: [0, 280], color: "#8A6F5C", arts: [4], rows: 1, fw: 60, fh: 45, art_z: 150, slat_w: 30, sconces: false}
+  - {kind: downlights, rect: [558, 538, 882, 882], z: 278, spacing: 120}
+  - {kind: downlights, rect: [558, 6, 882, 394], z: 278, spacing: 120}
+  # الخارج: قاعدة حجر + أباليك على جانبي المدخل
+  - {kind: stone, line: [-6, -6, 894, -6], n: [0, -1], z: [0, 50]}
+  - {kind: sconce, at: [380, -10, 230], n: [0, -1], w: 40}
+  - {kind: sconce, at: [520, -10, 230], n: [0, -1], w: 40}
+
+# ---------------- الأرض والسور (مفترضة) ----------------
+site:
+  plot: [-500, -1100, 1400, 1300]
+  street: S
+  street_width: 1600
+  wall: {t: 20, h: 220, finish: stone}
+  gates:
+    - {x: 1000, width: 400, kind: car}
+    - {x: 395, width: 110, kind: person}
+  zones:
+    - {kind: parking, rect: [960, -1090, 1390, -200], name: موقف}
+    - {kind: path, rect: [395, -1090, 505, -166], name: الممر}
+    - {kind: lawn, rect: [-490, -1090, 380, -250], name: الحديقة}
+  trees:
+    - {at: [-350, -300], kind: tree, r: 140}
+    - {at: [150, -900], kind: tree, r: 120}
+    - {at: [1250, 1100], kind: palm, r: 130}
+
+render:
+  night_interior: 1
+  palette: {rug: "#D8CDBB"}
