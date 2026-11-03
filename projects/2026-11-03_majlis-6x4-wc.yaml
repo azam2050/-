@@ -112,8 +112,17 @@ site:
     - {kind: lawn, rect: [-390, -890, 430, -250], name: الحديقة}
   trees:
     - {at: [-250, -300], kind: tree, r: 130}
-    - {at: [850, -600], kind: palm, r: 120}
+    - {at: [880, 700], kind: palm, r: 120}
 
 render:
   night_interior: 1
   palette: {majlis: "#ECE6D8", majlis_trim: "#4A3826", majlis_rug: "#9A9C84"}
+  exterior:
+    - {name: أمامي من الحديقة, cam: [-300, -800, 170], target: [300, 300, 300], lens: 20}
+    - {name: أمامي — المدخل, cam: [900, -800, 170], target: [300, 300, 300], lens: 20}
+    - {name: من الشارع — السور والبوابة, cam: [300, -2300, 450], target: [300, 0, 300], lens: 30}
+    - {name: منظر علوي — الأرض والسور, cam: [-1300, -2200, 1100], target: [300, 300, 150], lens: 26}
+  interior:
+    - {name: المجلس — الجلسة, cam: [390, 30, 140], target: [6, 450, 110], lens: 17}
+    - {name: المجلس — الجدار المميز, cam: [40, 60, 140], target: [400, 450, 140], lens: 17}
+    - {name: المدخل والمغسلة, cam: [580, 30, 150], target: [450, 400, 120], lens: 17}
