@@ -207,6 +207,10 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         ux, uy = w.u
         gable_end = w.exterior and w.floor == top and ((abs(uy) < 1e-6) == ridge_y) and \
             project.roof.type not in ("peaks", "tent_hip")
+        if gable_end:   # المثلث على الجدار الطرفي بس (مبنى L: جدار الركن المرتد ما يطلع له مثلث من السقف)
+            cv = w.start[1] if abs(uy) < 1e-6 else w.start[0]
+            ends = (y0, y1) if abs(uy) < 1e-6 else (x0, x1)
+            gable_end = min(abs(cv - e) for e in ends) < 15     # الحدود الخارجية = المحور ± نص الجدار
         if cut:
             pass
         elif gable_end and project.roof.type == "shed":       # حشوة الجدار الجانبي تحت الميل
@@ -222,6 +226,19 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
         elif gable_end and w.gable_openings:
             _gable_with_openings(S, w, L, H, rise, half, style)
+        elif gable_end and project.roof.type == "gable" and abs(L - ((y1 - y0) if ridge_x_wall(w) else (x1 - x0)) + 2 * half) > 20:
+            # جدار طرفي أقصر من عرض المبنى (مبنى L): المثلث يتبع ميل السقف الفعلي بدل مثلث متماثل
+            from .features import roof_z
+            rc = (y0 + y1) / 2 if project.roof.ridge_axis == "x" else (x0 + x1) / 2
+            px0, py0 = w.point(0, 0)
+            px1, py1 = w.point(L, 0)
+            c0, c1 = (py0, py1) if project.roof.ridge_axis == "x" else (px0, px1)
+            ts = [0.0, L]
+            if (c0 - rc) * (c1 - rc) < 0:
+                ts = [0.0, L * (rc - c0) / (c1 - c0), L]
+            zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
+            poly = [(-half, H), (L + half, H)] + [(t_, max(z_, H)) for t_, z_ in reversed(list(zip(ts, zs)))]
+            S.wprism("wood", w, poly, -half, half)
         elif gable_end:
             S.wprism("wood", w, [(-half, H), (L + half, H), (L / 2, H + rise)], -half, half)
         if w.exterior:   # ألواح الزوايا
@@ -735,6 +752,11 @@ def _opening(S, w, o, a, b, z0, z1, half, style, exterior):
     if getattr(o, "transom", 0):
         zt = o.transom
         S.wbox("frame", w, a, b, out - 2, half, zt - 3, zt + 3)
+
+
+def ridge_x_wall(w):
+    """الجدار ماشي بمحور y (جدار طرفي لسقف محوره x)."""
+    return abs(w.u[1]) > 0.5
 
 
 def gable_glass_geometry(L, H, rise, tp, border=20, post=10, spacing=110):
