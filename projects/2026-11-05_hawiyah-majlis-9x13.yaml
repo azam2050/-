@@ -1,0 +1,136 @@
+# عميل جديد (الحوية): مخطط يدوي من المصنع + صورة مرجعية للطابع (خشب عسلي، واجهة زجاج بمثلث زجاج، شرفة بدربزين X).
+# المخطط اليدوي (أعلى الورقة = الواجهة):
+#   - جلسة خارجية مغلقة 5.50 × 8.00 م: بابها على الواجهة، ومشب على جدارها الجانبي.
+#   - غرفة نوم 3.50 × 6.00 م + مستودع 3.50 × 2.00 م جنب الجلسة، أبوابهم من الجلسة.
+#   - مجلس 7.00 × 5.00 م ورا الجلسة: بابه وشباك من الجلسة، مشب على جداره الجانبي، وشباك خلفي.
+#   - شريحة 2.00 م: مغاسل 2.00 + حمام 3.00 جنب المجلس (باب المغاسل من المجلس).
+#   - الإجمالي 9.00 × 13.00 م، ارتفاع السقف 4 م، والسقف "متداخل".
+# مراجعة المصمم: شبابيك غرفة النوم على جدار خارجي (مو على الجلسة) للخصوصية والتهوية، ورأس السرير على جدار مصمت.
+# الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب (y = 0). المخطط مرسوم بنفس اتجاه الورقة بعد تدويرها.
+name: hawiyah-majlis-9x13
+title: مجلس وجلسة خارجية مغلقة وغرفة نوم 9.00 × 13.00 م — الحوية
+client: "عميل — الحوية"
+meta:
+  location: الحوية
+  usage: مجلس ضيافة + جلسة مغلقة + غرفة نوم
+  date: 2026-11-05
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: black, railing: x_cross, window_grid: grid, door_style: french}
+wall_height: 400
+height_exact: true
+slab_height: 45
+# السقف المتداخل: جملون رئيسي بطول المبنى + جملونين متقاطعين بارزين يتداخلون معه (فوق الجلسة وفوق المجلس) + مثلث زجاج على الواجهة
+roof:
+  ridge_axis: y
+  pitch_deg: 22
+  overhang: 40
+  purlins: 1
+  ext_start: 200
+  cross_gables:
+    - {side: W, center: 400, width: 520, pitch: 35, overhang: 40, window_width: 0}
+    - {side: E, center: 1050, width: 520, pitch: 35, overhang: 40, window_width: 0}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية
+    gable_glass: true
+    start: [0, 0]
+    end: [900, 0]
+    openings:
+      - {kind: door, code: ز1, name: ز1 زجاج ثابت — الجلسة, offset: 12, width: 170, height: 260, style: fixed, leaves: 2}
+      - {kind: door, code: ب1, name: ب1 مدخل الجلسة فرنسي زجاج, offset: 192, width: 166, height: 260, leaves: 2}
+      - {kind: door, code: ز2, name: ز2 زجاج ثابت — الجلسة, offset: 368, width: 170, height: 260, style: fixed, leaves: 2}
+      - {kind: window, code: ش1, name: ش1 غرفة النوم, offset: 655, width: 140, height: 150, sill: 90, grid: [2, 3]}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [900, 0]
+    end: [900, 1300]
+    openings:
+      - {kind: window, code: ش2, name: ش2 المستودع, offset: 675, width: 60, height: 50, sill: 190}
+      - {kind: window, code: ش3, name: ش3 المجلس, offset: 860, width: 100, height: 160, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 المجلس, offset: 1140, width: 100, height: 160, sill: 80, grid: [2, 3]}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [900, 1300]
+    end: [0, 1300]
+    openings:
+      - {kind: window, code: ش4, name: ش4 المجلس الخلفي, offset: 280, width: 140, height: 160, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش5, name: ش5 الحمام, offset: 760, width: 50, height: 50, sill: 180}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [0, 1300]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش5, name: ش5 المغاسل, offset: 375, width: 50, height: 50, sill: 180}
+      - {kind: window, code: ش6, name: ش6 الجلسة, offset: 600, width: 200, height: 220, sill: 50, grid: [3, 3]}
+      - {kind: window, code: ش6, name: ش6 الجلسة, offset: 1040, width: 200, height: 220, sill: 50, grid: [3, 3]}
+  - name: جدار الجلسة — الغرفة والمستودع
+    exterior: false
+    start: [550, 0]
+    end: [550, 800]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 90, width: 90, height: 220}
+      - {kind: door, code: ب3, name: ب3 المستودع, offset: 640, width: 90, height: 220}
+  - {name: جدار الغرفة — المستودع, exterior: false, start: [550, 600], end: [900, 600]}
+  - name: جدار الجلسة — المجلس
+    exterior: false
+    start: [0, 800]
+    end: [900, 800]
+    openings:
+      - {kind: window, code: ش7, name: ش7 المجلس على الجلسة, offset: 250, width: 120, height: 150, sill: 90, grid: [2, 3]}
+      - {kind: door, code: ب4, name: ب4 المجلس, offset: 420, width: 100, height: 230, leaves: 1}
+  - name: جدار المجلس — المغاسل
+    exterior: false
+    start: [200, 800]
+    end: [200, 1300]
+    openings:
+      - {kind: door, code: ب5, name: ب5 المغاسل, offset: 20, width: 80, height: 210}
+  - name: جدار المغاسل — الحمام
+    exterior: false
+    start: [0, 1000]
+    end: [200, 1000]
+    openings:
+      - {kind: door, code: ب6, name: ب6 الحمام, offset: 110, width: 70, height: 210}
+
+rooms:
+  - {name: جلسة خارجية مغلقة, rect: [6, 6, 544, 794], label: [150, 640]}
+  - {name: غرفة نوم, rect: [556, 6, 894, 594], label: [725, 250]}
+  - {name: مستودع, rect: [556, 606, 894, 794], label: [725, 700]}
+  - {name: مجلس, rect: [206, 806, 894, 1294], label: [560, 1050]}
+  - {name: مغاسل, rect: [6, 806, 194, 994], wet: true, label: [100, 880]}
+  - {name: حمام, rect: [6, 1006, 194, 1294], wet: true, label: [100, 1200]}
+
+decks:
+  - {name: الشرفة الأمامية, rect: [-6, -200, 556, -6], height: 45, railing: [S, W, E], stairs: {side: S, offset: 205, width: 140}}
+
+posts:
+  - {at: [-20, -190], size: 18}
+  - {at: [566, -190], size: 18}
+  - {at: [920, -190], size: 18}
+
+furniture:
+  # ---- الجلسة الخارجية المغلقة: مشب على الجدار الغربي + كنبة وكرسيين حوله، والممر للأبواب على الطرف الشرقي فاضي
+  - {name: مشب, rect: [6, 330, 60, 450]}
+  - {name: كنبة, rect: [250, 260, 340, 520]}
+  - {name: كرسي, rect: [90, 200, 170, 280]}
+  - {name: كرسي, rect: [90, 500, 170, 580]}
+  - {name: طاولة, rect: [140, 330, 220, 450]}
+  # ---- غرفة النوم: رأس السرير على جدار المستودع المصمت + دولاب على الجدار الشرقي
+  - {name: سرير, rect: [635, 394, 815, 594]}
+  - {name: دولاب, rect: [834, 100, 894, 300]}
+  # ---- المجلس: جلسة U مفتوحة على المشب (غرب + خلف + قدام)، وطريق الباب والمغاسل فاضي
+  - {name: مشب, rect: [834, 990, 894, 1110]}
+  - {name: جلسة عربية, rect: [206, 930, 286, 1294]}
+  - {name: جلسة عربية, rect: [286, 1214, 800, 1294]}
+  - {name: جلسة عربية, rect: [560, 806, 800, 886]}
+  - {name: طاولة, rect: [420, 1000, 600, 1110]}
+  # ---- المغاسل والحمام
+  - {name: "", rect: [6, 816, 52, 876], shape: basin}
+  - {name: "", rect: [6, 890, 52, 950], shape: basin}
+  - {name: "", rect: [6, 1250, 46, 1294], shape: wc}
+  - {name: دش, rect: [104, 1204, 194, 1294], shape: shower}
