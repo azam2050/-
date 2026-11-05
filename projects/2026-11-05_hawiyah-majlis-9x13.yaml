@@ -27,6 +27,7 @@ roof:
   purlins: 1
   split: 250
   split_glass: false
+  soffit: true        # سقف داخلي خشب أملس مقفل تحت المدادات
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -112,17 +113,22 @@ furniture:
 interior_decor:
   - {kind: feature_wall, line: [894, 620, 894, 1180], n: [-1, 0], z: [0, 400], color: "#2E3A4F", arts: [1, 3], rows: 1, fw: 70, fh: 50, art_z: 190, slat_w: 30}
   - {kind: rug, rect: [470, 720, 800, 1080]}
+  # أباليك أب/داون على جدار الغرفة من جهة الجلسة — تنوّر الجدار العالي لين السقف
+  - {kind: sconce, at: [258, 545, 320], n: [1, 0], w: 40}
+  - {kind: sconce, at: [258, 735, 320], n: [1, 0], w: 40}
+  - {kind: sconce, at: [258, 940, 320], n: [1, 0], w: 40}
+  - {kind: sconce, at: [258, 1125, 320], n: [1, 0], w: 40}
   - {kind: tile_floor, rect: [256, 506, 894, 1294], color: "#8E8982"}
   - {kind: tile_floor, rect: [706, 306, 894, 500], color: "#8E8982"}
-  - {kind: downlights, rect: [256, 506, 894, 1294], z: 398, spacing: 140}
+  - {kind: downlights, rect: [256, 506, 894, 1294], z: roof, spacing: 140, w: 40}
   - {kind: feature_wall, line: [6, 160, 6, 340], n: [1, 0], z: [0, 400], color: "#33373A", arts: [], rows: 1, fw: 60, fh: 45, art_z: 200, slat_w: 30, sconces: false}
   - {kind: art, at: [220, 8], n: [0, 1], z: 175, aw: 90, ah: 60}
   - {kind: art, at: [560, 8], n: [0, 1], z: 175, aw: 90, ah: 60}
   - {kind: rug, rect: [240, 120, 520, 380]}
   - {kind: tile_floor, rect: [6, 6, 694, 494], color: "#8E8982"}
-  - {kind: downlights, rect: [6, 6, 694, 494], z: 398, spacing: 140}
+  - {kind: downlights, rect: [6, 6, 694, 494], z: roof, spacing: 140, w: 40}
   - {kind: feature_wall, line: [10, 1294, 240, 1294], n: [0, -1], z: [0, 400], color: "#8C9A84", arts: [6], rows: 1, fw: 60, fh: 45, art_z: 150, slat_w: 30, sconces: false}
-  - {kind: downlights, rect: [6, 706, 244, 1294], z: 398, spacing: 130}
+  - {kind: downlights, rect: [6, 706, 244, 1294], z: roof, spacing: 130, w: 40}
   - {kind: stone, line: [-6, 1306, 906, 1306], n: [0, 1], z: [0, 50]}
   - {kind: sconce, at: [440, 1310, 300], n: [0, 1], w: 40}
   - {kind: sconce, at: [612, 1310, 300], n: [0, 1], w: 40}

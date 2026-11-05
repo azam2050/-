@@ -27,6 +27,14 @@ def hex2rgb(h):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=cfg["glb"])
 scene = bpy.context.scene
+import bmesh  # noqa: E402
+for _o in list(scene.objects):          # توحيد اتجاه النورمال للخارج (القطع المبثوقة wprism كان بعض وجوهها مقلوب ← تطلع سوداء)
+    if _o.type == "MESH":
+        _bm = bmesh.new()
+        _bm.from_mesh(_o.data)
+        bmesh.ops.recalc_face_normals(_bm, faces=_bm.faces)
+        _bm.to_mesh(_o.data)
+        _bm.free()
 
 
 def tex_material(name, asset, tile_m, tint=None, tint_mix=0.85, rough=None, bump=0.25, metal=0.0):

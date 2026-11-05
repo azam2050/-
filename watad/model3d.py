@@ -398,6 +398,9 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             for s0, s1, sa, sb in spans:
                 slope_hexa("sheathing", side, sa, sb, s0, s1, rafter_d, rafter_d + 2.5)     # تطبيق
                 slope_hexa("roof_tiles", side, sa, sb, s0, s1, rafter_d + 2.5, rafter_d + 6.5)
+            if project.roof.soffit:              # تلبيس خشب أملس تحت المدادات (سقف داخلي مقفل بالكامل)
+                ca, cb = max(aa, a_lo), min(ab, a_hi)
+                slope_hexa("ceiling", side, ca, cb, b_lo, b_hi, -2.0, 0.0)
             for pos in rafter_positions(project, rules):
                 b0 = max(pos - rafter_t / 2, B0)
                 b1 = min(pos + rafter_t / 2, B1)

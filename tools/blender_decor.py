@@ -461,10 +461,12 @@ def d_downlights(i, d):
     z = d["z"]
     sp = d.get("spacing", 1.2)
     nx_, ny_ = max(1, round((x1 - x0) / sp)), max(1, round((y1 - y0) / sp))
-    for a in range(nx_):
-        for b in range(ny_):
-            x = x0 + (a + 0.5) * (x1 - x0) / nx_
-            y = y0 + (b + 0.5) * (y1 - y0) / ny_
+    grid = [(a, b, x0 + (a + 0.5) * (x1 - x0) / nx_, y0 + (b + 0.5) * (y1 - y0) / ny_, z)
+            for a in range(nx_) for b in range(ny_)]
+    if d.get("pts"):                     # سقف مائل: كل سبوت على منسوب بطن السقف فوقه
+        grid = [(k, 0, p_[0], p_[1], p_[2]) for k, p_ in enumerate(d["pts"])]
+    for a, b, x, y, z in grid:
+        if True:
             fcyl(None, "black", x, y, z - 0.012, z - 0.002, 0.05, 24)
             bpy.ops.mesh.primitive_cylinder_add(radius=0.035, depth=0.004, vertices=24, location=(x, y, z - 0.014))
             bpy.context.active_object.data.materials.append(DM["led"])

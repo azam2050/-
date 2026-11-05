@@ -198,7 +198,32 @@ def decor_items(project):
     """interior_decor بالمشروع (سم) → بالمتر لـ tools/blender_decor.py."""
     def cm(v):
         return [cm(x) for x in v] if isinstance(v, (list, tuple)) else v / 100
-    return [{k: (cm(v) if k in CM_KEYS else v) for k, v in d.items()} for d in project.decor]
+    out = [{k: (cm(v) if k in CM_KEYS and not (k == "z" and v == "roof") else v) for k, v in d.items()}
+           for d in project.decor]
+    for d0, d in zip(project.decor, out):          # سبوتات تتبع بطن السقف المائل (z: roof) — ما تطير بالهوا
+        if d.get("kind") == "downlights" and d0.get("z") == "roof":
+            from .rules import load_rules
+            from .roof import plane_z
+            x0, y0, x1, y1 = d0["rect"]
+            sp = d0.get("spacing", 120)
+            nx_, ny_ = max(1, round((x1 - x0) / sp)), max(1, round((y1 - y0) / sp))
+            rl = load_rules(None)
+            pts = []
+            for a in range(nx_):
+                for b in range(ny_):
+                    x = x0 + (a + 0.5) * (x1 - x0) / nx_
+                    y = y0 + (b + 0.5) * (y1 - y0) / ny_
+                    ax_ = x if project.roof.ridge_axis == "y" else y
+                    sp_ = project.roof.split if project.roof.split is not None else None
+                    if sp_ is not None:
+                        side = -1 if ax_ < sp_ else 1
+                        z = plane_z(project, rl, ax_, side)
+                    else:
+                        z = min(plane_z(project, rl, ax_, -1), plane_z(project, rl, ax_, 1))
+                    pts.append([x / 100, y / 100, (z - 3) / 100])
+            d["pts"] = pts
+            d["z"] = 0
+    return out
 
 
 def tent_lights(project):
