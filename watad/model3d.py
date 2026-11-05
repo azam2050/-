@@ -1203,8 +1203,9 @@ def _split_gable(S, project, rules, w, L, H, half, lev, glass, border=20, post=1
     ts, z, s0 = split_gable_profile(project, rules, w, L, half, lev)
     za_s, zb_s = z(ts, s0), z(ts, -s0)
     prof = [(-half, max(H, z(-half))), (ts, za_s), (ts, zb_s), (L + half, max(H, z(L + half)))]
-    if not glass:
-        S.wprism("wood", w, [(-half, H), (L + half, H)] + prof[::-1], -half, half)
+    if not glass:                    # جزئين محدبين (المضلع بالدرجة غير محدب ← يطلع فيه فتحات)
+        S.wprism("wood", w, [(-half, H), (ts, H), (ts, za_s), (-half, max(H, z(-half)))], -half, half)
+        S.wprism("wood", w, [(ts, H), (L + half, H), (L + half, max(H, z(L + half))), (ts, zb_s)], -half, half)
         return
     tp = math.tan(math.radians(project.roof.pitch_deg))
     bv = border / math.cos(math.radians(project.roof.pitch_deg))

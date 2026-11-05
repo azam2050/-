@@ -1,6 +1,6 @@
 # عميل الحوية — مرسوم بالضبط على المخطط اليدوي من المصنع (نفس التقسيم ونفس اتجاه الورقة: أعلى الورقة = أعلى المسقط):
 #   - يسار فوق: غرفة نوم 2.50 × 6.00 م، وتحتها مستودع 2.50 × 2.00 م — أبوابهم وشبابيك الغرفة على الجلسة.
-#   - يمين فوق: جلسة خارجية مغلقة 6.50 × 8.00 م، بابها على الواجهة العلوية.
+#   - يمين فوق: حوش (جلسة خارجية مغلقة) 6.50 × 8.00 م، بابه خشب على الواجهة العلوية — بدون زجاج (علامات X من المصنع).
 #   - تحت: مجلس 7.00 × 5.00 م — باب وشباك على الجلسة، شباك على المستودع، شباك سفلي، ومشب على الجدار اليسار.
 #   - يمين تحت: مغاسل 2.00 × 2.00 م (مفتوحة على الجلسة) + حمام 2.00 × 3.00 م بابه من المغاسل.
 #   - الإجمالي 9.00 × 13.00 م، الجدران 4.00 م، السقف متداخل مثل صورة المصنع (الشريط بين السطحين خشب).
@@ -15,7 +15,7 @@ meta:
   price_note: ""
   price_scope: building
   hide_pricing: true
-style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: black, railing: x_cross, window_grid: grid, door_style: french}
+style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: black, railing: x_cross, window_grid: grid, door_style: panel}
 wall_height: 400
 height_exact: true
 slab_height: 45
@@ -35,13 +35,10 @@ pallet_length: 320
 walls:
   - name: الواجهة العلوية
     title: واجهة المدخل (أعلى المخطط)
-    gable_glass: true
     start: [900, 1300]
     end: [0, 1300]
     openings:
-      - {kind: door, code: ز2, name: ز2 زجاج ثابت — الجلسة, offset: 12, width: 276, height: 330, style: fixed, leaves: 3}
-      - {kind: door, code: ب1, name: ب1 باب الجلسة فرنسي زجاج, offset: 300, width: 150, height: 260, leaves: 2}
-      - {kind: door, code: ز1, name: ز1 زجاج ثابت — الجلسة, offset: 460, width: 178, height: 330, style: fixed, leaves: 2}
+      - {kind: door, code: ب1, name: ب1 باب الحوش خشب مصمت, offset: 300, width: 150, height: 240, leaves: 2}
   - {name: الجدار الأيمن, title: الواجهة اليمنى, start: [900, 0], end: [900, 1300]}
   - name: الواجهة السفلية
     title: الواجهة السفلية (المجلس)
@@ -79,7 +76,7 @@ walls:
 rooms:
   - {name: غرفة نوم, rect: [6, 706, 244, 1294], label: [125, 900]}
   - {name: مستودع, rect: [6, 506, 244, 694], label: [125, 600]}
-  - {name: جلسة خارجية مغلقة, rect: [256, 506, 894, 1294], label: [560, 1150]}
+  - {name: حوش — جلسة مغلقة, rect: [256, 506, 894, 1294], label: [560, 1150]}
   - {name: مجلس, rect: [6, 6, 694, 494], label: [380, 250]}
   - {name: مغاسل, rect: [706, 306, 894, 500], wet: true, label: [790, 400]}
   - {name: حمام, rect: [706, 6, 894, 294], wet: true, label: [790, 150]}
@@ -164,6 +161,6 @@ render:
     - {name: من الشارع — السور والبوابة, cam: [450, 3300, 750], target: [450, 1000, 280], lens: 30}
     - {name: منظر علوي — الأرض والسور, cam: [-1600, 3900, 1400], target: [450, 900, 150], lens: 26}
   interior:
-    - {name: الجلسة المغلقة — الواجهة الزجاج, cam: [850, 560, 160], target: [300, 1250, 150], lens: 17}
+    - {name: الحوش — الجلسة المغلقة, cam: [850, 560, 160], target: [300, 1250, 150], lens: 17}
     - {name: المجلس — المشب, cam: [640, 60, 150], target: [6, 250, 140], lens: 17}
     - {name: غرفة النوم, cam: [230, 720, 160], target: [80, 1294, 110], lens: 17}
