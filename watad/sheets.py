@@ -696,7 +696,7 @@ def elevation(ax, ctx, w):
             ax.add_patch(Rectangle((da + 7, G["sill"] + 14), db - da - 14, dh - m / 2 - G["sill"] - 21, fill=False,
                                    ec=C_DOOR, lw=0.5))
             ax.add_patch(Rectangle((db - 15, 95), 3, 30, fc=C_DOOR, ec="none"))
-        elif gable_end and gglass:
+        elif gable_end and gglass and P.roof.split is None:
             from .model3d import gable_glass_geometry
             inner, posts, zin, bv, tl = gable_glass_geometry(L, H, rise, math.tan(p))
             ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="#e9d9c4", ec="k", lw=1))
@@ -709,7 +709,9 @@ def elevation(ax, ctx, w):
             if L - 2 * ta > 60:
                 ax.add_patch(Rectangle((ta, zh - 5), L - 2 * ta, 10, fc="#e9d9c4", ec="k", lw=0.5))
             ax.text(L / 2, H + 32, "زجاج مقسّم بإطار خشب 20 سم + قوائم وعارضة 10 سم", ha="center", fontsize=7, color=C_WIN)
-        if gable_end:
+        if gable_end and P.roof.type == "gable" and P.roof.split is not None:
+            roof_top = _split_elev(ax, P, rules, w, L, H, half, depth, ov, gglass, cover)
+        elif gable_end:
             if not gglass:
                 ax.add_patch(Polygon([(0, H), (L / 2, top), (L, H)], closed=True, fc="white", ec="k", lw=1))
             y = H + cover if not gglass else top
@@ -1150,7 +1152,8 @@ def roof_sheet(ctx):
     ov = P.roof.overhang
     fig = new_page()
     ax = drawing_ax(fig, [0.05, 0.1, 0.42, 0.8])
-    title(ax, "مسقط السقف (" + ("مائل باتجاه واحد" if P.roof.type == "shed" else "جملون") + ")",
+    title(ax, "مسقط السقف (" + ("مائل باتجاه واحد" if P.roof.type == "shed" else
+                                "جملون متداخل" if P.roof.split is not None else "جملون") + ")",
           f"رفرف {ov:.0f} سم من كل جهة  |  مقياس 1:50")
     es, ee = P.roof.ext_start, P.roof.ext_end
     if P.roof.ridge_axis == "y":
@@ -1189,6 +1192,11 @@ def roof_sheet(ctx):
         ax.text(cx, (y1 if not hiS else y0) + (-25 if not hiS else 25), "الحافة العالية" + (" (الواجهة الزجاج)" if hiS else ""), ha="center",
                 fontsize=7, color=C_ROOF)
     elif ridge_y:
+        if P.roof.split is not None:             # متداخل: خط التداخل + شريط المشراق الزجاج
+            cx = P.roof.split
+            ax.add_patch(Rectangle((cx - 6, y0), 12, y1 - y0, fc="#e3f0fb", ec=C_WIN, lw=0.8, zorder=3))
+            ax.text(cx - 14, (y0 + y1) / 2, "مشراق زجاج رأسي بين السطحين (السطح العالي يركب فوق الواطي "
+                    f"{P.roof.split_lap:.0f} سم)", rotation=90, ha="center", va="center", fontsize=7, color=C_WIN, zorder=4)
         ax.plot([cx, cx], [y0 - ov - 20, y1 + ov + 20], color=C_ROOF, lw=1.2)
         ax.text(cx + 8, y1 - 40, "خط الحرف (رأس الجملون)", ha="left", fontsize=8, color=C_ROOF,
                 rotation=90, va="top")
@@ -1284,11 +1292,35 @@ def roof_sheet(ctx):
         xl_, xh_ = P.roof.ext_low, P.roof.ext_high
         ea, eb = (xh_, xl_) if hiS else (xl_, xh_)
         lower = [(-ov - ea, zz(-ov - ea)), (S + ov + eb, zz(S + ov + eb))]
-    upper = [(x, yy + depth) for x, yy in lower]
-    ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
+    SPL_ = P.roof.type == "gable" and P.roof.split is not None
+    if SPL_:                                         # متداخل: سطحين + المشراق الزجاج بينهم
+        xs_ = P.roof.split - lo
+        tq = math.tan(p)
+        za_, zb2 = H + xs_ * tq, H + (S - xs_) * tq
+        hiA = za_ >= zb2
+        lap = P.roof.split_lap
+        ra = xs_ + (lap if hiA else 0)
+        rb = xs_ - (0 if hiA else lap)
+        for poly in ([(-ov, H - e), (ra, H + ra * tq)], [(rb, H + (S - rb) * tq), (S + ov, H - e)]):
+            ax2.add_patch(Polygon(poly + [(x, yy + depth) for x, yy in poly][::-1], closed=True, fc="#fff3e0",
+                                  ec=C_ROOF, lw=1, zorder=3))
+        zl_, zh_ = min(za_, zb2) + depth, max(za_, zb2)
+        ax2.add_patch(Rectangle((xs_ - 4, zl_), 8, zh_ - zl_, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=2.5))
+        ax2.text(xs_ + (-12 if hiA else 12), (zl_ + zh_) / 2, "مشراق زجاج", ha="right" if hiA else "left",
+                 va="center", fontsize=7, color=C_WIN)
+    else:
+        upper = [(x, yy + depth) for x, yy in lower]
+        ax2.add_patch(Polygon(lower + upper[::-1], closed=True, fc="#fff3e0", ec=C_ROOF, lw=1))
     for a in purlin_positions(P, rules):            # مقطع الجسور الحاملة تحت المدادات
         xa = a - lo
         za = zz(xa) if P.roof.type == "shed" else H + min(xa, S - xa) * math.tan(p)
+        if SPL_:
+            za = H + (xa if xa <= xs_ else S - xa) * math.tan(p)
+            if abs(xa - xs_) < 1:
+                pw, ph = P.roof.purlin["w"], P.roof.purlin["h"]
+                for zq in (za_, zb2):
+                    ax2.add_patch(Rectangle((xa - pw / 2, zq - ph), pw, ph, fc="#c9a27a", ec="k", lw=0.7))
+                continue
         pw, ph = P.roof.purlin["w"], P.roof.purlin["h"]
         ax2.add_patch(Rectangle((xa - pw / 2, za - ph), pw, ph, fc="#c9a27a", ec="k", lw=0.7))
     for gc in cross_gables(P, rules):               # المثلث البارز إذا القطاع يمر فيه
@@ -1784,3 +1816,56 @@ def build_pdf(ctx, path):
             pdf.savefig(fig)
             plt.close(fig)
     return n
+
+
+def _split_elev(ax, P, rules, w, L, H, half, depth, ov, gglass, cover):
+    """واجهة طرفية للجملون المتداخل: سطحين بمنسوبين + درجة المشراق الزجاج + مثلثات زجاج بإطار خشب."""
+    from .model3d import split_gable_profile
+    lev = P.level(w.floor)
+    ts, z, s0 = split_gable_profile(P, rules, w, L - 2 * half, half, lev)
+    Z = lambda t_, sd=None: z(t_ - half, sd) + 4  # noqa: E731   (إحداثي اللوحة: 0 = الوجه الخارجي)
+    tsh = ts + half
+    za, zb = Z(tsh, s0), Z(tsh, -s0)
+    prof = [(0, H), (L, H), (L, max(H, Z(L))), (tsh, zb), (tsh, za), (0, max(H, Z(0)))]
+    ax.add_patch(Polygon(prof, closed=True, fc="white", ec="k", lw=1, zorder=1.2))
+    tq = math.tan(math.radians(P.roof.pitch_deg))
+    bv = 20 / math.cos(math.radians(P.roof.pitch_deg))
+    if gglass:
+        for ta, tb, sd in ((0, tsh - 5, s0), (tsh + 5, L, -s0)):
+            zt = lambda t_: Z(t_, sd) - bv  # noqa: E731
+            lo_t = ta if zt(ta) < zt(tb) else tb
+            hi_t = tb if lo_t == ta else ta
+            if zt(hi_t) < H + 25:
+                continue
+            tl = lo_t + (hi_t - lo_t) * max(0, H + 20 - zt(lo_t)) / max(1e-6, zt(hi_t) - zt(lo_t))
+            a_, b_ = sorted((tl, hi_t))
+            ax.add_patch(Polygon([(a_, H + 20), (b_, H + 20), (b_, zt(b_)), (a_, zt(a_))], closed=True,
+                                 fc="#e8f0f7", ec=C_WIN, lw=1.1, zorder=1.3))
+            n = max(1, round((b_ - a_) / 110))
+            for k in range(1, n):
+                t_ = a_ + (b_ - a_) * k / n
+                ax.add_patch(Rectangle((t_ - 5, H + 20), 10, zt(t_) - H - 20, fc="#e9d9c4", ec="k", lw=0.5, zorder=1.4))
+        ax.text(L / 2, H + 32, "مثلثات زجاج بإطار خشب 20 سم + قوائم 10 سم", ha="center", fontsize=7, color=C_WIN,
+                zorder=2)
+    else:
+        y = H + cover
+        while y < max(za, zb) - 5:
+            xs = [x_ for x_ in (0, L) if True]
+            ax.plot([0, L], [y, y], color="#999", lw=0.25, zorder=1.25, alpha=0.5)
+            y += cover * 3
+    hi_s = s0 if za > zb else -s0
+    lap = P.roof.split_lap
+    e = ov * tq
+    for sd in (s0, -s0):
+        if sd == s0:
+            pa = (-ov, H - e)
+            tend = tsh + (lap if sd == hi_s else 0)
+        else:
+            pa = (L + ov, H - e)
+            tend = tsh - (lap if sd == hi_s else 0)
+        pb = (tend, pa[1] + abs(tend - pa[0]) * tq)
+        poly = [pa, pb, (pb[0], pb[1] + depth), (pa[0], pa[1] + depth)]
+        ax.add_patch(Polygon(poly, closed=True, fc="#fff3e0", ec=C_ROOF, lw=0.9, zorder=2))
+    zl, zh = min(za, zb), max(za, zb)
+    ax.add_patch(Rectangle((tsh - 4, zl + depth), 8, zh - zl - depth, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=2.1))
+    return zh + depth

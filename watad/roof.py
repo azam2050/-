@@ -13,6 +13,9 @@ def roof_geometry(project, rules):
         ridge_len, span = y1 - y0, x1 - x0
     pitch = math.radians(r.pitch_deg)
     rise = (span if r.type == "shed" else span / 2) * math.tan(pitch)
+    if r.type == "gable" and r.split is not None:
+        lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+        rise = max(r.split - lo, hi - r.split) * math.tan(pitch)
     if r.type == "peaks" and r.peaks:
         rise = max(pk["h"] + _lantern_extra(pk) for pk in r.peaks)
     if r.type == "tent_hip" and r.units:
@@ -42,7 +45,12 @@ def gable_rafters(project, rules):
     roof_len = g["ridge_len"] + 2 * r.overhang + r.ext_start + r.ext_end
     per_side = math.floor(roof_len / spacing) + 1
     shed = r.type == "shed"
-    length = ((g["span"] + 2 * r.overhang + r.ext_low + r.ext_high) if shed else (g["span"] / 2 + r.overhang)) / math.cos(g["pitch"])
+    run = g["span"] / 2
+    if not shed and r.split is not None:          # متداخل: السطح الأطول يحدد المداد (+ تراكبه فوق القصير)
+        x0_, y0_, x1_, y1_ = g["bbox"]
+        lo_, hi_ = (y0_, y1_) if r.ridge_axis == "x" else (x0_, x1_)
+        run = max(r.split - lo_, hi_ - r.split) + r.split_lap
+    length = ((g["span"] + 2 * r.overhang + r.ext_low + r.ext_high) if shed else (run + r.overhang)) / math.cos(g["pitch"])
     pieces = 1
     if shed and r.splice is not None:     # المداد قطعتين تتراكب 60 سم فوق الجدار الداخلي الحامل
         x0, y0, x1, y1 = g["bbox"]
@@ -59,7 +67,7 @@ def gable_rafters(project, rules):
         pieces = n
     if not shed and r.purlins:            # شاليه: المداد قطع فوق الجسور الحاملة (تراكب 60 سم فوق كل جسر)
         n = r.purlins + 1
-        seg = g["span"] / 2 / n
+        seg = run / n
         lap = 60
         length = max(seg + r.overhang + lap / 2, seg + lap) / math.cos(g["pitch"])
         pieces = n
@@ -191,9 +199,42 @@ def purlin_positions(project, rules):
     lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
     if r.type == "shed":                 # مائل طويل بدون جدار داخلي: جسور حاملة بالتساوي (المداد قطع فوقها)
         return [lo + (hi - lo) * k / (r.purlins + 1) for k in range(1, r.purlins + 1)]
-    ac, n = (lo + hi) / 2, r.purlins + 1
+    ac, n = ridge_pos(project, rules), r.purlins + 1
     pos = [lo + (ac - lo) * k / n for k in range(1, n)]
-    return pos + [ac] + [hi - (p - lo) for p in reversed(pos)]
+    return pos + [ac] + [hi - (hi - ac) * k / n for k in reversed(range(1, n))]
+
+
+def ridge_pos(project, rules):
+    """محور القمة على المحور العرضي: النص للجملون العادي، أو خط التداخل للجملون المتداخل."""
+    r = project.roof
+    x0, y0, x1, y1 = outer_bbox(project, rules)
+    lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+    return r.split if (r.type == "gable" and r.split is not None) else (lo + hi) / 2
+
+
+def split_info(project, rules):
+    """الجملون المتداخل: s خط التداخل، hi_side (-1 السطح من جهة البداية أعلى / 1 من جهة النهاية)،
+    z_lo/z_hi منسوب بطن المداد للسطحين عند الخط، lap التراكب. None للجملون العادي."""
+    r = project.roof
+    if r.type != "gable" or r.split is None:
+        return None
+    x0, y0, x1, y1 = outer_bbox(project, rules)
+    lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+    t = math.tan(math.radians(r.pitch_deg))
+    H = project.roof_base
+    s = r.split
+    za, zb = H + (s - lo) * t, H + (hi - s) * t
+    return {"s": s, "lo": lo, "hi": hi, "t": t, "H": H, "hi_side": -1 if za >= zb else 1,
+            "z_hi": max(za, zb), "z_lo": min(za, zb), "lap": r.split_lap}
+
+
+def plane_z(project, rules, a, side):
+    """منسوب بطن المداد للسطح side (-1 جهة البداية، 1 جهة النهاية) عند الإحداثي العرضي a."""
+    r = project.roof
+    x0, y0, x1, y1 = outer_bbox(project, rules)
+    lo, hi = (y0, y1) if r.ridge_axis == "x" else (x0, x1)
+    t = math.tan(math.radians(r.pitch_deg))
+    return project.roof_base + ((a - lo) if side < 0 else (hi - a)) * t
 
 
 def _lantern_extra(pk):

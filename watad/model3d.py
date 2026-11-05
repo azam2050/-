@@ -195,12 +195,17 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             tc_ = None
             px0, py0 = w.point(0, 0)
             px1, py1 = w.point(L, 0)
-            rc = (y0 + y1) / 2 if project.roof.ridge_axis == "x" else (x0 + x1) / 2
+            from .roof import ridge_pos
+            rc = ridge_pos(project, rules)
             c0, c1 = (py0, py1) if project.roof.ridge_axis == "x" else (px0, px1)
             if (c0 - rc) * (c1 - rc) < 0:
                 tc_ = L * (rc - c0) / (c1 - c0)
                 ts = [0.0, tc_, L]
             zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
+            if tc_ is not None and project.roof.split is not None:    # متداخل: الجدار يتبع السطحين مع الدرجة
+                eps = 0.5
+                ts = [0.0, tc_ - eps, tc_ + eps, L]
+                zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
             if max(zs) > H + 5:
                 poly = [(0, H), (L, H)] + [(t_, max(z_, H)) for t_, z_ in reversed(list(zip(ts, zs)))]
                 S.wprism(wm, w, poly, -half, half)
@@ -220,6 +225,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                    ([(-half, za)] if za > H + 1 else [])
             if len(poly) >= 3:
                 S.wprism("wood", w, poly, -half, half)
+        elif gable_end and project.roof.type == "gable" and project.roof.split is not None:
+            _split_gable(S, project, rules, w, L, H, half, lev, w.gable_glass)
         elif gable_end and w.glass_front:
             _glass_front(S, w, L, H, rise, half)
         elif gable_end and w.gable_glass:
@@ -317,7 +324,14 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         else:
             a_lo, a_hi, b_lo, b_hi = y0, y1, x0, x1
             to_xy = lambda a, b: (b, a)  # noqa: E731
-        ac = (a_lo + a_hi) / 2
+        from .roof import ridge_pos, split_info
+        ac = ridge_pos(project, rules)
+        SPL = split_info(project, rules)
+
+        def _ext(side, aa, ab):              # السطح العالي بالمتداخل يركب فوق الواطي بمقدار التراكب
+            if SPL and side == SPL["hi_side"]:
+                return (aa, ab + SPL["lap"]) if side < 0 else (aa - SPL["lap"], ab)
+            return aa, ab
         B0, B1 = b_lo - ov - project.roof.ext_start, b_hi + ov + project.roof.ext_end
         zb = lambda a, side: H + ((a - a_lo) if side < 0 else (a_hi - a)) * tp  # noqa: E731
         kv = 1 / math.cos(p)
@@ -369,7 +383,7 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
 
         from .roof import cross_gables as _cgs
         for side, eave in gable_sides:
-            aa, ab = (eave, ac) if side < 0 else (ac, eave)
+            aa, ab = _ext(side, *((eave, ac) if side < 0 else (ac, eave)))
             # الرفرف الرئيسي ينقطع خلف المثلث البارز (واجهة المثلث تنزل بدون شريط رفرف قدامها — مثل الشاليه)
             wall_a = a_lo if side < 0 else a_hi
             cuts = sorted((g["c"] - g["hw"], g["c"] + g["hw"]) for g in _cgs(project, rules)
@@ -399,16 +413,33 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         # جسور حاملة طولية (شاليه) تحت المدادات — أطرافها بارزة تحت الرفرف مثل الصورة
         from .roof import purlin_positions
         pw, ph = project.roof.purlin["w"], project.roof.purlin["h"]
-        for a in purlin_positions(project, rules):
-            ztop = zsh(a) if shed else zb(a, -1 if a <= ac else 1)
+        pl = [(a, zsh(a) if shed else zb(a, -1 if a <= ac else 1)) for a in purlin_positions(project, rules)]
+        if SPL:                              # متداخل: جسر قمة لكل سطح (الواطي تحت الزجاج + العالي فوقه)
+            pl = [(a, z) for a, z in pl if abs(a - ac) > 1] + \
+                 [(ac - SPL["hi_side"] * pw / 2, zb(ac, -SPL["hi_side"])), (ac + SPL["hi_side"] * pw / 2, zb(ac, SPL["hi_side"]))]
+        for a, ztop in pl:
             c0, c1 = to_xy(a - pw / 2, B0 - 10), to_xy(a + pw / 2, B1 + 10)
             S.box("trim", min(c0[0], c1[0]), min(c0[1], c1[1]), ztop - ph,
                   max(c0[0], c1[0]), max(c0[1], c1[1]), ztop)
+        if SPL:                              # شريط زجاج المشراق الرأسي بين السطحين بطول المبنى
+            z0 = zb(ac, -SPL["hi_side"]) + (rafter_d + 6.5) * kv
+            z1 = zb(ac, SPL["hi_side"]) - 2
+            if z1 - z0 > 20:
+                g0, g1 = to_xy(ac - 1, b_lo), to_xy(ac + 1, b_hi)
+                S.box("glass", min(g0[0], g1[0]), min(g0[1], g1[1]), z0 + 6, max(g0[0], g1[0]), max(g0[1], g1[1]), z1 - 6)
+                for zz in (z0, z1 - 6):
+                    f0, f1 = to_xy(ac - 4, b_lo), to_xy(ac + 4, b_hi)
+                    S.box("frame", min(f0[0], f1[0]), min(f0[1], f1[1]), zz, max(f0[0], f1[0]), max(f0[1], f1[1]), zz + 6)
+                nm = max(1, round((b_hi - b_lo) / 120))
+                for k in range(nm + 1):
+                    bm = b_lo + (b_hi - b_lo) * k / nm
+                    f0, f1 = to_xy(ac - 4, bm - 3), to_xy(ac + 4, bm + 3)
+                    S.box("frame", min(f0[0], f1[0]), min(f0[1], f1[1]), z0, max(f0[0], f1[0]), max(f0[1], f1[1]), z1)
         # ألواح حافة الجملون (barge boards)
         bb = tr["barge_board"]
         for bpos in (B0 - bb["t"], B1):
             for side, eave in gable_sides:
-                aa, ab = (eave, ac) if side < 0 else (ac, eave)
+                aa, ab = _ext(side, *((eave, ac) if side < 0 else (ac, eave)))
                 slope_hexa("trim", side, aa, ab, bpos, bpos + bb["t"], rafter_d + 6.5 - bb["h"], rafter_d + 6.5)
 
     x0, y0, x1, y1 = outer_bbox(project, rules)        # رجوع لحدود المبنى كامل (بعد السقف)
@@ -459,6 +490,8 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
         else:
             a = px if ridge_y else py
             ztop = zsh(a) if project.roof.type == "shed" else zb(a, -1 if a <= ac else 1)
+            if SPL and abs(a - ac) < 30:
+                ztop = zb(ac, -SPL["hi_side"])
         if "top" in pt:              # عمود يحمل برندة/بلكونة (ينتهي تحت أرضيتها)
             ztop = pt["top"] if not cut else min(cut, pt["top"])
         ps = pt.get("size", 15)
@@ -1137,6 +1170,62 @@ def _glass_front(S, w, L, H, rise, half):
 def gable_transom(H, rise, border, bv):
     """منسوب العارضة الأفقية في زجاج الجملون (45% من ارتفاع الزجاج)."""
     return H + border + (rise - bv - border) * 0.45
+
+
+def split_gable_profile(project, rules, w, L, half, lev):
+    """جدار طرفي تحت جملون متداخل: موقع خط التداخل على الجدار ts، ومنسوب السطحين z(t) (بطن السقف)."""
+    from .roof import plane_z
+    r = project.roof
+    ia = 0 if r.ridge_axis == "y" else 1
+    ua = w.u[ia]
+    sa = w.start[ia]
+    ts = (r.split - sa) / ua
+
+    def z(t_, side_of_t=None):
+        a = sa + ua * t_
+        sd = side_of_t if side_of_t is not None else (-1 if a < r.split else 1)
+        return plane_z(project, rules, a, sd) - lev - 4
+    s0 = -1 if ua > 0 else 1                 # السطح اللي على جهة بداية الجدار
+    return ts, z, s0
+
+
+def _split_gable(S, project, rules, w, L, H, half, lev, glass, border=20, post=10, spacing=110):
+    """مثلث الجدار الطرفي للجملون المتداخل: سطحين بمنسوبين ودرجة رأسية عند خط التداخل.
+    زجاج: إطار خشب 20 سم + قوائم 10 سم + زجاج بإطار أسود (مثل صورة المصنع)."""
+    ts, z, s0 = split_gable_profile(project, rules, w, L, half, lev)
+    za_s, zb_s = z(ts, s0), z(ts, -s0)
+    prof = [(-half, max(H, z(-half))), (ts, za_s), (ts, zb_s), (L + half, max(H, z(L + half)))]
+    if not glass:
+        S.wprism("wood", w, [(-half, H), (L + half, H)] + prof[::-1], -half, half)
+        return
+    tp = math.tan(math.radians(project.roof.pitch_deg))
+    bv = border / math.cos(math.radians(project.roof.pitch_deg))
+    zb0 = H + border
+    S.wbox("wood", w, -half, L + half, -half, half, H, zb0)
+    # أشرطة الحافة المائلة (خشب) لكل سطح
+    for (ta, tb, zfa, zfb) in ((-half, ts, max(H, z(-half)), za_s), (ts, L + half, zb_s, max(H, z(L + half)))):
+        S.wprism("wood", w, [(ta, zfa), (tb, zfb), (tb, zfb - bv), (ta, zfa - bv)], -half, half)
+    S.wbox("wood", w, ts - post / 2, ts + post / 2, -half, half, zb0, max(za_s, zb_s))   # قائم خط التداخل
+    fw_, fd = 5, 4
+    for (ta, tb, sd) in ((-half, ts - post / 2, s0), (ts + post / 2, L + half, -s0)):
+        zt = lambda t_: z(t_, sd) - bv  # noqa: E731
+        # حدود الزجاج: من نقطة التقاء الحافة بالقاعدة لين القائم
+        t_in = [t_ for t_ in (ta, tb) if zt(t_) > zb0 + 5]
+        if not t_in:
+            continue
+        lo_t = ta if zt(ta) > zt(tb) else tb          # الطرف الواطي عند الجدار
+        hi_t = tb if lo_t == ta else ta
+        tl = lo_t + (hi_t - lo_t) * max(0.0, (zb0 - zt(lo_t))) / max(1e-6, (zt(hi_t) - zt(lo_t)))
+        a_, b_ = sorted((tl, hi_t))
+        poly = [(a_, zb0), (b_, zb0), (b_, zt(b_)), (a_, zt(a_))]
+        S.wprism("glass", w, poly, -1, 1)
+        n = max(1, round((b_ - a_) / spacing))
+        for k in range(1, n):
+            t_ = a_ + (b_ - a_) * k / n
+            S.wbox("wood", w, t_ - post / 2, t_ + post / 2, -half, half, zb0, zt(t_) + 1)
+        S.wbox("frame", w, a_, b_, -fd, fd, zb0, zb0 + fw_)
+        S.wdiag("frame", w, a_, zt(a_), b_, zt(b_), fw_ * 2, -fd, fd)
+    S.wbox("trim", w, -half, L + half, -half - 2.5, -half, zb0 - 5, zb0)
 
 
 def _glass_gable(S, w, L, H, rise, half, tp, border=20, post=10, spacing=110):

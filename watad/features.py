@@ -327,6 +327,13 @@ def roof_z(P, rules, x, y):
     from .model import outer_bbox
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
     tp = math.tan(math.radians(P.roof.pitch_deg))
+    if P.roof.type == "gable" and P.roof.split is not None:      # جملون متداخل: كل جهة من خط التداخل على سطحها
+        from .roof import plane_z
+        a = x if P.roof.ridge_axis == "y" else y
+        sp = P.roof.split
+        if abs(a - sp) < 8:                  # على خط التداخل نفسه: تحت السطح الواطي (فوقه شريط الزجاج)
+            return min(plane_z(P, rules, a, -1), plane_z(P, rules, a, 1)) - 18
+        return plane_z(P, rules, a, -1 if a < sp else 1) - 18
     if P.roof.ridge_axis == "y":
         d = min(x - bx0, bx1 - x)
     else:

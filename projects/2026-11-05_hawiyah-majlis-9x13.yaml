@@ -21,16 +21,14 @@ style: {preset: cedar_charcoal_porch, wood: honey_cedar, glass: clear, frame: bl
 wall_height: 400
 height_exact: true
 slab_height: 45
-# السقف المتداخل: جملون رئيسي بطول المبنى + جملونين متقاطعين بارزين يتداخلون معه (فوق الجلسة وفوق المجلس) + مثلث زجاج على الواجهة
+# السقف المتداخل (مثل صورة المصنع): جملون بسطحين بمنسوبين — السطح الطويل فوق الجلسة أعلى ويركب فوق سطح الغرفة،
+# وبينهم شريط زجاج رأسي (مشراق) بطول المبنى عند خط التداخل (فوق جدار الجلسة/الغرفة)، ومثلث الواجهة زجاج بإطار خشب.
 roof:
   ridge_axis: y
-  pitch_deg: 22
-  overhang: 40
+  pitch_deg: 20
+  overhang: 50
   purlins: 1
-  ext_start: 200
-  cross_gables:
-    - {side: W, center: 400, width: 520, pitch: 35, overhang: 40, window_width: 0}
-    - {side: E, center: 1050, width: 520, pitch: 35, overhang: 40, window_width: 0}
+  split: 550
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -42,9 +40,9 @@ walls:
     start: [0, 0]
     end: [900, 0]
     openings:
-      - {kind: door, code: ز1, name: ز1 زجاج ثابت — الجلسة, offset: 12, width: 170, height: 260, style: fixed, leaves: 2}
+      - {kind: door, code: ز1, name: ز1 زجاج ثابت — الجلسة, offset: 12, width: 170, height: 330, style: fixed, leaves: 2, grid: [2, 3]}
       - {kind: door, code: ب1, name: ب1 مدخل الجلسة فرنسي زجاج, offset: 192, width: 166, height: 260, leaves: 2}
-      - {kind: door, code: ز2, name: ز2 زجاج ثابت — الجلسة, offset: 368, width: 170, height: 260, style: fixed, leaves: 2}
+      - {kind: door, code: ز2, name: ز2 زجاج ثابت — الجلسة, offset: 368, width: 170, height: 330, style: fixed, leaves: 2, grid: [2, 3]}
       - {kind: window, code: ش1, name: ش1 غرفة النوم, offset: 655, width: 140, height: 150, sill: 90, grid: [2, 3]}
   - name: شرق
     title: الواجهة الشرقية
@@ -106,12 +104,7 @@ rooms:
   - {name: حمام, rect: [6, 1006, 194, 1294], wet: true, label: [100, 1200]}
 
 decks:
-  - {name: الشرفة الأمامية, rect: [-6, -200, 556, -6], height: 45, railing: [S, W, E], stairs: {side: S, offset: 205, width: 140}}
-
-posts:
-  - {at: [-20, -190], size: 18}
-  - {at: [566, -190], size: 18}
-  - {at: [920, -190], size: 18}
+  - {name: الشرفة الأمامية, rect: [-6, -220, 906, -6], height: 45, railing: [S, W, E], stairs: {side: S, offset: 220, width: 160}}
 
 furniture:
   # ---- الجلسة الخارجية المغلقة: مشب على الجدار الغربي + كنبة وكرسيين حوله، والممر للأبواب على الطرف الشرقي فاضي
