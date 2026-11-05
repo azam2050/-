@@ -1194,8 +1194,10 @@ def roof_sheet(ctx):
     elif ridge_y:
         if P.roof.split is not None:             # متداخل: خط التداخل + شريط المشراق الزجاج
             cx = P.roof.split
-            ax.add_patch(Rectangle((cx - 6, y0), 12, y1 - y0, fc="#e3f0fb", ec=C_WIN, lw=0.8, zorder=3))
-            ax.text(cx - 14, (y0 + y1) / 2, "مشراق زجاج رأسي بين السطحين (السطح العالي يركب فوق الواطي "
+            gl_ = P.roof.split_glass
+            ax.add_patch(Rectangle((cx - 6, y0), 12, y1 - y0, fc="#e3f0fb" if gl_ else "#e9d9c4", ec=C_WIN if gl_ else "k",
+                                   lw=0.8, zorder=3))
+            ax.text(cx - 14, (y0 + y1) / 2, ("مشراق زجاج" if gl_ else "شريط خشب") + " رأسي بين السطحين (السطح العالي يركب فوق الواطي "
                     f"{P.roof.split_lap:.0f} سم)", rotation=90, ha="center", va="center", fontsize=7, color=C_WIN, zorder=4)
         ax.plot([cx, cx], [y0 - ov - 20, y1 + ov + 20], color=C_ROOF, lw=1.2)
         ax.text(cx + 8, y1 - 40, "خط الحرف (رأس الجملون)", ha="left", fontsize=8, color=C_ROOF,
@@ -1305,8 +1307,10 @@ def roof_sheet(ctx):
             ax2.add_patch(Polygon(poly + [(x, yy + depth) for x, yy in poly][::-1], closed=True, fc="#fff3e0",
                                   ec=C_ROOF, lw=1, zorder=3))
         zl_, zh_ = min(za_, zb2) + depth, max(za_, zb2)
-        ax2.add_patch(Rectangle((xs_ - 4, zl_), 8, zh_ - zl_, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=2.5))
-        ax2.text(xs_ + (-12 if hiA else 12), (zl_ + zh_) / 2, "مشراق زجاج", ha="right" if hiA else "left",
+        gl_ = P.roof.split_glass
+        ax2.add_patch(Rectangle((xs_ - 4, zl_), 8, zh_ - zl_, fc="#e3f0fb" if gl_ else "#e9d9c4", ec=C_WIN if gl_ else "k",
+                                lw=1, zorder=2.5))
+        ax2.text(xs_ + (-12 if hiA else 12), (zl_ + zh_) / 2, "مشراق زجاج" if gl_ else "شريط خشب", ha="right" if hiA else "left",
                  va="center", fontsize=7, color=C_WIN)
     else:
         upper = [(x, yy + depth) for x, yy in lower]
@@ -1867,5 +1871,6 @@ def _split_elev(ax, P, rules, w, L, H, half, depth, ov, gglass, cover):
         poly = [pa, pb, (pb[0], pb[1] + depth), (pa[0], pa[1] + depth)]
         ax.add_patch(Polygon(poly, closed=True, fc="#fff3e0", ec=C_ROOF, lw=0.9, zorder=2))
     zl, zh = min(za, zb), max(za, zb)
-    ax.add_patch(Rectangle((tsh - 4, zl + depth), 8, zh - zl - depth, fc="#e3f0fb", ec=C_WIN, lw=1, zorder=2.1))
+    ax.add_patch(Rectangle((tsh - 4, zl + depth), 8, zh - zl - depth, fc="#e3f0fb" if P.roof.split_glass else "#e9d9c4",
+                           ec=C_WIN if P.roof.split_glass else "k", lw=1, zorder=2.1))
     return zh + depth
