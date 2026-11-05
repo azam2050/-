@@ -1416,7 +1416,8 @@ def areas_sheet(ctx):
     gross = sum((b[2] - b[0]) * (b[3] - b[1]) for b in fbs) / 1e4      # كل دور بمقاسه (العلوي ممكن أصغر)
     same = all(abs(b[k] - fbs[0][k]) < 1 for b in fbs for k in range(4))
     net = sum(r.area_m2 for r in P.rooms if r.kind != "stair" or r.floor == 0)
-    terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in P.decks) / 1e4
+    decks_ = [d for d in P.decks if getattr(d, "count_area", True)]
+    terrace = sum((d.rect[2] - d.rect[0]) * (d.rect[3] - d.rect[1]) for d in decks_) / 1e4
     from .model import mezz_area
     mz = mezz_area(P)                         # الدور الأول داخل المثلث / الميزانين = مساحة مبنية (ملاحظة المصنع)
     gross0 = gross
@@ -1442,13 +1443,13 @@ def areas_sheet(ctx):
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
     free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price and \
         not P.meta.get("price_items") else ""
-    if terrace and len(P.decks) > 1:          # كل دكة/بلكونة بسطر بأبعادها (مقاساتها تختلف)
-        for d in P.decks:
+    if terrace and len(decks_) > 1:          # كل دكة/بلكونة بسطر بأبعادها (مقاساتها تختلف)
+        for d in decks_:
             dw, dh = (d.rect[2] - d.rect[0]) / 100, (d.rect[3] - d.rect[1]) / 100
             rows.append(["", d.name + free, f"{dw:.2f} × {dh:.2f}", f"{dw * dh:.2f}"])
     elif terrace:
-        lbl = P.decks[0].name if "تراس" not in P.decks[0].name else "التراس المسقوف"
-        rows.append(["", lbl + free, " × ".join(f"{(P.decks[0].rect[k + 2] - P.decks[0].rect[k]) / 100:.2f}"
+        lbl = decks_[0].name if "تراس" not in decks_[0].name else "التراس المسقوف"
+        rows.append(["", lbl + free, " × ".join(f"{(decks_[0].rect[k + 2] - decks_[0].rect[k]) / 100:.2f}"
                                                 for k in (0, 1)), f"{terrace:.2f}"])
     if not same:             # دور علوي أصغر: سطر لكل دور
         for f, b in enumerate(fbs):

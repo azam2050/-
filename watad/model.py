@@ -118,6 +118,7 @@ class Deck:
     stairs: dict = None        # {side: S, offset: 100, width: 120} فتحة الدرج في الدربزين
     railing_style: str = None  # يغلب نمط المشروع
     level: float = 0           # منسوب سطح الدكة (0 = أرضي). للبلكونة = منسوب أرضية الدور الأول
+    count_area: bool = True    # false: عتبة مدخل صغيرة ما تنحسب بالمساحات (بدون تراس)
 
 
 @dataclass

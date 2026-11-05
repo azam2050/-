@@ -35,106 +35,106 @@ pallet_length: 320
 walls:
   - name: الواجهة العلوية
     title: واجهة المدخل (أعلى المخطط)
-    start: [900, 1300]
-    end: [0, 1300]
+    start: [894, 1294]
+    end: [6, 1294]
     openings:
-      - {kind: door, code: ب1, name: ب1 باب الحوش خشب مصمت, offset: 300, width: 150, height: 240, leaves: 2}
-  - {name: الجدار الأيمن, title: الواجهة اليمنى, start: [900, 0], end: [900, 1300]}
+      - {kind: door, code: ب1, name: ب1 باب الحوش خشب مصمت, offset: 294, width: 150, height: 240, leaves: 2}
+  - {name: الجدار الأيمن, title: الواجهة اليمنى, start: [894, 6], end: [894, 1294]}
   - name: الواجهة السفلية
     title: الواجهة السفلية (المجلس)
-    start: [0, 0]
-    end: [900, 0]
+    start: [6, 6]
+    end: [894, 6]
     openings:
-      - {kind: window, code: ش4, name: ش4 المجلس, offset: 345, width: 100, height: 150, sill: 80, grid: [2, 3]}
-  - {name: الجدار الأيسر, title: الواجهة اليسرى, start: [0, 1300], end: [0, 0]}
+      - {kind: window, code: ش4, name: ش4 المجلس, offset: 339, width: 100, height: 150, sill: 80, grid: [2, 3]}
+  - {name: الجدار الأيسر, title: الواجهة اليسرى, start: [6, 1294], end: [6, 6]}
   - name: جدار الغرفة والمستودع — الجلسة
     exterior: false
     start: [250, 500]
-    end: [250, 1300]
+    end: [250, 1294]
     openings:
       - {kind: door, code: ب3, name: ب3 المستودع, offset: 90, width: 90, height: 220}
       - {kind: window, code: ش1, name: ش1 الغرفة على الجلسة, offset: 280, width: 100, height: 120, sill: 100, grid: [2, 2]}
       - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 500, width: 90, height: 220}
       - {kind: window, code: ش1, name: ش1 الغرفة على الجلسة, offset: 660, width: 100, height: 120, sill: 100, grid: [2, 2]}
-  - {name: جدار الغرفة — المستودع, exterior: false, start: [0, 700], end: [250, 700]}
+  - {name: جدار الغرفة — المستودع, exterior: false, start: [6, 700], end: [250, 700]}
   - name: جدار المجلس العلوي
     exterior: false
-    start: [0, 500]
+    start: [6, 500]
     end: [700, 500]
     openings:
-      - {kind: window, code: ش2, name: ش2 المجلس على المستودع, offset: 80, width: 80, height: 100, sill: 120, grid: [1, 2]}
-      - {kind: door, code: ب4, name: ب4 المجلس, offset: 310, width: 100, height: 230}
-      - {kind: window, code: ش3, name: ش3 المجلس على الجلسة, offset: 510, width: 100, height: 150, sill: 90, grid: [2, 3]}
-  - {name: جدار المجلس — المغاسل والحمام, exterior: false, start: [700, 0], end: [700, 500]}
+      - {kind: window, code: ش2, name: ش2 المجلس على المستودع, offset: 74, width: 80, height: 100, sill: 120, grid: [1, 2]}
+      - {kind: door, code: ب4, name: ب4 المجلس, offset: 304, width: 100, height: 230}
+      - {kind: window, code: ش3, name: ش3 المجلس على الجلسة, offset: 504, width: 100, height: 150, sill: 90, grid: [2, 3]}
+  - {name: جدار المجلس — المغاسل والحمام, exterior: false, start: [700, 6], end: [700, 500]}
   - name: جدار المغاسل — الحمام
     exterior: false
     start: [700, 300]
-    end: [900, 300]
+    end: [894, 300]
     openings:
       - {kind: door, code: ب5, name: ب5 الحمام, offset: 60, width: 80, height: 210}
 
 rooms:
-  - {name: غرفة نوم, rect: [6, 706, 244, 1294], label: [125, 900]}
-  - {name: مستودع, rect: [6, 506, 244, 694], label: [125, 600]}
-  - {name: حوش — جلسة مغلقة, rect: [256, 506, 894, 1294], label: [560, 1150]}
-  - {name: مجلس, rect: [6, 6, 694, 494], label: [380, 250]}
-  - {name: مغاسل, rect: [706, 306, 894, 500], wet: true, label: [790, 400]}
-  - {name: حمام, rect: [706, 6, 894, 294], wet: true, label: [790, 150]}
+  - {name: غرفة نوم, rect: [12, 706, 244, 1288], label: [125, 900]}
+  - {name: مستودع, rect: [12, 506, 244, 694], label: [125, 600]}
+  - {name: حوش — جلسة مغلقة, rect: [256, 506, 888, 1288], label: [560, 1150]}
+  - {name: مجلس, rect: [12, 12, 694, 494], label: [380, 250]}
+  - {name: مغاسل, rect: [706, 306, 888, 500], wet: true, label: [790, 400]}
+  - {name: حمام, rect: [706, 12, 888, 294], wet: true, label: [790, 150]}
 
 # بدون شرفة (طلب المصنع): عتبة خشب صغيرة قدام باب الحوش + درج بس
 decks:
-  - {name: عتبة المدخل, rect: [430, 1306, 620, 1406], height: 45, railing: [], stairs: {side: N, offset: 0, width: 190}}
+  - {name: عتبة المدخل, rect: [430, 1300, 620, 1400], height: 45, railing: [], stairs: {side: N, offset: 0, width: 190}, count_area: false}
 
 furniture:
   # غرفة النوم: سرير 1.20 راسه على الجدار العلوي المصمت، ممر 59 سم بكل جنب + عند الرجلين (الغرفة 2.50)، دولاب على الجدار اليسار
-  - {name: سرير, rect: [65, 1094, 185, 1294]}
-  - {name: دولاب, rect: [6, 760, 66, 960]}
+  - {name: سرير, rect: [68, 1088, 188, 1288]}
+  - {name: دولاب, rect: [12, 760, 66, 960]}
   # الجلسة المغلقة: كنب على الجدار اليمين + طاولة + كرسيين، والممر للأبواب على اليسار فاضي
-  - {name: كنبة, rect: [814, 650, 894, 1150]}
+  - {name: كنبة, rect: [808, 650, 888, 1150]}
   - {name: طاولة, rect: [640, 780, 760, 1020]}
   - {name: كرسي, rect: [480, 760, 560, 840]}
   - {name: كرسي, rect: [480, 960, 560, 1040]}
   # المجلس: مشب على الجدار اليسار + جلسة U مفتوحة عليه، وباب المجلس فاضي
-  - {name: مشب, rect: [6, 190, 60, 310]}
-  - {name: جلسة عربية, rect: [140, 6, 694, 86]}
-  - {name: جلسة عربية, rect: [614, 86, 694, 494]}
+  - {name: مشب, rect: [12, 190, 60, 310]}
+  - {name: جلسة عربية, rect: [140, 12, 694, 92]}
+  - {name: جلسة عربية, rect: [614, 92, 694, 494]}
   - {name: جلسة عربية, rect: [140, 414, 300, 494]}
   - {name: جلسة عربية, rect: [420, 414, 614, 494]}
   - {name: طاولة, rect: [280, 170, 470, 330]}
   # المغاسل والحمام
-  - {name: "", rect: [848, 360, 894, 420], shape: basin}
-  - {name: "", rect: [848, 430, 894, 490], shape: basin}
-  - {name: "", rect: [706, 6, 746, 50], shape: wc}
-  - {name: دش, rect: [804, 6, 894, 96], shape: shower}
+  - {name: "", rect: [842, 360, 888, 420], shape: basin}
+  - {name: "", rect: [842, 430, 888, 490], shape: basin}
+  - {name: "", rect: [706, 12, 746, 56], shape: wc}
+  - {name: دش, rect: [798, 12, 888, 102], shape: shower}
 
 # ---------------- التصميم الداخلي (خشب عسلي: كنب كريمي، جدار أزرق ليلي بالجلسة، فحمي حول مشب المجلس، لمسات نحاسي) ----------------
 interior_decor:
-  - {kind: feature_wall, line: [894, 620, 894, 1180], n: [-1, 0], z: [0, 400], color: "#2E3A4F", arts: [1, 3], rows: 1, fw: 70, fh: 50, art_z: 190, slat_w: 30}
+  - {kind: feature_wall, line: [888, 620, 888, 1180], n: [-1, 0], z: [0, 400], color: "#2E3A4F", arts: [1, 3], rows: 1, fw: 70, fh: 50, art_z: 190, slat_w: 30}
   - {kind: rug, rect: [470, 720, 800, 1080]}
   # إضاءة مخفية على رأس الجدران تغسل السقف الخشب العالي (ما يبقى ركن مظلم)
-  - {kind: cove, line: [256, 506, 256, 1294], n: [1, 0], z: 400}
-  - {kind: cove, line: [894, 506, 894, 1294], n: [-1, 0], z: 400}
-  - {kind: cove, line: [256, 1294, 894, 1294], n: [0, -1], z: 400}
-  - {kind: cove, line: [256, 506, 894, 506], n: [0, 1], z: 400}
+  - {kind: cove, line: [256, 506, 256, 1288], n: [1, 0], z: 400}
+  - {kind: cove, line: [888, 506, 888, 1288], n: [-1, 0], z: 400}
+  - {kind: cove, line: [256, 1288, 888, 1288], n: [0, -1], z: 400}
+  - {kind: cove, line: [256, 506, 888, 506], n: [0, 1], z: 400}
   # أباليك أب/داون على جدار الغرفة من جهة الجلسة — تنوّر الجدار العالي لين السقف
   - {kind: sconce, at: [258, 545, 320], n: [1, 0], w: 40}
   - {kind: sconce, at: [258, 735, 320], n: [1, 0], w: 40}
   - {kind: sconce, at: [258, 940, 320], n: [1, 0], w: 40}
   - {kind: sconce, at: [258, 1125, 320], n: [1, 0], w: 40}
-  - {kind: tile_floor, rect: [256, 506, 894, 1294], color: "#8E8982"}
-  - {kind: tile_floor, rect: [706, 306, 894, 500], color: "#8E8982"}
-  - {kind: downlights, rect: [256, 506, 894, 1294], z: roof, spacing: 140, w: 40}
-  - {kind: feature_wall, line: [6, 160, 6, 340], n: [1, 0], z: [0, 400], color: "#33373A", arts: [], rows: 1, fw: 60, fh: 45, art_z: 200, slat_w: 30, sconces: false}
-  - {kind: art, at: [220, 8], n: [0, 1], z: 175, aw: 90, ah: 60}
-  - {kind: art, at: [560, 8], n: [0, 1], z: 175, aw: 90, ah: 60}
+  - {kind: tile_floor, rect: [256, 506, 888, 1288], color: "#8E8982"}
+  - {kind: tile_floor, rect: [706, 306, 888, 500], color: "#8E8982"}
+  - {kind: downlights, rect: [256, 506, 888, 1288], z: roof, spacing: 140, w: 40}
+  - {kind: feature_wall, line: [12, 160, 6, 340], n: [1, 0], z: [0, 400], color: "#33373A", arts: [], rows: 1, fw: 60, fh: 45, art_z: 200, slat_w: 30, sconces: false}
+  - {kind: art, at: [220, 14], n: [0, 1], z: 175, aw: 90, ah: 60}
+  - {kind: art, at: [560, 14], n: [0, 1], z: 175, aw: 90, ah: 60}
   - {kind: rug, rect: [240, 120, 520, 380]}
-  - {kind: tile_floor, rect: [6, 6, 694, 494], color: "#8E8982"}
-  - {kind: downlights, rect: [6, 6, 694, 494], z: roof, spacing: 140, w: 40}
-  - {kind: feature_wall, line: [10, 1294, 240, 1294], n: [0, -1], z: [0, 400], color: "#8C9A84", arts: [6], rows: 1, fw: 60, fh: 45, art_z: 150, slat_w: 30, sconces: false}
-  - {kind: downlights, rect: [6, 706, 244, 1294], z: roof, spacing: 130, w: 40}
-  - {kind: stone, line: [-6, 1306, 906, 1306], n: [0, 1], z: [0, 50]}
-  - {kind: sconce, at: [440, 1310, 300], n: [0, 1], w: 40}
-  - {kind: sconce, at: [612, 1310, 300], n: [0, 1], w: 40}
+  - {kind: tile_floor, rect: [12, 12, 694, 494], color: "#8E8982"}
+  - {kind: downlights, rect: [12, 12, 694, 494], z: roof, spacing: 140, w: 40}
+  - {kind: feature_wall, line: [16, 1288, 240, 1288], n: [0, -1], z: [0, 400], color: "#8C9A84", arts: [6], rows: 1, fw: 60, fh: 45, art_z: 150, slat_w: 30, sconces: false}
+  - {kind: downlights, rect: [12, 706, 244, 1288], z: roof, spacing: 130, w: 40}
+  - {kind: stone, line: [-6, 1300, 906, 1300], n: [0, 1], z: [0, 50]}
+  - {kind: sconce, at: [440, 1304, 300], n: [0, 1], w: 40}
+  - {kind: sconce, at: [612, 1304, 300], n: [0, 1], w: 40}
 
 site:
   plot: [-500, -500, 1500, 2700]
@@ -146,7 +146,7 @@ site:
     - {x: 470, width: 110, kind: person}
   zones:
     - {kind: parking, rect: [1000, 1600, 1490, 2690], name: موقف}
-    - {kind: path, rect: [470, 1406, 580, 2690], name: الممر}
+    - {kind: path, rect: [470, 1400, 580, 2690], name: الممر}
     - {kind: lawn, rect: [-490, 1600, 440, 2690], name: الحديقة}
   trees:
     - {at: [-380, 1000], kind: palm, r: 120}
@@ -163,5 +163,5 @@ render:
     - {name: منظر علوي — الأرض والسور, cam: [-1600, 3900, 1400], target: [450, 900, 150], lens: 26}
   interior:
     - {name: الحوش — الجلسة المغلقة, cam: [850, 560, 160], target: [300, 1250, 150], lens: 17}
-    - {name: المجلس — المشب, cam: [640, 60, 150], target: [6, 250, 140], lens: 17}
-    - {name: غرفة النوم, cam: [230, 720, 160], target: [80, 1294, 110], lens: 17}
+    - {name: المجلس — المشب, cam: [640, 60, 150], target: [12, 250, 140], lens: 17}
+    - {name: غرفة النوم, cam: [230, 720, 160], target: [80, 1288, 110], lens: 17}
