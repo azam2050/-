@@ -202,11 +202,24 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
                 tc_ = L * (rc - c0) / (c1 - c0)
                 ts = [0.0, tc_, L]
             zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
-            if tc_ is not None and project.roof.split is not None:    # متداخل: الجدار يتبع السطحين مع الدرجة
-                eps = 0.5
-                ts = [0.0, tc_ - eps, tc_ + eps, L]
-                zs = [roof_z(project, rules, *w.point(t_, 0)) - lev - 4 for t_ in ts]
-            if max(zs) > H + 5:
+            if project.roof.split is not None and abs(c1 - c0) > 1:     # متداخل: جدار عرضي يتبع سطح جهته (بدون زعانف فوق السقف)
+                from .roof import plane_z
+                sp_ = project.roof.split
+
+                def _zs(t_, toward):
+                    a_ = c0 + (c1 - c0) * t_ / L
+                    sd = -1 if a_ + toward * (c1 - c0) / L * 9 < sp_ else 1
+                    return plane_z(project, rules, a_, sd) - 18 - lev - 4
+                if tc_ is not None:
+                    ts = [0.0, tc_, tc_, L]
+                    zs = [_zs(0.0, 1), _zs(tc_, -1), _zs(tc_, 1), _zs(L, -1)]
+                else:
+                    zs = [_zs(0.0, 1), _zs(L, -1)]
+            if max(zs) > H + 5 and len(ts) == 4 and ts[1] == ts[2]:      # درجة: جزئين محدبين
+                for (ta, tb, za_, zb2) in ((ts[0], ts[1], zs[0], zs[1]), (ts[2], ts[3], zs[2], zs[3])):
+                    if tb - ta > 1:
+                        S.wprism(wm, w, [(ta, H), (tb, H), (tb, max(zb2, H)), (ta, max(za_, H))], -half, half)
+            elif max(zs) > H + 5:
                 poly = [(0, H), (L, H)] + [(t_, max(z_, H)) for t_, z_ in reversed(list(zip(ts, zs)))]
                 S.wprism(wm, w, poly, -half, half)
         ux, uy = w.u
