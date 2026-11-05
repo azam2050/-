@@ -81,8 +81,9 @@ rooms:
   - {name: مغاسل, rect: [706, 306, 894, 500], wet: true, label: [790, 400]}
   - {name: حمام, rect: [706, 6, 894, 294], wet: true, label: [790, 150]}
 
+# بدون شرفة (طلب المصنع): عتبة خشب صغيرة قدام باب الحوش + درج بس
 decks:
-  - {name: الشرفة, rect: [-6, 1306, 906, 1520], height: 45, railing: [N, E, W], stairs: {side: N, offset: 300, width: 160}}
+  - {name: عتبة المدخل, rect: [430, 1306, 620, 1406], height: 45, railing: [], stairs: {side: N, offset: 0, width: 190}}
 
 furniture:
   # غرفة النوم: سرير 1.20 راسه على الجدار العلوي المصمت، ممر 59 سم بكل جنب + عند الرجلين (الغرفة 2.50)، دولاب على الجدار اليسار
@@ -145,7 +146,7 @@ site:
     - {x: 470, width: 110, kind: person}
   zones:
     - {kind: parking, rect: [1000, 1600, 1490, 2690], name: موقف}
-    - {kind: path, rect: [470, 1530, 580, 2690], name: الممر}
+    - {kind: path, rect: [470, 1406, 580, 2690], name: الممر}
     - {kind: lawn, rect: [-490, 1600, 440, 2690], name: الحديقة}
   trees:
     - {at: [-380, 1000], kind: palm, r: 120}
