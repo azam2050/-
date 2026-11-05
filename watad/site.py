@@ -301,14 +301,17 @@ def site_sheet(ctx):
             a = c1
         if edge in "WE":
             ax.add_patch(Rectangle((ax0, ay0), ax1 - ax0, ay1 - ay0, fc="#6e6e6e", ec="k", lw=0.5, zorder=9))
+    nth = side == "N" and not poly
     for g in gates:
         gx = g["x"]
-        ax.plot([gx, gx + g["width"]], [y0 - t / 2] * 2, color="#10a010", lw=2.4, zorder=10)
-        ax.text(gx + g["width"] / 2, y0 - t - 22, "بوابة سيارة" if g.get("kind") == "car" else "باب مشاة",
-                ha="center", va="top", fontsize=7, color="#10a010", zorder=10)
+        ax.plot([gx, gx + g["width"]], [(y1 + t / 2) if nth else (y0 - t / 2)] * 2, color="#10a010", lw=2.4, zorder=10)
+        ax.text(gx + g["width"] / 2, (y1 + t + 22) if nth else (y0 - t - 22),
+                "بوابة سيارة" if g.get("kind") == "car" else "باب مشاة",
+                ha="center", va="bottom" if nth else "top", fontsize=7, color="#10a010", zorder=10)
     sw = st.get("street_width", 1600)
-    ax.add_patch(Rectangle((x0 - 300, y0 - t - 120 - 160), x1 - x0 + 600, 160, fc="#cfcfcf", ec="none", zorder=0))
-    ax.text((x0 + x1) / 2, y0 - t - 200, f"شارع عرض {sw / 100:.0f} م", ha="center", va="center", fontsize=9,
+    sy = (y1 + t + 120) if nth else (y0 - t - 120 - 160)
+    ax.add_patch(Rectangle((x0 - 300, sy), x1 - x0 + 600, 160, fc="#cfcfcf", ec="none", zorder=0))
+    ax.text((x0 + x1) / 2, sy + 80, f"شارع عرض {sw / 100:.0f} م", ha="center", va="center", fontsize=9,
             color="#333", zorder=1)
     # الأبعاد: الإجمالي ثم التقسيمات (قاعدة المصنع)
     if poly:                    # طول كل ضلع من أضلاع الأرض
@@ -341,7 +344,7 @@ def site_sheet(ctx):
     ax.add_patch(Polygon([(nx, ny), (nx - 25, ny - 90), (nx, ny - 65), (nx + 25, ny - 90)], closed=True, fc="k"))
     ax.text(nx, ny + 15, "ش", ha="center", va="bottom", fontsize=12)
     ax.set_xlim(min(p[0] for p in bpts) - 330, x1 + 260 + (200 if poly else 0))
-    ax.set_ylim(y0 - 330, y1 + 200)
+    ax.set_ylim(y0 - (130 if nth else 330), y1 + (400 if nth else 200))
     # جدول المساحات + ملاحظات
     rows, plot, green = site_rows(P, rules)
     ax2 = fig.add_axes([0.66, 0.42, 0.31, 0.46])
@@ -429,19 +432,25 @@ def add_site_3d(S, P, rules, style, cut=None):
         fx = sorted(p[0] for p in bp if abs(p[1] - y0) < 1)
         x0, x1 = fx[0] + t, fx[-1] - t
     a = x0 - t
+    north = side == "N" and not st.get("boundary")          # الشارع من الجهة العليا (y1)
+    fa, fb = (y1, y1 + t) if north else (y0 - t, y0)       # وجهي السور الأمامي
+    fm = (fa + fb) / 2
     for g0, g1, g in gates + [(x1 + t, x1 + t, None)]:          # السور الأمامي مع البوابات
         if g0 > a:
-            S.box("site_wall", a, y0 - t, gz, g0, y0, gz + h)
-            S.box("trim", a, y0 - t - 2, gz + h - 12, g0, y0 + 2, gz + h)       # كاب خشب أعلى السور
+            S.box("site_wall", a, fa, gz, g0, fb, gz + h)
+            S.box("trim", a, fa - 2, gz + h - 12, g0, fb + 2, gz + h)       # كاب خشب أعلى السور
         if g:
             n = max(4, round(g["width"] / 12))                   # بوابة شرائح خشب حديثة
             for k in range(n):
                 xa = g0 + (g1 - g0) * k / n
-                S.box("trim", xa + 1, y0 - t / 2 - 3, gz + 5, xa + (g1 - g0) / n - 2, y0 - t / 2 + 3, gz + h - 20)
-            S.box("gate", g0, y0 - t / 2 - 4, gz + h - 20, g1, y0 - t / 2 + 4, gz + h - 12)
+                S.box("trim", xa + 1, fm - 3, gz + 5, xa + (g1 - g0) / n - 2, fm + 3, gz + h - 20)
+            S.box("gate", g0, fm - 4, gz + h - 20, g1, fm + 4, gz + h - 12)
         a = g1
     if not st.get("boundary"):
-        S.box("site_wall", x0 - t, y1, gz, x1 + t, y1 + t, gz + h)
+        if north:
+            S.box("site_wall", x0 - t, y0 - t, gz, x1 + t, y0, gz + h)
+        else:
+            S.box("site_wall", x0 - t, y1, gz, x1 + t, y1 + t, gz + h)
         S.box("site_wall", x0 - t, y0, gz, x0, y1, gz + h)
         S.box("site_wall", x1, y0, gz, x1 + t, y1, gz + h)
     for dv in st.get("dividers", []):
