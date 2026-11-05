@@ -428,8 +428,10 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             z0 = zb(ac, -SPL["hi_side"]) + (rafter_d + 6.5) * kv
             z1 = zb(ac, SPL["hi_side"]) - 2
             if z1 - z0 > 20 and not project.roof.split_glass:   # شريط خشب مقفل (طلب المصنع)
-                g0, g1 = to_xy(ac - 6, b_lo), to_xy(ac + 6, b_hi)
-                S.box("wood", min(g0[0], g1[0]), min(g0[1], g1[1]), z0 - 2, max(g0[0], g1[0]), max(g0[1], g1[1]), z1)
+                # الشريط على جهة السطح الواطي (برا وجه الجدار الداخلي) — ما يتطابق مع الجدار (تطابق الأسطح يطلع أسود بالرندر)
+                hs = SPL["hi_side"]
+                g0, g1 = to_xy(ac - hs * 18, b_lo), to_xy(ac - hs * 6.5, b_hi)
+                S.box("wood", min(g0[0], g1[0]), min(g0[1], g1[1]), z0 - 2, max(g0[0], g1[0]), max(g0[1], g1[1]), z1 + 4)
             elif z1 - z0 > 20:
                 g0, g1 = to_xy(ac - 1, b_lo), to_xy(ac + 1, b_hi)
                 S.box("glass", min(g0[0], g1[0]), min(g0[1], g1[1]), z0 + 6, max(g0[0], g1[0]), max(g0[1], g1[1]), z1 - 6)

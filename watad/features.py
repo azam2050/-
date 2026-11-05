@@ -333,7 +333,7 @@ def roof_z(P, rules, x, y):
         sp = P.roof.split
         if abs(a - sp) < 8:                  # على خط التداخل: مع المشراق يوقف تحت السطح الواطي، وبدونه يكمل جدار كامل لين العالي
             zs_ = (plane_z(P, rules, a, -1), plane_z(P, rules, a, 1))
-            return (min(zs_) if P.roof.split_glass else max(zs_)) - 18
+            return min(zs_) - 18 if P.roof.split_glass else max(zs_) + 2     # بدون مشراق: يلصق ببطن السقف العالي (بدون فتحة سوداء)
         return plane_z(P, rules, a, -1 if a < sp else 1) - 18
     if P.roof.ridge_axis == "y":
         d = min(x - bx0, bx1 - x)
