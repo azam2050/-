@@ -555,6 +555,8 @@ def elevation(ax, ctx, w):
     L = w.length + 2 * half
     stack = [(w2, P.level(w2.floor)) for w2 in P.walls
              if w2.exterior and tuple(w2.start) == tuple(w.start) and tuple(w2.end) == tuple(w.end)]
+    if len(P.floor_list) > 1 and all(w2.floor == 0 for w2, _l in stack):
+        return _wing_elev(ax, P, rules, w, half, L, stack)      # جناح دور واحد جنب مبنى دورين (سطحه بلكونة)
     g = roof_geometry(P, rules)
     ov, p = P.roof.overhang, g["pitch"]
     rise = g["rise"]
@@ -1875,3 +1877,109 @@ def _split_elev(ax, P, rules, w, L, H, half, depth, ov, gglass, cover):
     ax.add_patch(Rectangle((tsh - 4, zl + depth), 8, zh - zl - depth, fc="#e3f0fb" if P.roof.split_glass else "#e9d9c4",
                            ec=C_WIN if P.roof.split_glass else "k", lw=1, zorder=2.1))
     return zh + depth
+
+
+def _wing_elev(ax, P, rules, w, half, L, stack):
+    """واجهة جناح دور أرضي فقط (سطحه بلكونة بدربزين) + المبنى الرئيسي (الدور العلوي والسقف) وراه."""
+    g = roof_geometry(P, rules)
+    ov, p, rise = P.roof.overhang, g["pitch"], g["rise"]
+    depth = rules["members"]["rafter"]["w"] / math.cos(p)
+    cover = rules["cladding"]["effective_cover"]
+    sh = P.slab_height
+    H0 = P.floor_list[0]["height"]
+    top = len(P.floor_list) - 1
+    lvt = P.level(top)
+    Ht = lvt + P.floor_list[top]["height"]
+    ux, uy = w.u
+    tt = lambda x_, y_: (x_ - w.start[0]) * ux + (y_ - w.start[1]) * uy + half  # noqa: E731
+    xs = [0, L]
+    # المبنى الرئيسي وراه: جدران الدور العلوي الموازية
+    own = {id(w2) for w2, _l in stack}
+    nx_, ny_ = w.n                                     # w.n للداخل: اللي وراه موجب
+    dist = lambda w2: (w2.start[0] - w.start[0]) * nx_ + (w2.start[1] - w.start[1]) * ny_  # noqa: E731
+    cands = [w2 for w2 in P.walls if w2.exterior and id(w2) not in own and abs(w2.u[0] * ux + w2.u[1] * uy) > 0.99
+             and dist(w2) >= -1]
+    near = {}
+    for w2 in cands:                                   # لكل دور: أقرب واجهة ورا الجناح بس (مو الخلفية)
+        near[w2.floor] = min(near.get(w2.floor, 1e9), dist(w2))
+    for w2 in cands:
+        if dist(w2) > near[w2.floor] + 1:
+            continue
+        a, b = sorted((tt(*w2.start), tt(*w2.end)))
+        a, b = a - half, b + half
+        xs += [a, b]
+        lv2 = P.level(w2.floor)
+        Ht2 = lv2 + P.floor_list[w2.floor]["height"]
+        ax.add_patch(Rectangle((a, lv2), b - a, Ht2 - lv2, fc="#f6f1ea", ec="k", lw=0.8, zorder=1))
+        y = lv2 + cover
+        while y < Ht2 - 1:
+            ax.plot([a, b], [y, y], color="#bbb", lw=0.3, zorder=1.1)
+            y += cover
+        same = (w2.u[0] * ux + w2.u[1] * uy) > 0
+        for o in w2.openings:
+            e0 = tt(*w2.point(o.offset, 0))
+            ex = e0 if same else e0 - o.width
+            b_ = lv2 + (o.sill if o.kind == "window" else 0)
+            col = C_WIN if o.kind == "window" else C_DOOR
+            ax.add_patch(Rectangle((ex, b_), o.width, o.height, fc="white", ec=col, lw=0.9, zorder=1.2))
+            ax.text(ex + o.width / 2, b_ + o.height + 6, o.code, ha="center", fontsize=7, color=col, zorder=1.3)
+        e = ov * math.tan(p)
+        if w2.floor != top:
+            continue
+        if (P.roof.ridge_axis == "y") == (abs(w2.u[1]) < 1e-6):     # جدار طرفي: مثلث الجملون
+            m = (a + b) / 2
+            ax.add_patch(Polygon([(a, Ht), (m, Ht + rise), (b, Ht)], closed=True, fc="#f6f1ea", ec="k", lw=0.8, zorder=1))
+            low = [(a - ov, Ht - e), (m, Ht + rise), (b + ov, Ht - e)]
+            ax.add_patch(Polygon(low + [(x_, z_ + depth) for x_, z_ in low][::-1], closed=True, fc="#fff3e0",
+                                 ec=C_ROOF, lw=0.9, zorder=1.4))
+        else:                                                         # جدار جانبي: يبان سطح السقف
+            ax.add_patch(Rectangle((a - ov, Ht - e), b - a + 2 * ov, rise + e + depth, fc="#fff3e0", ec=C_ROOF,
+                                   lw=0.9, zorder=1.4))
+            yy = Ht - e + 12
+            while yy < Ht + rise + depth - 5:
+                ax.plot([a - ov, b + ov], [yy, yy], color=C_ROOF, lw=0.3, zorder=1.5)
+                yy += 12
+        xs += [a - ov, b + ov]
+    # الجناح نفسه
+    ax.plot([min(xs) - 170, max(xs) + 170], [-sh, -sh], color="k", lw=1)
+    ax.add_patch(Rectangle((-10, -sh), L + 20, sh, fc="#f2f2f2", ec="#888", lw=0.6, zorder=2))
+    ax.add_patch(Rectangle((0, 0), L, H0, fc="white", ec="k", lw=1, zorder=2))
+    y = cover
+    while y < H0 - 1:
+        ax.plot([0, L], [y, y], color="#999", lw=0.4, zorder=2.1)
+        y += cover
+    ax.add_patch(Rectangle((0, H0), L, lvt - H0, fc="#e9d9c4", ec="k", lw=0.7, zorder=2.2))   # بلاطة سطح الجناح
+    for w2, lev in stack:
+        for o in w2.openings:
+            ex = o.offset + half
+            b_ = o.sill if o.kind == "window" else 0
+            col = C_WIN if o.kind == "window" else C_DOOR
+            ax.add_patch(Rectangle((ex, b_), o.width, o.height, fc="white", ec=col, lw=1, zorder=2.3))
+            ax.add_patch(Rectangle((ex + 4, b_ + 4), o.width - 8, o.height - 8, fill=False, ec=col, lw=0.6, zorder=2.3))
+            if o.grid:
+                cols, rows = o.grid
+                for k in range(1, cols):
+                    ax.plot([ex + o.width * k / cols] * 2, [b_ + 4, b_ + o.height - 4], color=col, lw=0.5, zorder=2.4)
+                for k in range(1, rows):
+                    ax.plot([ex + 4, ex + o.width - 4], [b_ + o.height * k / rows] * 2, color=col, lw=0.5, zorder=2.4)
+            ax.text(ex + o.width / 2, b_ + o.height + 8, o.code, ha="center", va="bottom", fontsize=8, color=col,
+                    zorder=2.5)
+    # دربزين البلكونة الجانبية فوق الجناح
+    ax.add_patch(Rectangle((0, lvt), L, 105, fc="#fbf6ef", ec="#8b5a2b", lw=0.9, alpha=0.9, zorder=2.6))
+    for tq in np.arange(0, L + 1, 12):
+        ax.plot([tq, tq], [lvt, lvt + 100], color="#8b5a2b", lw=0.5, zorder=2.7)
+    ax.plot([0, L], [lvt + 100, lvt + 100], color="#8b5a2b", lw=1.6, zorder=2.7)
+    ax.text(L / 2, lvt + 115, "دربزين البلكونة الجانبية (سطح الجناح)", ha="center", fontsize=7, color="#8b5a2b",
+            zorder=2.8)
+    lx = min(xs) - 110
+    level(ax, lx, -sh, -sh / 100, "منسوب الأرض", below=True)
+    level(ax, lx, 0, 0.0001, "وجه الصبة")
+    level(ax, lx, lvt, lvt / 100, "أرضية البلكونة")
+    level(ax, lx, Ht, Ht / 100, "أعلى الجدار")
+    level(ax, lx, Ht + rise, (Ht + rise) / 100, "قمة الجملون")
+    ts = [0] + sorted(o.offset + half + d for w2, _l in stack for o in w2.openings for d in (0, o.width)) + [L]
+    chain(ax, [(t, -sh) for t in ts], -35)
+    dim(ax, (0, -sh), (L, -sh), -75, fs=8)
+    dim(ax, (L, 0), (L, H0), -40)
+    ax.set_xlim(min(xs) - 170, max(xs) + 160)
+    ax.set_ylim(-120 - sh, Ht + rise + depth + 30)

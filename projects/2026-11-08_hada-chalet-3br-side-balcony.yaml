@@ -1,0 +1,311 @@
+# تصميم ثالث لنفس عميل الهدا: أرض جنب الأرض — كوخ واحد بنفس تقسيم شاليه الهدا المنشور (watad-wood.com/hada) بدون تغيير،
+# + غرفة نوم ثالثة بالأرضي (بحمام خاص) + بلكونة جانبية بالأول فوقها (طلب المصنع — حتى لو زادت المساحة).
+#  الإضافة: جناح شرقي 3.60 م بعمق المبنى كامل (9.00 م) بالأرضي: غرفة نوم 3 + حمامها + غرفة غسيل ومخزن من المطبخ.
+#  الأول: سطح الجناح = بلكونة جانبية 3.60 × 9.00 م بدربزين، يطلع لها الماستر بسحاب زجاج.
+#  السقف الجملون نفسه فوق الدور الأول 7.00 × 9.00 (ما تغيّر).
+name: hada-chalet-3br-side-balcony
+title: كوخ الهدا — دورين — 3 غرف نوم + بلكونة جانبية — 10.60 × 9.00 م
+client: "عميل — الهدا"
+meta:
+  location: الهدا — الطائف
+  usage: كوخ سكني/استثماري
+  date: 2026-11-08
+  price_note: ""
+  price_scope: building
+  price_items:
+    - {name: تراس الأرضي + البلكونة الأمامية بالأول (7.00 × 2.40 × 2), qty: 33.6, unit: م², rate: 1096}
+    - {name: البلكونة الجانبية بالأول (3.60 × 9.00), qty: 32.4, unit: م², rate: 1096}
+  terms:
+    - "السعر للكوخ (الدورين) والتراس والبلكونات حسب المخطط المعتمد — التراس والبلكونة تُسعّر بنفس سعر متر الكوخ."
+    - "أعمال الموقع (السور والبوابات والمسبح والجلسة الشتوية والبلاط والزراعة) عن طريق المقاول وتُسعّر منفصلة."
+    - "الصبة والتمديدات الخارجية على العميل ما لم يُذكر غير ذلك."
+price_per_m2: 1096
+style: {preset: walnut_black, wood: natural_pine, railing: B04, window_grid: none, door_style: french, frame: wood_dark}
+wall_height: 280
+floors:
+  - {name: الدور الأرضي, level: 0, height: 280}
+  - {name: الدور الأول, level: 305, height: 280}
+slab_height: 45
+roof: {ridge_axis: y, pitch_deg: 30, overhang: 35, ext_start: 240}   # السقف ممتد 2.40 م يغطي البلكونة
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  # ======================= الدور الأرضي =======================
+  - name: أ-جنوب
+    title: الواجهة الأمامية
+    start: [0, 0]
+    end: [688, 0]
+    openings:   # سحاب زجاج للجلسة + المدخل شرق البارتشن (قدام درج التراس) + سحاب زجاج للطعام
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج الجلسة, offset: 30, width: 260, height: 240, style: sliding, leaves: 2}
+      - {kind: door, code: ب2, name: ب2 المدخل, offset: 360, width: 100, height: 240, leaves: 1, grid: [2, 5]}
+      - {kind: door, code: ب1, name: ب1 سحاب زجاج الطعام, offset: 490, width: 170, height: 240, style: sliding, leaves: 2}
+  # ---- الجناح الشرقي المضاف (3.60 م): غرفة نوم 3 + حمامها + غسيل ومخزن
+  - name: أ-جنوب الجناح
+    title: الواجهة الأمامية — الجناح (غرفة 3)
+    start: [688, 0]
+    end: [1048, 0]
+    openings:
+      - {kind: window, code: ش6, name: ش6 غرفة نوم 3, offset: 90, width: 160, height: 140, sill: 80, grid: [2, 3]}
+  - name: أ-شرق
+    title: الواجهة الشرقية
+    start: [1048, 0]
+    end: [1048, 888]
+    openings:
+      - {kind: window, code: ش6, name: ش6 غرفة نوم 3, offset: 150, width: 120, height: 140, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 حمام غرفة 3, offset: 450, width: 60, height: 60, sill: 160}
+      - {kind: door, code: ب12, name: ب12 الغسيل والمخزن — خارجي, offset: 700, width: 90, height: 220}
+  - {name: أ-شمال الجناح, title: الواجهة الخلفية — الجناح, start: [1048, 888], end: [688, 888]}
+  - name: أ-فاصل الجناح
+    exterior: false
+    start: [688, 0]
+    end: [688, 888]
+    openings:
+      - {kind: door, code: ب10, name: ب10 غرفة نوم 3 (من الصالة), offset: 20, width: 90, height: 220}
+      - {kind: door, code: ب13, name: ب13 الغسيل (من المطبخ), offset: 712, width: 80, height: 210}
+  - name: أ-فاصل غرفة 3
+    exterior: false
+    start: [688, 386]
+    end: [1048, 386]
+    openings:
+      - {kind: door, code: ب11, name: ب11 حمام غرفة 3, offset: 272, width: 70, height: 210}
+  - {name: أ-فاصل الغسيل, exterior: false, start: [688, 572], end: [1048, 572]}
+  - name: أ-شمال
+    title: الواجهة الخلفية
+    start: [688, 888]
+    end: [0, 888]
+    openings:
+      - {kind: window, code: ش3, name: ش3 حمام الصالة, offset: 330, width: 60, height: 60, sill: 160}
+  - name: أ-غرب
+    title: الواجهة الغربية
+    start: [0, 888]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 600, width: 200, height: 150, sill: 70, grid: [3, 3]}
+  - name: أ-فاصل الصالة
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:   # فتحات واسعة بدون أبواب: الموزع والدرج + المطبخ المفتوح
+      - {kind: door, code: ف1, name: ف1 فتحة الجلسة — الموزع والدرج, offset: 20, width: 300, height: 220, leaves: 0}
+      - {kind: door, code: ف3, name: ف3 فتحة المدخل — الموزع, offset: 349, width: 88, height: 220, leaves: 0}
+      - {kind: door, code: ف2, name: ف2 فتحة المطبخ, offset: 465, width: 200, height: 220, leaves: 0}
+  - name: أ-بارتشن الصالة     # بارتشن أعمدة خشب (طلب المصنع): جسر علوي 12×30 يشيل جدار الغرفتين بالعلوي على أعمدة 9×9 كل 24 سم
+    exterior: false
+    start: [336, 460]
+    end: [336, 150]
+    openings:
+      - {kind: door, code: ف4, name: ف4 بارتشن أعمدة خشب, offset: 13, width: 284, height: 250, leaves: 0}
+  - name: أ-فاصل الحمام
+    exterior: false
+    start: [240, 564]
+    end: [450, 564]
+    openings:
+      - {kind: door, code: ب3, name: ب3 حمام الصالة, offset: 60, width: 70, height: 210}
+  - {name: أ-جدار الدرج, exterior: false, start: [240, 564], end: [240, 888]}
+  - {name: أ-جدار المطبخ, exterior: false, start: [450, 460], end: [450, 888]}
+  # ======================= الدور الأول =======================
+  - name: ب-جنوب
+    floor: 1
+    title: الواجهة الأمامية (على البلكونة)
+    gable_glass: true          # مثلث زجاج بالجملون
+    start: [0, 0]
+    end: [688, 0]
+    openings:
+      - {kind: door, code: ب4, name: ب4 سحاب غرفة 2 — البلكونة, offset: 40, width: 220, height: 220, style: sliding, leaves: 2}
+      - {kind: door, code: ب4, name: ب4 سحاب الماستر — البلكونة, offset: 410, width: 230, height: 220, style: sliding, leaves: 2}
+  - name: ب-شرق
+    floor: 1
+    title: الواجهة الشرقية
+    start: [688, 0]
+    end: [688, 888]
+    openings:
+      - {kind: door, code: ب14, name: ب14 سحاب الماستر — البلكونة الجانبية, offset: 130, width: 200, height: 220, style: sliding, leaves: 2}
+      - {kind: window, code: ش3, name: ش3 حمام الماستر (عالي), offset: 760, width: 60, height: 40, sill: 180}
+  - name: ب-شمال
+    floor: 1
+    title: الواجهة الخلفية
+    start: [688, 888]
+    end: [0, 888]
+    openings:
+      - {kind: window, code: ش3, name: ش3 الحمام, offset: 330, width: 60, height: 60, sill: 160}
+      - {kind: window, code: ش5, name: ش5 الدرج, offset: 520, width: 100, height: 100, sill: 120, grid: [2, 2]}
+  - name: ب-غرب
+    floor: 1
+    title: الواجهة الغربية
+    start: [0, 888]
+    end: [0, 0]
+    openings:
+      - {kind: window, code: ش4, name: ش4 غرفة نوم 2, offset: 640, width: 120, height: 120, sill: 90, grid: [2, 3]}
+  - name: ب-فاصل أمامي
+    floor: 1
+    exterior: false
+    start: [0, 460]
+    end: [688, 460]
+    openings:
+      - {kind: door, code: ب5, name: ب5 غرفة نوم 2, offset: 253, width: 70, height: 210}
+      - {kind: door, code: ب6, name: ب6 الماستر, offset: 350, width: 80, height: 210}
+      - {kind: door, code: ب7, name: ب7 غرفة الملابس, offset: 480, width: 80, height: 210}
+  - {name: ب-فاصل الغرف, floor: 1, exterior: false, start: [336, 0], end: [336, 460]}
+  - name: ب-فاصل الحمام
+    floor: 1
+    exterior: false
+    start: [240, 564]
+    end: [450, 564]
+    openings:
+      - {kind: door, code: ب8, name: ب8 الحمام, offset: 60, width: 70, height: 210}
+  - {name: ب-جدار الدرج, floor: 1, exterior: false, start: [240, 564], end: [240, 888]}
+  - {name: ب-جدار الملابس, floor: 1, exterior: false, start: [450, 460], end: [450, 888]}
+  - name: ب-فاصل حمام الماستر
+    floor: 1
+    exterior: false
+    start: [450, 640]
+    end: [688, 640]
+    openings:
+      - {kind: door, code: ب9, name: ب9 حمام الماستر, offset: 60, width: 70, height: 210}
+
+stairs:   # درج U خشب بالخلف — يطلع للممر العلوي قدام أبواب الغرف
+  - {from: 0, rect: [6, 570, 234, 870], flight_w: 100, first: east, tread: 26, landing: 100}
+
+rooms:
+  - {name: الصالة, rect: [6, 6, 682, 454], label: [250, 360]}
+  - {name: الموزع, rect: [6, 466, 444, 558], kind: corridor, label: [330, 512]}
+  - {name: الدرج, rect: [6, 570, 234, 870], kind: stair}
+  - {name: حمام الصالة, rect: [246, 570, 444, 882], wet: true, label: [330, 700]}
+  - {name: المطبخ, rect: [456, 466, 682, 882], label: [540, 700]}
+  - {name: غرفة نوم 3, rect: [694, 6, 1042, 380], label: [870, 300]}
+  - {name: حمام غرفة 3, rect: [694, 392, 1042, 566], wet: true, label: [900, 480]}
+  - {name: غسيل ومخزن, rect: [694, 578, 1042, 882], label: [870, 760]}
+  - {name: غرفة نوم 2, floor: 1, rect: [6, 6, 330, 454], label: [170, 380]}
+  - {name: الماستر, floor: 1, rect: [342, 6, 682, 454], label: [510, 380]}
+  - {name: الممر, floor: 1, rect: [6, 466, 444, 558], kind: corridor, label: [330, 512]}
+  - {name: فتحة الدرج, floor: 1, rect: [6, 570, 234, 870], kind: stair}
+  - {name: الحمام (لغرفة 2), floor: 1, rect: [246, 570, 444, 882], wet: true, label: [330, 700]}
+  - {name: غرفة الملابس, floor: 1, rect: [456, 466, 682, 634], label: [530, 560]}
+  - {name: حمام الماستر, floor: 1, rect: [456, 646, 682, 882], wet: true, label: [540, 740]}
+
+decks:
+  - {name: التراس, rect: [-6, -246, 694, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 310, width: 200}}
+  - {name: البلكونة, rect: [-6, -246, 694, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters}
+  - {name: البلكونة الجانبية, rect: [694, -6, 1054, 894], level: 305, railing: [S, E, N], railing_style: vertical_balusters}
+
+posts:   # أعمدة خشب 18×18 من الأرض لين السقف الممتد (تحمل البلكونة وبروز السقف) — خارج فتحة الدرج
+  - {at: [3, -237], size: 18}
+  - {at: [250, -237], size: 18}
+  - {at: [540, -237], size: 18}
+  - {at: [685, -237], size: 18}
+
+  # بارتشن الصالة: أعمدة خشب 9×9 كل 24 سم تحت الجسر (تشيل وتقسم وتخلي الضوء يمر)
+  - {at: [336, 170], size: 9, top: 250, inner: true}
+  - {at: [336, 194], size: 9, top: 250, inner: true}
+  - {at: [336, 218], size: 9, top: 250, inner: true}
+  - {at: [336, 242], size: 9, top: 250, inner: true}
+  - {at: [336, 266], size: 9, top: 250, inner: true}
+  - {at: [336, 290], size: 9, top: 250, inner: true}
+  - {at: [336, 314], size: 9, top: 250, inner: true}
+  - {at: [336, 338], size: 9, top: 250, inner: true}
+  - {at: [336, 362], size: 9, top: 250, inner: true}
+  - {at: [336, 386], size: 9, top: 250, inner: true}
+  - {at: [336, 410], size: 9, top: 250, inner: true}
+  - {at: [336, 434], size: 9, top: 250, inner: true}
+
+furniture:
+  # ---- الأرضي: الجلسة غرب البارتشن (كنبة مقابل التلفزيون على البارتشن)، والطعام والمدخل شرقه
+  - {name: كنبة, rect: [6, 100, 86, 420]}
+  - {name: طاولة, rect: [115, 210, 205, 310]}
+  - {name: تلفزيون, rect: [250, 190, 294, 410]}
+  - {name: طاولة 6, rect: [540, 170, 650, 260]}
+  - {name: "", rect: [550, 125, 590, 165]}
+  - {name: "", rect: [600, 125, 640, 165]}
+  - {name: "", rect: [550, 265, 590, 305]}
+  - {name: "", rect: [600, 265, 640, 305]}
+  # المطبخ المفتوح
+  - {name: ثلاجة, rect: [617, 466, 682, 531]}
+  - {name: كاونتر, rect: [622, 531, 682, 700]}
+  # غرفة نوم 3 (الجناح): سرير راسه على جدار الحمام المصمت + دولاب على الجدار الغربي
+  - {name: سرير 160×200, rect: [800, 180, 960, 380]}
+  - {name: دولاب, rect: [694, 140, 754, 340]}
+  - {name: "", rect: [700, 392, 746, 438], shape: basin}
+  - {name: دش, rect: [760, 476, 850, 566], shape: shower}
+  - {name: "", rect: [998, 520, 1042, 566], shape: wc}
+  - {name: غسالة, rect: [980, 800, 1042, 882]}
+  - {name: كاونتر, rect: [456, 822, 622, 882]}
+  # حمام الصالة
+  - {name: دش, rect: [354, 792, 444, 882], shape: shower}
+  - {name: "", rect: [404, 570, 444, 620], shape: wc}
+  - {name: "", rect: [246, 836, 292, 882], shape: basin}
+  # ---- الأول: الغرفة 2 — رأس السرير على الجدار المصمت (فاصل الغرف)، والدولاب على جدار الممر
+  - {name: سرير 160×200, floor: 1, rect: [130, 140, 330, 300]}
+  - {name: دولاب, floor: 1, rect: [6, 394, 186, 454]}
+  # الماستر: رأس السرير على الجدار المصمت (فاصل الغرف)، وممرات حوله ≥ 1.20
+  - {name: سرير 180×200, floor: 1, rect: [342, 130, 542, 310]}
+  - {name: "", floor: 1, rect: [342, 80, 387, 125]}
+  - {name: "", floor: 1, rect: [342, 315, 387, 360]}
+  # غرفة الملابس
+  - {name: دولاب, floor: 1, rect: [622, 466, 682, 634]}
+  # الحمام (لغرفة 2) — فوق حمام الصالة
+  - {name: دش, floor: 1, rect: [354, 792, 444, 882], shape: shower}
+  - {name: "", floor: 1, rect: [404, 570, 444, 620], shape: wc}
+  - {name: "", floor: 1, rect: [246, 836, 292, 882], shape: basin}
+  # حمام الماستر
+  - {name: دش, floor: 1, rect: [592, 792, 682, 882], shape: shower}
+  - {name: "", floor: 1, rect: [642, 646, 682, 696], shape: wc}
+  - {name: "", floor: 1, rect: [456, 836, 502, 882], shape: basin}
+
+# ---------------- الرندر الواقعي + الواقع الافتراضي (سم، w = واط) ----------------
+interior_decor:
+  - {kind: pendant, at: [595, 215], z: 185, dia: 45, hgt: 35, ceil: 280, w: 70}   # ثريا فوق الطعام
+  - {kind: cove, line: [6, 12, 330, 12], n: [0, 1], z: 272}
+  - {kind: cove, line: [12, 6, 12, 454], n: [1, 0], z: 272}
+  - {kind: slats, rect: [336, 60, 342, 400], n: [1, 0], z: [305, 445]}           # خلفية سرير الماستر بإضاءة مخفية
+  - {kind: rug, rect: [100, 150, 270, 370]}
+  - {kind: fire_pit, at: [91, -570], z: -85, r: 32}                                # مشب الجلسة المدفونة — الوحدة 1
+
+render:
+  quality: high
+  night_interior: 1
+  exterior:
+    - {name: الكوخ من الشارع, cam: [520, -2500, 900], target: [520, 200, 250], lens: 24}
+    - {name: الحوش — الجلسة المدفونة والمسبح, cam: [700, -1300, 165], target: [300, -200, 250], lens: 20}
+    - {name: البلكونة الجانبية والجناح, cam: [1450, -900, 300], target: [870, 300, 380], lens: 22}
+    - {name: منظر علوي خلفي, cam: [600, 2600, 1200], target: [520, -100, 150], lens: 24}
+  interior:
+    - {name: الصالة — الجلسة والبارتشن, cam: [640, 40, 135], target: [120, 380, 125], lens: 17}
+    - {name: الماستر, cam: [660, 40, 440], target: [342, 260, 410], lens: 17}
+    - {name: غرفة نوم 3, cam: [1020, 40, 150], target: [760, 300, 110], lens: 17}
+    - {name: البلكونة الجانبية, cam: [1000, 820, 470], target: [860, 0, 420], lens: 18}
+
+site:
+  # الأرض المجاورة (مقاسها ما وصل): أرض مفترضة 20.00 × 24.67 م حول الكوخ بسور
+  plot: [-450, -1373, 1550, 1094]
+  street: S
+  street_width: 1500
+  wall: {t: 20, h: 220}
+  gates:
+    - {x: -56, width: 300, kind: car}
+    - {x: 290, width: 100, kind: person}
+  zones:
+    - {kind: parking, rect: [-56, -1363, 244, -813], name: موقف}
+    - {kind: path, rect: [290, -1363, 390, -246], name: ممر المدخل}
+    - {kind: paving, rect: [420, -1300, 744, -660], name: ""}
+    - {kind: pool, rect: [470, -1240, 700, -760], name: مسبح غطس, depth: 140}
+    - {kind: sunken, rect: [-46, -740, 274, -400], name: الجلسة الشتوية المدفونة, depth: 70, steps: E, label: [40, -470]}
+    - {kind: planter, rect: [20, 990, 1040, 1080], name: أحواض زراعة}
+  pergolas:
+    - {rect: [-56, -760, 284, -380], name: الجلسة الشتوية, h: 250}
+  trees:
+    - {at: [600, -450], kind: tree, r: 110}
+    - {at: [560, -290], kind: shrub, r: 40}
+    - {at: [680, -290], kind: shrub, r: 40}
+    - {at: [150, 1035], kind: shrub, r: 40}
+    - {at: [520, 1035], kind: shrub, r: 40}
+  cost_pages: false
+  notes:
+    - "أرض مفترضة 20.00 × 24.67 م (المقاس الفعلي يوصل من العميل) بسور 2.20 م وبوابة سيارة وباب مشاة."
+    - "نفس لاندسكيب الهدا: مسبح غطس + جلسة شتوية مدفونة بمشب تحت برجولة + ممر مستقيم لدرج التراس."
+
+notes:
+  - "نفس تقسيم شاليه الهدا: الأرضي صالة بسحابات زجاج + مطبخ مفتوح + حمام + درج خشب، والأول ماستر بغرفة ملابس وحمام + غرفة 2 وحمامها + بلكونة أمامية."
+  - "الإضافة (طلب المصنع): جناح شرقي 3.60 × 9.00 م بالأرضي — غرفة نوم 3 (3.48 × 3.74 م) بحمام خاص + غسيل ومخزن من المطبخ."
+  - "الأول: سطح الجناح بلكونة جانبية 3.60 × 9.00 م بدربزين، يطلع لها الماستر بسحاب زجاج."

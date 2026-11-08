@@ -227,7 +227,9 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             project.roof.type not in ("peaks", "tent_hip")
         if gable_end:   # المثلث على الجدار الطرفي بس (مبنى L: جدار الركن المرتد ما يطلع له مثلث من السقف)
             cv = w.start[1] if abs(uy) < 1e-6 else w.start[0]
-            ends = (y0, y1) if abs(uy) < 1e-6 else (x0, x1)
+            from .model import roof_bbox as _rbb
+            rx0_, ry0_, rx1_, ry1_ = _rbb(project, rules)          # حدود السقف (الدور الأخير) مو الأرضي الأكبر
+            ends = (ry0_, ry1_) if abs(uy) < 1e-6 else (rx0_, rx1_)
             gable_end = min(abs(cv - e) for e in ends) < 15     # الحدود الخارجية = المحور ± نص الجدار
         if cut:
             pass
@@ -246,10 +248,10 @@ def build_scene(project, rules, style, heights, cut=None, furniture=False):
             _glass_gable(S, w, L, H, rise, half, math.tan(p))
         elif gable_end and w.gable_openings:
             _gable_with_openings(S, w, L, H, rise, half, style)
-        elif gable_end and project.roof.type == "gable" and abs(L - ((y1 - y0) if ridge_x_wall(w) else (x1 - x0)) + 2 * half) > 20:
+        elif gable_end and project.roof.type == "gable" and abs(L - ((ry1_ - ry0_) if ridge_x_wall(w) else (rx1_ - rx0_)) + 2 * half) > 20:
             # جدار طرفي أقصر من عرض المبنى (مبنى L): المثلث يتبع ميل السقف الفعلي بدل مثلث متماثل
             from .features import roof_z
-            rc = (y0 + y1) / 2 if project.roof.ridge_axis == "x" else (x0 + x1) / 2
+            rc = (ry0_ + ry1_) / 2 if project.roof.ridge_axis == "x" else (rx0_ + rx1_) / 2
             px0, py0 = w.point(0, 0)
             px1, py1 = w.point(L, 0)
             c0, c1 = (py0, py1) if project.roof.ridge_axis == "x" else (px0, px1)

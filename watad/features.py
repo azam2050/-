@@ -324,7 +324,7 @@ def _slab_pieces(r, holes):
 
 def roof_z(P, rules, x, y):
     """منسوب بطن السقف (الجملون) عند نقطة — للجدران اللي تطلع لين السقف."""
-    from .model import outer_bbox
+    from .model import roof_bbox as outer_bbox     # السقف فوق الدور الأخير (لو الأرضي أكبر)
     bx0, by0, bx1, by1 = outer_bbox(P, rules)
     tp = math.tan(math.radians(P.roof.pitch_deg))
     if P.roof.type == "gable" and P.roof.split is not None:      # جملون متداخل: كل جهة من خط التداخل على سطحها
