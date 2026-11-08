@@ -1,0 +1,105 @@
+# عميل جديد (الطائف): تصميم سطح 7 × 7 م — غرفة نوم + صالة + حمام + مطبخ مفتوح على الصالة (رسالة المصنع).
+# التوزيع:
+#   - المدخل بالنص على جهة درج السطح (جنوب) ← موزع صغير مفتوح على المطبخ والصالة.
+#   - المطبخ بالركن الأمامي اليسار مفتوح على الصالة، والصالة بالخلف اليسار (جلسة L مواجهة للتلفزيون).
+#   - الحمام بالركن الأمامي اليمين على جدار خارجي (شباكه جانبي مو على المدخل)، بابه من الموزع.
+#   - غرفة النوم بالخلف اليمين (3.22 × 3.82)، بابها من الموزع (ما تنكشف على الجلسة)، راس السرير على جدار الحمام المصمت.
+# السقف: جملون بالعرض 25° + جملون زجاج صغير بارز فوق المدخل على مظلة (فكرة سقف لهالتصميم).
+# الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 7.00 × 7.00)، +y = الخلف، المدخل جنوب.
+name: taif-roof-annex-7x7
+title: ملحق سطح — غرفة نوم + صالة + مطبخ مفتوح + حمام — 7.00 × 7.00 م — الطائف
+client: "عميل — الطائف (سطح)"
+meta:
+  location: الطائف
+  usage: ملحق سكني على السطح
+  date: 2026-11-08
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: cedar_charcoal_porch, wood: natural_pine, glass: clear, frame: black, railing: B04, window_grid: grid, door_style: french}
+wall_height: 300
+height_exact: true
+slab_height: 0
+roof:
+  ridge_axis: x
+  pitch_deg: 25
+  overhang: 35
+  cross_gables:
+    - {side: S, center: 380, width: 240, pitch: 40, overhang: 40, ext: 120, beams: 1, glass: true, window_width: 0}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: جدار المدخل (جهة درج السطح)
+    start: [6, 6]
+    end: [694, 6]
+    openings:
+      - {kind: window, code: ش1, name: ش1 المطبخ, offset: 90, width: 140, height: 110, sill: 110, grid: [2, 2]}
+      - {kind: door, code: ب1, name: ب1 مدخل الملحق, offset: 324, width: 100, height: 230, leaves: 1, grid: [2, 4]}
+  - name: شرق
+    title: الجدار الأيمن
+    start: [694, 6]
+    end: [694, 694]
+    openings:
+      - {kind: window, code: ش2, name: ش2 الحمام, offset: 120, width: 60, height: 60, sill: 170}
+      - {kind: window, code: ش3, name: ش3 غرفة النوم, offset: 430, width: 140, height: 140, sill: 80, grid: [2, 3]}
+  - name: شمال
+    title: الجدار الخلفي
+    start: [694, 694]
+    end: [6, 694]
+    openings:
+      - {kind: window, code: ش3, name: ش3 غرفة النوم, offset: 80, width: 120, height: 140, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش4, name: ش4 الصالة, offset: 400, width: 200, height: 160, sill: 60, grid: [3, 3]}
+  - name: غرب
+    title: الجدار الأيسر
+    start: [6, 694]
+    end: [6, 6]
+    openings:
+      - {kind: window, code: ش4, name: ش4 الصالة, offset: 120, width: 160, height: 160, sill: 60, grid: [2, 3]}
+  - name: جدار غرفة النوم — الصالة
+    exterior: false
+    start: [360, 300]
+    end: [360, 694]
+  - name: جدار الحمام وغرفة النوم
+    exterior: false
+    start: [360, 300]
+    end: [694, 300]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 6, width: 80, height: 220}
+  - name: جدار الحمام — الموزع
+    exterior: false
+    start: [460, 6]
+    end: [460, 300]
+    openings:
+      - {kind: door, code: ب3, name: ب3 الحمام, offset: 100, width: 75, height: 210}
+
+rooms:
+  - {name: المطبخ, rect: [12, 12, 300, 294], label: [150, 200]}
+  - {name: الموزع, rect: [300, 12, 454, 294], kind: corridor, label: [380, 230]}
+  - {name: حمام, rect: [466, 12, 688, 294], wet: true, label: [580, 230]}
+  - {name: الصالة, rect: [12, 300, 354, 688], label: [180, 520]}
+  - {name: غرفة النوم, rect: [366, 306, 688, 688], label: [560, 620]}
+
+decks:
+  - {name: عتبة المدخل, rect: [264, -114, 496, 0], height: 15, railing: []}
+
+furniture:
+  # المطبخ المفتوح: كاونتر L على الجدار الأمامي والأيسر + ثلاجة بالركن (ما تسد شي)
+  - {name: ثلاجة, rect: [12, 12, 77, 77]}
+  - {name: كاونتر, rect: [77, 12, 290, 72]}
+  - {name: كاونتر, rect: [12, 77, 72, 260]}
+  - {name: طاولة, rect: [150, 140, 250, 220]}
+  # الصالة: كنبة L على الجدار الأيسر والخلفي مواجهة للتلفزيون على جدار غرفة النوم
+  - {name: كنبة, rect: [12, 400, 92, 688]}
+  - {name: كنبة, rect: [92, 608, 290, 688]}
+  - {name: طاولة, rect: [130, 470, 230, 560]}
+  - {name: تلفزيون, rect: [314, 400, 354, 580]}
+  # غرفة النوم: راس السرير على جدار الحمام المصمت + دولاب على جدار الصالة
+  - {name: سرير 160×200, rect: [466, 306, 626, 506]}
+  - {name: دولاب, rect: [366, 520, 426, 688]}
+  # الحمام
+  - {name: دش, rect: [598, 204, 688, 294], shape: shower}
+  - {name: "", rect: [648, 12, 688, 62], shape: wc}
+  - {name: "", rect: [466, 12, 512, 58], shape: basin}
