@@ -1,0 +1,105 @@
+# عميل جديد: شاليه 12.00 × 5.00 م (≈ 60 م²) — على صورة المرجع وجدول المقاسات اللي أرسلها المصنع:
+#   - ارتفاع السقف الداخلي 3.00 م (الخارجي ≈ 3.70 مع الصبة والسقف)، واجهة زجاج لين السقف (≈ 3.00 م).
+#   - باب المدخل 1.00 × 2.40 م، تراس أمامي بعمق 1.50 م (≈ 18 م²) وتراس غرفة النوم بعمق ≈ 2.40 م.
+#   - سقف الحمام 2.60 – 2.70 م (سقف مستعار)، وسقف مسطح الشكل بحافة رفيعة ممتد فوق التراس، وشرائح خشب رأسية عند غرفة النوم.
+# التوزيع (يسار ← يمين مثل الصورة):
+#   - صالة ومطبخ مفتوح 6.82 م بواجهة زجاج كاملة على التراس.
+#   - بالنص: موزع المدخل (باب 1.00 × 2.40 على التراس) + الحمام خلفه.
+#   - يمين: غرفة النوم 3.22 × 4.76 بسحاب زجاج على تراسها الخاص (عمق 2.40) وشرائح خشب على طرفه.
+# الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 12.00 × 5.00)، +y = الخلف، الواجهة جنوب.
+name: chalet-12x5-glass
+title: شاليه 12.00 × 5.00 م — صالة ومطبخ مفتوح + غرفة نوم + حمام — واجهة زجاج وتراس
+client: "عميل — شاليه 12 × 5"
+meta:
+  location: "—"
+  usage: شاليه
+  date: 2026-11-10
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: panel}
+wall_height: 300
+height_exact: true
+slab_height: 45
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, soffit: true, ext_high: 240}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (زجاج على التراس)
+    start: [6, 6]
+    end: [1194, 6]
+    openings:
+      - {kind: door, code: ز1, name: ز1 واجهة زجاج الصالة لين السقف (سحاب), offset: 18, width: 656, height: 290, style: sliding, leaves: 4}
+      - {kind: door, code: ب1, name: ب1 باب المدخل 1.00 × 2.40, offset: 724, width: 100, height: 240, leaves: 1}
+      - {kind: door, code: ز2, name: ز2 سحاب زجاج غرفة النوم لين السقف, offset: 900, width: 260, height: 290, style: sliding, leaves: 2}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [1194, 6]
+    end: [1194, 494]
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [1194, 494]
+    end: [6, 494]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الحمام (عالي), offset: 380, width: 60, height: 50, sill: 180}
+      - {kind: window, code: ش2, name: ش2 المطبخ, offset: 920, width: 160, height: 100, sill: 110}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [6, 494]
+    end: [6, 6]
+    openings:
+      - {kind: window, code: ش3, name: ش3 الصالة, offset: 120, width: 140, height: 150, sill: 70}
+  - name: جدار الصالة — الموزع والحمام
+    exterior: false
+    start: [700, 6]
+    end: [700, 494]
+    openings:
+      - {kind: door, code: ف1, name: ف1 فتحة الموزع على الصالة, offset: 30, width: 190, height: 240, leaves: 0}
+  - name: جدار الموزع — الحمام
+    exterior: false
+    start: [700, 254]
+    end: [860, 254]
+    openings:
+      - {kind: door, code: ب2, name: ب2 الحمام, offset: 40, width: 75, height: 210}
+  - name: جدار غرفة النوم
+    exterior: false
+    start: [860, 6]
+    end: [860, 494]
+    openings:
+      - {kind: door, code: ب3, name: ب3 غرفة النوم, offset: 110, width: 90, height: 220}
+
+rooms:
+  - {name: الصالة والمطبخ, rect: [12, 12, 694, 488], label: [400, 200]}
+  - {name: الموزع, rect: [706, 12, 854, 248], kind: corridor, label: [780, 200]}
+  - {name: حمام, rect: [706, 260, 854, 488], wet: true, label: [780, 400]}
+  - {name: غرفة النوم, rect: [866, 12, 1188, 488], label: [1030, 200]}
+
+decks:
+  - {name: التراس الأمامي, rect: [0, -150, 866, 0], height: 45, railing: [], stairs: {side: S, offset: 250, width: 300}}
+  - {name: تراس غرفة النوم, rect: [866, -240, 1200, 0], height: 45, railing: []}
+
+posts:
+  - {at: [1185, -230], size: 15}
+  - {at: [15, -230], size: 15}
+
+furniture:
+  # الصالة: كنبة L مواجهة للزجاج + طاولة، والمطبخ المفتوح بالخلف (كاونتر على الجدار الخلفي + جزيرة صغيرة)
+  - {name: كنبة, rect: [12, 120, 92, 380]}
+  - {name: كنبة, rect: [92, 300, 330, 380]}
+  - {name: طاولة, rect: [140, 150, 260, 250]}
+  - {name: كرسي, rect: [360, 140, 440, 220]}
+  - {name: كاونتر, rect: [300, 428, 694, 488]}
+  - {name: ثلاجة, rect: [629, 363, 694, 428]}
+  - {name: طاولة 6, rect: [450, 240, 590, 320]}
+  # الحمام (سقف مستعار 2.60 – 2.70)
+  - {name: دش, rect: [764, 398, 854, 488], shape: shower}
+  - {name: "", rect: [706, 448, 746, 488], shape: wc}
+  - {name: "", rect: [706, 345, 752, 391], shape: basin}
+  # غرفة النوم: سرير راسه على الجدار الخلفي المصمت + دولاب على الجدار الشرقي
+  - {name: سرير 180×200, rect: [940, 288, 1120, 488]}
+  - {name: دولاب, rect: [1128, 30, 1188, 230]}
+  # شرائح خشب رأسية على طرف تراس غرفة النوم (مثل الصورة)
+  - {name: شرائح خشب, rect: [1176, -236, 1194, 0], shape: slats}
