@@ -20,7 +20,7 @@ COL = {"pool": ("#bfe6f5", "#2b8cbe"), "deck": ("#ead2b0", "#8b5a2b"), "paving":
        "parking": ("#dcdcdc", "#777777"), "seating": ("#f1e3cc", "#8b5a2b"), "path": ("#eee8dc", "#8a8478"),
        "lawn": ("#d6ebc3", "#6a9a3a"), "planter": ("#c9dfb0", "#4f7a2a"), "sunken": ("#e6d6bd", "#7a5a3a")}
 AR = {"pool": "مسبح", "deck": "ديك خشب", "paving": "بلاط", "parking": "موقف سيارة", "seating": "جلسة خارجية",
-      "path": "ممر", "lawn": "مسطح أخضر", "planter": "أحواض زراعة", "sunken": "جلسة مدفونة"}
+      "path": "ممر", "lawn": "مسطح أخضر", "planter": "أحواض زراعة", "sunken": "جلسة شتوية مدفونة (أشتوية)"}
 
 
 def _area(r):
