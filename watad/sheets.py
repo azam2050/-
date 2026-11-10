@@ -1445,6 +1445,8 @@ def areas_sheet(ctx):
                      f"{(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f}" + (" − فتحة الدرج" if ha else ""),
                      f"{(mx1 - mx0) * (my1 - my0) / 1e4 - ha:.2f}"])
     rows.append(["", "المساحة الصافية الداخلية", "", f"{net:.2f}"])
+    sep = P.meta.get("terrace_separate")          # التراس خارج مساحة الكوخ: سطر منفصل بعد الإجمالي (بدون جمع)
+    n_before = len(rows)
     free = " (مجاناً)" if P.meta.get("price_scope") == "building" and not hide_price and \
         not P.meta.get("price_items") else ""
     if terrace and len(decks_) > 1:          # كل دكة/بلكونة بسطر بأبعادها (مقاساتها تختلف)
@@ -1455,6 +1457,10 @@ def areas_sheet(ctx):
         lbl = decks_[0].name if "تراس" not in decks_[0].name else "التراس المسقوف"
         rows.append(["", lbl + free, " × ".join(f"{(decks_[0].rect[k + 2] - decks_[0].rect[k]) / 100:.2f}"
                                                 for k in (0, 1)), f"{terrace:.2f}"])
+    tr_rows = rows[n_before:] if sep else []
+    if sep:
+        del rows[n_before:]
+        tr_rows = [[a, b + " (خارج مساحة الكوخ)", c, d] for a, b, c, d in tr_rows]
     if not same:             # دور علوي أصغر: سطر لكل دور
         for f, b in enumerate(fbs):
             rows.append(["", "مسطح " + P.floor_list[f]["name"], f"{(b[2] - b[0]) / 100:.2f} × {(b[3] - b[1]) / 100:.2f}",
@@ -1466,13 +1472,14 @@ def areas_sheet(ctx):
                  "مجموع الأدوار" if mz or not same else
                  (f"{(x1 - x0) / 100:.2f} × {(y1 - y0) / 100:.2f}" + (f" × {nfl} دور" if nfl > 1 else "")),
                  f"{gross:.2f}"])
-    if terrace and P.meta.get("price_scope") != "built":
+    rows += tr_rows
+    if terrace and P.meta.get("price_scope") != "built" and not sep:
         dk = ("التراس والبلكونة" if any("بلكون" in d.name for d in P.decks) else "التراسات") if len(P.decks) > 1 \
             else "التراس"
         rows.append(["", "المساحة الكلية (المبنية + " + dk + ")",
                      "", f"{gross + terrace:.2f}"])
     table(ax, ["م", "الفراغ", "الأبعاد (م)", "المساحة (م2)"], rows, [0.7, 3.6, 2.8, 2.1], fs=10.5 if len(rows) < 12 else 9,
-          bold_last=4 if terrace and P.meta.get("price_scope") != "built" else 2)
+          bold_last=(len(tr_rows) + 1) if sep else (4 if terrace and P.meta.get("price_scope") != "built" else 2))
     ax.set_title("جدول المساحات", fontsize=14, weight="bold", color=BRAND, loc="right")
     # بيانات المشروع
     m = P.meta

@@ -2,11 +2,11 @@
 #   - يسار: غرفة نوم الأطفال 4.00 × 4.00 قدام + حمام الأطفال 2.40 × 2.00 وراها + دولاب/خزانة + كاونتر مطبخ على الصالة.
 #   - النص: الصالة (جلسة L + طعام) مفتوحة، والمدخل بالجدار الخلفي.
 #   - يمين: غرفة النوم الرئيسية 4.50 × 4.00 قدام + غرفة ملابس 2.40 × 2.00 + حمام خاص 3.00 × 2.00 وراها.
-#   - التراس بعرض الكوخ كامل قدام (عمق 2.14 م) ودرج عريض بالنص — المبنى 16.00 × 6.36 + التراس = 8.50 م.
+#   - تراس أمامي 16.00 × 4.00 + تراس خلفي 16.00 × 2.00 (تعديل المصنع)، والمطبخ: نص جدار ونص زجاج بطول المطبخ.
 # السقف: مسطح الشكل (ميل خفيف 3° للخلف، صاج + عزل مائي) ممتد فوق التراس كامل على 4 أعمدة (طلب المصنع).
 # الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 16.00 × 6.36)، +y = الخلف، التراس جنوب.
 name: chalet-16x8.5-2br
-title: كوخ 16.00 × 8.50 م — غرفتين نوم + صالة + حمامين + تراس
+title: كوخ 16.00 × 6.36 م — غرفتين نوم + صالة + حمامين + تراس أمامي 4.00 وخلفي 2.00
 client: "عميل — كوخ 16 × 8.5"
 meta:
   location: "—"
@@ -15,11 +15,12 @@ meta:
   price_note: ""
   price_scope: building
   hide_pricing: true
+  terrace_separate: true     # التراسات خارج مساحة الكوخ — سطر منفصل بالجدول بدون أسعار (طلب المصنع)
 style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: panel}
 wall_height: 300
 height_exact: true
 slab_height: 45
-roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, purlins: 1, soffit: true, ext_high: 214}   # سقف ممتد فوق التراس كامل (طلب المصنع)
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, purlins: 1, soffit: true, ext_high: 400, ext_low: 200}   # سقف ممتد فوق التراس الأمامي 4.00 والخلفي 2.00 (طلب المصنع)
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -45,7 +46,8 @@ walls:
     start: [1594, 630]
     end: [6, 630]
     openings:
-      - {kind: door, code: ب1, name: ب1 المدخل, offset: 764, width: 100, height: 240, leaves: 1}
+      - {kind: door, code: ب1, name: ب1 المدخل (على التراس الخلفي), offset: 764, width: 100, height: 240, leaves: 1}
+      - {kind: window, code: ش3, name: ش3 زجاج المطبخ بطول المطبخ (نص جدار + نص زجاج), offset: 894, width: 336, height: 150, sill: 105}
   - name: غرب
     title: الواجهة الغربية
     start: [6, 630]
@@ -97,13 +99,17 @@ rooms:
   - {name: غرفة النوم الرئيسية, rect: [1138, 12, 1588, 412], label: [1300, 100]}
 
 decks:
-  - {name: التراس, rect: [0, -214, 1600, 0], height: 45, railing: [], stairs: {side: S, offset: 520, width: 560}}
+  - {name: التراس الأمامي, rect: [0, -400, 1600, 0], height: 45, railing: [], stairs: {side: S, offset: 520, width: 560}}
+  - {name: التراس الخلفي, rect: [0, 636, 1600, 836], height: 45, railing: [], stairs: {side: N, offset: 700, width: 200}}
 
 posts:
-  - {at: [15, -200], size: 18}
-  - {at: [535, -200], size: 18}
-  - {at: [1065, -200], size: 18}
-  - {at: [1585, -200], size: 18}
+  - {at: [15, -385], size: 18}
+  - {at: [535, -385], size: 18}
+  - {at: [1065, -385], size: 18}
+  - {at: [1585, -385], size: 18}
+  - {at: [15, 821], size: 18}
+  - {at: [800, 821], size: 18}
+  - {at: [1585, 821], size: 18}
 
 furniture:
   # غرفة الأطفال: سريرين مفرد راسهم على الجدار الغربي + كومودينو
@@ -116,7 +122,8 @@ furniture:
   # الخزانة
   - {name: دولاب, rect: [264, 564, 340, 624]}
   # المطبخ: كاونتر على جدار الخزانة مواجه للصالة
-  - {name: كاونتر, rect: [352, 430, 412, 624]}
+  - {name: كاونتر, rect: [352, 430, 412, 564]}
+  - {name: كاونتر, rect: [352, 564, 700, 624]}
   # الصالة: طعام يسار + جلسة L بالنص + كرسيين
   - {name: طاولة 6, rect: [480, 170, 580, 290]}
   - {name: كنبة, rect: [680, 270, 900, 350]}
