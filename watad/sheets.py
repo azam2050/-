@@ -429,8 +429,10 @@ def plan_sheet(ctx, floor=0):
         while yy < dy1:
             ax.plot([dx0, dx1], [yy, yy], color="#d9c2a5", lw=0.4)
             yy += 14
-        ax.text((dx0 + dx1) / 2, (dy0 + dy1) / 2, f"{d.name}  {(dx1 - dx0) / 100:.2f} × {(dy1 - dy0) / 100:.2f} م",
-                ha="center", va="center", fontsize=10, color="#5a3a22")
+        lx, ly = d.label or ((dx0 + dx1) / 2, (dy0 + dy1) / 2)
+        ax.text(lx, ly, f"{d.name}  {(dx1 - dx0) / 100:.2f} × {(dy1 - dy0) / 100:.2f} م",
+                ha="center", va="center", fontsize=10, color="#5a3a22",
+                bbox=dict(fc="#f6ecdf", ec="none", pad=1.5) if d.label else None)
         if d.stairs and d.stairs.get("side") == "S":
             n = max(1, math.ceil(d.height / 15))
             a, b = dx0 + d.stairs["offset"], dx0 + d.stairs["offset"] + d.stairs["width"]
@@ -963,10 +965,11 @@ def elevation_sheets(ctx):
         for k, w in enumerate(pair):
             ax = drawing_ax(fig, [0.05, 0.53 - 0.45 * k, 0.9, 0.4])
             elevation(ax, ctx, w)
-            ax.text(0.5, -0.02, w.title or w.name, transform=ax.transAxes, ha="center", va="top",
-                    fontsize=15)
-            ax.text(0.5, -0.075, "مقياس 1:50  |  الوحدة: سم", transform=ax.transAxes, ha="center",
-                    va="top", fontsize=8)
+            # إزاحة بالنقاط (مو بنسبة المحور) — المحور يصغر بالواجهات العريضة فيتداخل العنوان مع سطر المقياس
+            ax.annotate(w.title or w.name, (0.5, 0), xycoords="axes fraction", xytext=(0, -6),
+                        textcoords="offset points", ha="center", va="top", fontsize=15)
+            ax.annotate("مقياس 1:50  |  الوحدة: سم", (0.5, 0), xycoords="axes fraction",
+                        xytext=(0, -30), textcoords="offset points", ha="center", va="top", fontsize=8)
         out.append((fig, " و".join((w.title or w.name) for w in pair)))
     return out
 

@@ -119,6 +119,7 @@ class Deck:
     railing_style: str = None  # يغلب نمط المشروع
     level: float = 0           # منسوب سطح الدكة (0 = أرضي). للبلكونة = منسوب أرضية الدور الأول
     count_area: bool = True    # false: عتبة مدخل صغيرة ما تنحسب بالمساحات (بدون تراس)
+    label: list = None         # [x, y] مكان اسم التراس بالمسقط (لما خطوط الأبعاد تمر بالنص)
 
 
 @dataclass
