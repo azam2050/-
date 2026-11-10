@@ -3,7 +3,7 @@
 #   - النص: الصالة (جلسة L + طعام) مفتوحة، والمدخل بالجدار الخلفي.
 #   - يمين: غرفة النوم الرئيسية 4.50 × 4.00 قدام + غرفة ملابس 2.40 × 2.00 + حمام خاص 3.00 × 2.00 وراها.
 #   - التراس بعرض الكوخ كامل قدام (عمق 2.14 م) ودرج عريض بالنص — المبنى 16.00 × 6.36 + التراس = 8.50 م.
-# السقف: جملون بالطول 25° + جملون زجاج بارز فوق الصالة ممتد فوق التراس على عمودين.
+# السقف: مسطح الشكل (ميل خفيف 3° للخلف، صاج + عزل مائي) ممتد فوق التراس كامل على 4 أعمدة (طلب المصنع).
 # الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 16.00 × 6.36)، +y = الخلف، التراس جنوب.
 name: chalet-16x8.5-2br
 title: كوخ 16.00 × 8.50 م — غرفتين نوم + صالة + حمامين + تراس
@@ -19,12 +19,7 @@ style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, rai
 wall_height: 300
 height_exact: true
 slab_height: 45
-roof:
-  ridge_axis: x
-  pitch_deg: 25
-  overhang: 40
-  cross_gables:
-    - {side: S, center: 775, width: 520, pitch: 35, overhang: 40, ext: 200, beams: 1, glass: true, window_width: 0}
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, purlins: 1, soffit: true, ext_high: 214}   # سقف ممتد فوق التراس كامل (طلب المصنع)
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -105,8 +100,10 @@ decks:
   - {name: التراس, rect: [0, -214, 1600, 0], height: 45, railing: [], stairs: {side: S, offset: 520, width: 560}}
 
 posts:
-  - {at: [525, -200], size: 18}
-  - {at: [1025, -200], size: 18}
+  - {at: [15, -200], size: 18}
+  - {at: [535, -200], size: 18}
+  - {at: [1065, -200], size: 18}
+  - {at: [1585, -200], size: 18}
 
 furniture:
   # غرفة الأطفال: سريرين مفرد راسهم على الجدار الغربي + كومودينو
