@@ -467,11 +467,13 @@ def plan_sheet(ctx, floor=0):
         cx, cy = r.label or ((r.rect[0] + r.rect[2]) / 2, (r.rect[1] + r.rect[3]) / 2)
         big = r.area_m2 > 4 and r.kind != "stair"
         rot = 90 if r.h > 2 * r.w and r.w < 100 else 0
-        ax.text(cx, cy + (8 if big else 0), r.name, ha="center", va="bottom", fontsize=12 if big else 8,
-                rotation=rot)
+        narrow = min(r.w, r.h) < 240                     # فراغ ضيق: خط أصغر عشان الكلام ما يطلع على الجدران
+        lbl_box = dict(fc="white", ec="none", alpha=0.85, pad=0.6)    # خلفية بيضا: الكلام ما يتداخل مع خطوط الفرش
+        ax.text(cx, cy + (8 if big else 0), r.name, ha="center", va="bottom",
+                fontsize=(9 if narrow else 12) if big else 7, rotation=rot, bbox=lbl_box, zorder=20)
         if big:
             ax.text(cx, cy, f"{r.w / 100:.2f} × {r.h / 100:.2f} م  |  {r.area_m2:.1f} م2",
-                    ha="center", va="top", fontsize=8)
+                    ha="center", va="top", fontsize=6 if narrow else 8, bbox=lbl_box, zorder=20)
         if r.kind != "stair" and r.area_m2 >= 2.5:        # الأبعاد الداخلية الصافية لكل فراغ (قاعدة المصنع)
             rx0, ry0, rx1, ry1 = r.rect
             dim(ax, (rx0, ry1 - 18), (rx1, ry1 - 18), 0, fs=6, color=C_IN, ext=False)
