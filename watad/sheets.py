@@ -552,6 +552,26 @@ def plan_sheet(ctx, floor=0):
 
 
 # ---------------------------------------------------------------- الواجهات
+def _draw_finishes(ax, w, half, ztop):
+    """تشطيبات الواجهة (wall.finishes): خشب رأسي على الأطراف / أعمدة لياسة صامتة بين الفتحات — بإحداثيات offset الفتحات."""
+    for f in w.finishes or []:
+        a, b = f["from"] + half, f["to"] + half
+        if f["kind"] == "plaster":
+            ax.add_patch(Rectangle((a, 0), b - a, ztop, fc="#f1e8d8", ec="k", lw=0.6, zorder=2))
+            lbl = "لياسة"
+        else:                                   # wood_v: ألواح خشب رأسية
+            ax.add_patch(Rectangle((a, 0), b - a, ztop, fc="#ead5b6", ec="k", lw=0.6, zorder=2))
+            x = a + 12
+            while x < b - 2:
+                ax.plot([x, x], [0, ztop], color="#a57c52", lw=0.4, zorder=2.1)
+                x += 12
+            lbl = "خشب رأسي"
+        if b - a >= 40:
+            ax.text((a + b) / 2, ztop * 0.5, lbl, ha="center", va="center", fontsize=6, color="#5a3a22",
+                    rotation=90 if b - a < 150 else 0, zorder=2.2,
+                    bbox=dict(fc="white", ec="none", alpha=0.8, pad=1))
+
+
 def elevation(ax, ctx, w):
     P, rules = ctx["project"], ctx["rules"]
     half = wall_thickness(rules) / 2
@@ -590,6 +610,7 @@ def elevation(ax, ctx, w):
                 ax.plot([tc, L] if zb_ > za else [0, tc], [y, y], color="#999", lw=0.4)
             y += cover
         top = max(za, zb_)
+        _draw_finishes(ax, w, half, min(za, zb_))
         if gable_end:              # الجدار الجانبي: لوح السقف المائل بالرفرف
             xl_ = P.roof.ext_low
             xh_ = P.roof.ext_high

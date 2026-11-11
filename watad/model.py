@@ -43,6 +43,7 @@ class Wall:
     glass_split: bool = False   # تقسيم زجاج الواجهة لألواح أصغر (عارضة ثانية بالمثلث + قوائم)
     gable_openings: list = field(default_factory=list)   # فتحات داخل مثلث الجملون (باب بلكونة الميزانين…)
     floor: int = 0              # رقم الدور (0 أرضي، 1 أول)
+    finishes: list = None       # تشطيبات الواجهة: [{from, to, kind: wood_v|plaster}] بنفس offset الفتحات
 
     @property
     def length(self):
