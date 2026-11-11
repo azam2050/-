@@ -1,149 +1,202 @@
-# عميل الرياض: نفس تقسيم كوخ 16 بالضبط (ملف المصنع) + الواجهتين الأمامية والخلفية بالضبط على صور المصنع:
-#   الأمامية: جدارين خشب رأسي على الطرفين + 3 واجهات زجاج لين السقف (غرفة الأطفال / الصالة / الماستر) بينها عمودين لياسة فاتحة،
-#             رفرف ممتد 4.00 م فوق التراس بحافة خشب سميكة بدون أعمدة بالنص، تراس مرتفع ودرج عريض بالنص (3 درجات).
-#   الخلفية متماثلة بالضبط: خشب متساوي على الطرفين + زجاج متساوي يمين ويسار + صامت + الباب بالنص، ودرج عريض بالنص.
-#   (عشان التماثل: الخزانة وغرفة الملابس صاروا دواليب بالغرف، والحمامين بعرض الخشب 3.10 من الجهتين)
-# الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 16.00 × 6.36)، +y = الخلف، التراس جنوب.
+# عميل الرياض: نفس تقسيم كوخ 16 بالضبط (ملف المصنع) بدون أي تغيير بالغرف — زاد الطول 4.00 م بالمطبخ والصالة (طلب المصنع)
+# عشان الواجهتين تطلع مثل الصور بالضبط:
+#   الخلفية متماثلة: خشب 5.81 | زجاج 2.99 | صامت 0.70 | باب 1.00 بالنص | صامت 0.70 | زجاج 2.99 | خشب 5.81 = 20.00 م
+#   الأمامية: أطراف خشب + 3 واجهات زجاج لين السقف بينها أعمدة صامتة، رفرف 4.00 م بدون أعمدة بالنص، درج عريض بالنص.
+# الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 20.00 × 6.36)، +y = الخلف، التراس جنوب.
 name: riyadh-chalet-16
-title: كوخ الرياض 16.00 × 6.36 م — غرفتين نوم + صالة + حمامين + تراس أمامي 4.00 وخلفي 2.00
-client: "عميل — الرياض"
-meta:
-  location: الرياض
-  usage: سكني
-  date: 2026-11-11
-  price_note: ""
-  price_scope: building
-  hide_pricing: true
-  terrace_separate: true     # التراسات خارج مساحة الكوخ — سطر منفصل بالجدول بدون أسعار (طلب المصنع)
+title: كوخ الرياض 20.00 × 6.36 م — غرفتين نوم + صالة + حمامين + تراس أمامي 4.00 وخلفي 2.00
+client: عميل — الرياض
+meta: {location: الرياض, usage: سكني, date: '2026-11-11', price_note: '', price_scope: building, hide_pricing: true, terrace_separate: true}
 style: {preset: walnut_black, wood: honey_cedar, glass: clear, frame: black, railing: B04, window_grid: none, door_style: panel}
 wall_height: 300
 height_exact: true
 slab_height: 45
-roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, purlins: 1, soffit: true, ext_high: 400, ext_low: 200}   # سقف ممتد فوق التراس الأمامي 4.00 والخلفي 2.00 (طلب المصنع)
+roof: {type: shed, ridge_axis: x, high_side: S, pitch_deg: 3, low_pitch_approved: true, overhang: 40, purlins: 1, soffit: true, ext_high: 400, ext_low: 200}
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
-
 walls:
-  - name: جنوب
-    title: الواجهة الأمامية (على التراس)
-    finishes:   # الأطراف خشب رأسي + عمودين لياسة صامتة بين الزجاج (مثل الصورة)
-      - {from: -6, to: 60, kind: wood_v}
-      - {from: 360, to: 440, kind: plaster}
-      - {from: 1100, to: 1180, kind: plaster}
-      - {from: 1520, to: 1594, kind: wood_v}
-    start: [6, 6]
-    end: [1594, 6]
-    openings:
-      - {kind: door, code: ز1, name: ز1 واجهة زجاج غرفة الأطفال لين السقف, offset: 60, width: 300, height: 290, style: sliding, leaves: 2}
-      - {kind: door, code: ز2, name: ز2 واجهة زجاج الصالة لين السقف, offset: 440, width: 660, height: 290, style: sliding, leaves: 4}
-      - {kind: door, code: ز1, name: ز1 واجهة زجاج غرفة النوم الرئيسية لين السقف, offset: 1180, width: 340, height: 290, style: sliding, leaves: 2}
-  - name: شرق
-    title: الواجهة الشرقية
-    start: [1594, 6]
-    end: [1594, 630]
-    openings:
-      - {kind: window, code: ش1, name: ش1 غرفة النوم الرئيسية, offset: 30, width: 90, height: 140, sill: 80}
-      - {kind: window, code: ش2, name: ش2 الحمام الخاص, offset: 500, width: 60, height: 50, sill: 180}
-  - name: شمال
-    title: الواجهة الخلفية (المدخل)
-    finishes:   # الأطراف خشب رأسي + عمودين لياسة صامتة على جنبي الباب (مثل الصورة)
-      - {from: -6, to: 315, kind: wood_v}
-      - {from: 674, to: 744, kind: plaster}
-      - {from: 844, to: 914, kind: plaster}
-      - {from: 1273, to: 1594, kind: wood_v}
-    start: [1594, 630]
-    end: [6, 630]
-    openings:
-      # متماثلة مثل الصورة بالضبط: خشب 3.21 | زجاج 3.59 | صامت 0.70 | باب 1.00 بالنص | صامت 0.70 | زجاج 3.59 | خشب 3.21
-      - {kind: door, code: ب1, name: ب1 الباب الرئيسي خشب (بالنص بين عمودين لياسة), offset: 744, width: 100, height: 260, leaves: 1}
-      - {kind: window, code: ش3, name: ش3 زجاج المطبخ لين السقف — يمين المدخل, offset: 315, width: 359, height: 290, sill: 0}
-      - {kind: window, code: ش3, name: ش3 زجاج المطبخ لين السقف — يسار المدخل, offset: 914, width: 359, height: 290, sill: 0}
-  - name: غرب
-    title: الواجهة الغربية
-    start: [6, 630]
-    end: [6, 6]
-    openings:
-      - {kind: window, code: ش2, name: ش2 حمام الأطفال, offset: 70, width: 60, height: 50, sill: 180}
-      - {kind: window, code: ش1, name: ش1 غرفة الأطفال, offset: 450, width: 90, height: 140, sill: 80}
-  # ---- يسار: غرفة الأطفال + حمامها + خزانة + كاونتر المطبخ
-  - name: جدار غرفة الأطفال — الصالة
-    exterior: false
-    start: [418, 6]
-    end: [418, 418]
-    openings:
-      - {kind: door, code: ب2, name: ب2 غرفة الأطفال, offset: 310, width: 85, height: 220}
-  - name: جدار غرفة الأطفال — الحمام
-    exterior: false
-    start: [6, 418]
-    end: [418, 418]
-    openings:
-      - {kind: door, code: ب3, name: ب3 حمام الأطفال, offset: 150, width: 70, height: 210}
-  # الواجهة الخلفية متماثلة (طلب المصنع): حمام الأطفال بعرض الخشب الغربي 3.10 والخزانة دخلت دولاب بالغرفة
-  - {name: جدار حمام الأطفال — المطبخ, exterior: false, start: [310, 418], end: [310, 630]}
-  # ---- يمين: غرفة النوم الرئيسية + الملابس + الحمام الخاص
-  - name: جدار الغرفة الرئيسية — الصالة
-    exterior: false
-    start: [1132, 6]
-    end: [1132, 418]
-    openings:
-      - {kind: door, code: ب4, name: ب4 غرفة النوم الرئيسية, offset: 300, width: 90, height: 220}
-  - name: جدار الغرفة الرئيسية — الملابس والحمام
-    exterior: false
-    start: [1132, 418]
-    end: [1594, 418]
-    openings:
-      - {kind: door, code: ب5, name: ب5 الحمام الخاص, offset: 178, width: 70, height: 210}
-  # الحمام الخاص بعرض الخشب الشرقي 3.10 (متماثل مع حمام الأطفال)، والملابس صارت دولاب بالغرفة
-  - {name: جدار الحمام الخاص — المطبخ, exterior: false, start: [1290, 418], end: [1290, 630]}
-
+- name: جنوب
+  title: الواجهة الأمامية (على التراس)
+  start: [6, 6]
+  end: [1994, 6]
+  openings:
+  - {kind: door, code: ز1, name: ز1 واجهة زجاج غرفة الأطفال لين السقف, offset: 60, width: 300, height: 290, style: sliding, leaves: 2}
+  - {kind: door, code: ز2, name: ز2 واجهة زجاج الصالة لين السقف, offset: 440, width: 1060, height: 290, style: sliding, leaves: 6}
+  - {kind: door, code: ز1, name: ز1 واجهة زجاج غرفة النوم الرئيسية لين السقف, offset: 1580, width: 340, height: 290, style: sliding, leaves: 2}
+  finishes:
+  - {from: -6, to: 60, kind: wood_v}
+  - {from: 360, to: 440, kind: plaster}
+  - {from: 1500, to: 1580, kind: plaster}
+  - {from: 1920, to: 1994, kind: wood_v}
+- name: شرق
+  title: الواجهة الشرقية
+  start: [1994, 6]
+  end: [1994, 630]
+  openings:
+  - {kind: window, code: ش1, name: ش1 غرفة النوم الرئيسية, offset: 30, width: 90, height: 140, sill: 80}
+  - {kind: window, code: ش2, name: ش2 الحمام الخاص, offset: 500, width: 60, height: 50, sill: 180}
+- name: شمال
+  title: الواجهة الخلفية (المدخل)
+  start: [1994, 630]
+  end: [6, 630]
+  openings:
+  - {kind: door, code: ب1, name: ب1 الباب الرئيسي خشب (بالنص بين عمودين صامتة), offset: 944, width: 100, height: 260, leaves: 1}
+  - {kind: door, code: ز3, name: ز3 زجاج المطبخ لين السقف — يمين المدخل, offset: 575, width: 299, height: 290, style: sliding, leaves: 2}
+  - {kind: door, code: ز3, name: ز3 زجاج المطبخ لين السقف — يسار المدخل, offset: 1114, width: 299, height: 290, style: sliding, leaves: 2}
+  finishes:
+  - {from: -6, to: 575, kind: wood_v}
+  - {from: 874, to: 944, kind: plaster}
+  - {from: 1044, to: 1114, kind: plaster}
+  - {from: 1413, to: 1994, kind: wood_v}
+- name: غرب
+  title: الواجهة الغربية
+  start: [6, 630]
+  end: [6, 6]
+  openings:
+  - {kind: window, code: ش2, name: ش2 حمام الأطفال, offset: 70, width: 60, height: 50, sill: 180}
+  - {kind: window, code: ش1, name: ش1 غرفة الأطفال, offset: 450, width: 90, height: 140, sill: 80}
+- name: جدار غرفة الأطفال — الصالة
+  exterior: false
+  start: [418, 6]
+  end: [418, 418]
+  openings:
+  - {kind: door, code: ب2, name: ب2 غرفة الأطفال, offset: 310, width: 85, height: 220}
+- name: جدار غرفة الأطفال — الحمام
+  exterior: false
+  start: [6, 418]
+  end: [418, 418]
+  openings:
+  - {kind: door, code: ب3, name: ب3 حمام الأطفال, offset: 150, width: 70, height: 210}
+  - {kind: door, code: ف1, name: ف1 خزانة غرفة الأطفال, offset: 263, width: 66, height: 220, leaves: 0}
+- name: جدار حمام الأطفال — الخزانة
+  exterior: false
+  start: [258, 418]
+  end: [258, 630]
+- name: جدار الخزانة — المطبخ
+  exterior: false
+  start: [346, 418]
+  end: [346, 630]
+- name: جدار الغرفة الرئيسية — الصالة
+  exterior: false
+  start: [1532, 6]
+  end: [1532, 418]
+  openings:
+  - {kind: door, code: ب4, name: ب4 غرفة النوم الرئيسية, offset: 300, width: 90, height: 220}
+- name: جدار الغرفة الرئيسية — الملابس والحمام
+  exterior: false
+  start: [1430, 418]
+  end: [1994, 418]
+  openings:
+  - {kind: door, code: ف2, name: ف2 غرفة الملابس, offset: 130, width: 80, height: 220, leaves: 0}
+  - {kind: door, code: ب5, name: ب5 الحمام الخاص, offset: 270, width: 70, height: 210}
+- name: جدار الملابس — الصالة
+  exterior: false
+  start: [1430, 418]
+  end: [1430, 630]
+- name: جدار الملابس — الحمام
+  exterior: false
+  start: [1682, 418]
+  end: [1682, 630]
 rooms:
-  - {name: غرفة نوم الأطفال, rect: [12, 12, 412, 412], label: [300, 200]}
-  - {name: حمام الأطفال, rect: [12, 424, 304, 624], wet: true, label: [200, 560]}
-  - {name: الصالة, rect: [424, 12, 1126, 412], label: [775, 120]}
-  - {name: المطبخ والمدخل, rect: [316, 424, 1284, 624], label: [600, 560]}
-  - {name: حمام خاص, rect: [1296, 424, 1588, 624], wet: true, label: [1450, 560]}
-  - {name: غرفة النوم الرئيسية, rect: [1138, 12, 1588, 412], label: [1300, 100]}
-
+- name: غرفة نوم الأطفال
+  rect: [12, 12, 412, 412]
+  label: [300, 200]
+- name: حمام الأطفال
+  rect: [12, 424, 252, 624]
+  wet: true
+  label: [132, 560]
+- name: خزانة
+  rect: [264, 424, 340, 624]
+  label: [302, 600]
+- name: الصالة
+  rect: [424, 12, 1526, 412]
+  label: [975, 120]
+- name: المطبخ والممر
+  rect: [352, 424, 1424, 624]
+  label: [700, 560]
+- name: غرفة ملابس
+  rect: [1436, 424, 1676, 624]
+  label: [1556, 560]
+- name: حمام خاص
+  rect: [1688, 424, 1988, 624]
+  wet: true
+  label: [1838, 560]
+- name: غرفة النوم الرئيسية
+  rect: [1538, 12, 1988, 412]
+  label: [1700, 100]
 decks:
-  - {name: التراس الأمامي, rect: [0, -400, 1600, 0], height: 45, railing: [], stairs: {side: S, offset: 400, width: 800}}
-  - {name: التراس الخلفي, rect: [0, 636, 1600, 836], height: 45, railing: [], stairs: {side: N, offset: 500, width: 600}, label: [1250, 806]}
-
-posts:   # الرفرف الأمامي بدون أعمدة بالنص (مثل الصورة) — العمودين بالأطراف داخل جدار الخشب، وجسر الحافة 16 م يحتاج جسر مصفح/حديد (قرار المصنع)
-  - {at: [15, -385], size: 18}
-  - {at: [1585, -385], size: 18}
-  - {at: [15, 821], size: 18}
-  - {at: [1585, 821], size: 18}
-
+- name: التراس الأمامي
+  rect: [0, -400, 2000, 0]
+  height: 45
+  railing: []
+  stairs: {side: S, offset: 600, width: 800}
+- name: التراس الخلفي
+  rect: [0, 636, 2000, 836]
+  height: 45
+  railing: []
+  stairs: {side: N, offset: 700, width: 600}
+  label: [1650, 806]
+posts:
+- at: [15, -385]
+  size: 18
+- at: [1985, -385]
+  size: 18
+- at: [15, 821]
+  size: 18
+- at: [1985, 821]
+  size: 18
 furniture:
-  # غرفة الأطفال: سريرين مفرد راسهم على الجدار الغربي + كومودينو + دولاب (بدل الخزانة)
-  - {name: سرير 90×190, rect: [12, 50, 202, 140]}
-  - {name: سرير 90×190, rect: [12, 250, 202, 340]}
-  - {name: كومودينو, rect: [12, 160, 52, 230]}
-  - {name: دولاب, rect: [12, 352, 150, 412]}
-  # حمام الأطفال
-  - {name: دش, rect: [12, 534, 102, 624], shape: shower}
-  - {name: "", rect: [264, 574, 304, 624], shape: wc}
-  - {name: "", rect: [258, 424, 304, 470], shape: basin}
-  # المطبخ: كاونتر على الجدارين الجانبيين + ثلاجة، والزجاج والمدخل بالنص فاضية
-  - {name: كاونتر, rect: [316, 424, 376, 624]}
-  - {name: كاونتر, rect: [1224, 489, 1284, 624]}
-  - {name: ثلاجة, rect: [1219, 424, 1284, 489]}
-  # الصالة: طعام يسار + جلسة L بالنص + كرسيين
-  - {name: طاولة 6, rect: [480, 170, 580, 290]}
-  - {name: كنبة, rect: [680, 270, 900, 350]}
-  - {name: كنبة, rect: [680, 140, 760, 270]}
-  - {name: طاولة, rect: [790, 180, 870, 250]}
-  - {name: كرسي, rect: [940, 60, 1010, 130]}
-  - {name: كرسي, rect: [1020, 60, 1090, 130]}
-  # الغرفة الرئيسية: سرير 180 راسه على الجدار الشرقي + كومودينو + دولاب (بدل غرفة الملابس)
-  - {name: سرير 180×200, rect: [1388, 130, 1588, 310]}
-  - {name: "", rect: [1548, 312, 1588, 350]}
-  - {name: دولاب, rect: [1400, 352, 1588, 412]}
-  # الحمام الخاص
-  - {name: دش, rect: [1498, 534, 1588, 624], shape: shower}
-  - {name: "", rect: [1296, 574, 1336, 624], shape: wc}
-  - {name: "", rect: [1348, 578, 1394, 624], shape: basin}
-  # جدارين خشب رأسي على طرفي التراس الأمامي (مثل الصورة)
-  - {name: "", rect: [0, -400, 24, 0], shape: slats}
-  - {name: "", rect: [1576, -400, 1600, 0], shape: slats}
+- name: سرير 90×190
+  rect: [12, 50, 202, 140]
+- name: سرير 90×190
+  rect: [12, 250, 202, 340]
+- name: كومودينو
+  rect: [12, 160, 52, 230]
+- name: دش
+  rect: [12, 534, 102, 624]
+  shape: shower
+- name: كاونتر
+  rect: [412, 564, 570, 624]
+- name: ''
+  rect: [212, 574, 252, 624]
+  shape: wc
+- name: دولاب
+  rect: [264, 564, 340, 624]
+- name: كاونتر
+  rect: [352, 430, 412, 564]
+- name: كاونتر
+  rect: [1364, 424, 1424, 564]
+- name: طاولة 6
+  rect: [480, 170, 580, 290]
+- name: كنبة
+  rect: [930, 270, 1150, 350]
+- name: كنبة
+  rect: [930, 140, 1010, 270]
+- name: طاولة
+  rect: [1040, 180, 1120, 250]
+- name: كرسي
+  rect: [1340, 60, 1410, 130]
+- name: كرسي
+  rect: [1420, 60, 1490, 130]
+- name: سرير 180×200
+  rect: [1788, 130, 1988, 310]
+- name: كومودينو
+  rect: [1948, 320, 1988, 370]
+- name: دولاب
+  rect: [1436, 564, 1676, 624]
+- name: دش
+  rect: [1898, 534, 1988, 624]
+  shape: shower
+- name: ''
+  rect: [1688, 574, 1728, 624]
+  shape: wc
+- name: ''
+  rect: [1740, 578, 1786, 624]
+  shape: basin
+- name: ''
+  rect: [0, -400, 24, 0]
+  shape: slats
+- name: ''
+  rect: [1976, -400, 2000, 0]
+  shape: slats
