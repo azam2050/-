@@ -1,0 +1,135 @@
+# عميل الخبر: استراحة شخصية 200 م² (رسالة المصنع): صالة جلوس كبيرة + مطبخ + حمام + مغاسل + غرفة نوم بدورة مياه.
+# التوزيع (20.00 × 10.00 م):
+#   - غرب: الصالة الكبيرة 11.88 × 9.88 (جلسة U + طعام) — المدخل الرئيسي بالنص على التراس.
+#   - شرق قدام: المغاسل مفتوحة على الصالة + الحمام بالركن (شباكه جانبي، مو على الواجهة).
+#   - شرق ورا: المطبخ مفتوح على الصالة (يخدم الجلسة والطعام) + غرفة النوم ودورة مياهها بالركن الخلفي (خصوصية).
+# السقف (فكرة لهالتصميم): جملون طولي 22° + جملون زجاج بارز فوق المدخل يغطي مظلة الدخول على عمودين.
+# الإحداثيات على محور الجدار، الجدار 12 سم (المقاس الخارجي 20.00 × 10.00)، +y = الخلف، الواجهة جنوب.
+name: khobar-rest-200
+title: استراحة الخبر 20.00 × 10.00 م (200 م²) — صالة كبيرة + مطبخ + مغاسل + حمام + غرفة نوم بدورة مياه
+client: "عميل — الخبر"
+meta:
+  location: الخبر
+  usage: استراحة شخصية
+  date: 2026-11-15
+  price_note: ""
+  price_scope: building
+  hide_pricing: true
+  terrace_separate: true
+style: {preset: cedar_charcoal_porch, wood: natural_pine, glass: clear, frame: black, railing: B04, window_grid: grid, door_style: french}
+wall_height: 300
+height_exact: true
+slab_height: 45
+roof:
+  ridge_axis: x
+  pitch_deg: 22
+  overhang: 50
+  purlins: 1
+  cross_gables:
+    - {side: S, center: 600, width: 400, pitch: 35, overhang: 40, ext: 290, beams: 1, glass: true, window_width: 0}
+insulation: true
+cladding_board_length: 400
+pallet_length: 320
+
+walls:
+  - name: جنوب
+    title: الواجهة الأمامية (المدخل)
+    start: [6, 6]
+    end: [1994, 6]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 144, width: 200, height: 160, sill: 70, grid: [3, 3]}
+      - {kind: door, code: ب1, name: ب1 المدخل الرئيسي, offset: 514, width: 160, height: 240, leaves: 2, grid: [2, 5]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 844, width: 200, height: 160, sill: 70, grid: [3, 3]}
+      - {kind: window, code: ش2, name: ش2 المغاسل, offset: 1394, width: 100, height: 100, sill: 120, grid: [2, 2]}
+  - name: شرق
+    title: الواجهة الشرقية
+    start: [1994, 6]
+    end: [1994, 994]
+    openings:
+      - {kind: window, code: ش3, name: ش3 الحمام, offset: 114, width: 60, height: 60, sill: 170}
+      - {kind: window, code: ش4, name: ش4 غرفة النوم, offset: 424, width: 140, height: 150, sill: 80, grid: [2, 3]}
+      - {kind: window, code: ش3, name: ش3 دورة مياه الغرفة, offset: 814, width: 60, height: 60, sill: 170}
+  - name: شمال
+    title: الواجهة الخلفية
+    start: [1994, 994]
+    end: [6, 994]
+    openings:
+      - {kind: window, code: ش5, name: ش5 المطبخ, offset: 494, width: 200, height: 110, sill: 110, grid: [3, 2]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 994, width: 200, height: 160, sill: 70, grid: [3, 3]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 1594, width: 200, height: 160, sill: 70, grid: [3, 3]}
+  - name: غرب
+    title: الواجهة الغربية
+    start: [6, 994]
+    end: [6, 6]
+    openings:
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 144, width: 200, height: 160, sill: 70, grid: [3, 3]}
+      - {kind: window, code: ش1, name: ش1 الصالة, offset: 494, width: 200, height: 160, sill: 70, grid: [3, 3]}
+  - name: جدار الصالة — المغاسل والمطبخ
+    exterior: false
+    start: [1200, 6]
+    end: [1200, 994]
+    openings:
+      - {kind: door, code: ف1, name: ف1 فتحة المغاسل على الصالة, offset: 34, width: 220, height: 240, leaves: 0}
+      - {kind: door, code: ف2, name: ف2 فتحة المطبخ على الصالة, offset: 494, width: 300, height: 240, leaves: 0}
+  - name: جدار المغاسل — المطبخ والغرفة
+    exterior: false
+    start: [1200, 300]
+    end: [1994, 300]
+    openings:
+      - {kind: door, code: ب2, name: ب2 غرفة النوم, offset: 412, width: 90, height: 220}
+  - name: جدار الحمام
+    exterior: false
+    start: [1720, 6]
+    end: [1720, 300]
+    openings:
+      - {kind: door, code: ب3, name: ب3 الحمام, offset: 114, width: 75, height: 210}
+  - {name: جدار المطبخ — غرفة النوم, exterior: false, start: [1600, 300], end: [1600, 994]}
+  - name: جدار دورة مياه الغرفة
+    exterior: false
+    start: [1600, 700]
+    end: [1994, 700]
+    openings:
+      - {kind: door, code: ب4, name: ب4 دورة مياه الغرفة, offset: 40, width: 75, height: 210}
+
+rooms:
+  - {name: صالة الجلوس, rect: [12, 12, 1194, 988], label: [700, 420]}
+  - {name: المغاسل, rect: [1206, 12, 1714, 294], label: [1460, 120]}
+  - {name: حمام, rect: [1726, 12, 1988, 294], wet: true, label: [1850, 230]}
+  - {name: المطبخ, rect: [1206, 306, 1594, 988], label: [1360, 760]}
+  - {name: غرفة النوم, rect: [1606, 306, 1988, 694], label: [1900, 360]}
+  - {name: دورة مياه الغرفة, rect: [1606, 706, 1988, 988], wet: true, label: [1800, 850]}
+
+decks:
+  - {name: التراس, rect: [0, -300, 2000, 0], height: 45, railing: [], stairs: {side: S, offset: 480, width: 240}}
+
+posts:   # مظلة المدخل تحت الجملون الزجاج
+  - {at: [412, -288], size: 18}
+  - {at: [788, -288], size: 18}
+
+furniture:
+  # الصالة: جلسة U مفتوحة على الشرق + طاولة، والطعام قريب من فتحة المطبخ، وممر المدخل فاضي
+  - {name: كنبة, rect: [12, 200, 92, 800]}
+  - {name: كنبة, rect: [92, 200, 480, 280]}
+  - {name: كنبة, rect: [92, 720, 480, 800]}
+  - {name: طاولة, rect: [180, 390, 400, 610]}
+  - {name: طاولة 8, rect: [860, 560, 1080, 740]}
+  # المغاسل: مغسلتين على الجدار الخلفي
+  - {name: "", rect: [1300, 248, 1346, 294], shape: basin}
+  - {name: "", rect: [1370, 248, 1416, 294], shape: basin}
+  # الحمام
+  - {name: "", rect: [1948, 12, 1988, 62], shape: wc}
+  - {name: دش, rect: [1898, 204, 1988, 294], shape: shower}
+  - {name: "", rect: [1726, 12, 1772, 58], shape: basin}
+  # المطبخ: كاونتر L + ثلاجة + جزيرة
+  - {name: ثلاجة, rect: [1534, 306, 1594, 371]}
+  - {name: كاونتر, rect: [1534, 371, 1594, 928]}
+  - {name: كاونتر, rect: [1206, 928, 1594, 988]}
+  - {name: جزيرة, rect: [1300, 500, 1440, 640]}
+  # غرفة النوم: راس السرير على الجدار المصمت (المطبخ) + كومودينو + دولاب
+  - {name: سرير 180×200, rect: [1606, 420, 1806, 600]}
+  - {name: "", rect: [1606, 606, 1646, 646]}
+  - {name: دولاب, rect: [1810, 640, 1988, 700]}
+  # دورة مياه الغرفة
+  - {name: دش, rect: [1898, 898, 1988, 988], shape: shower}
+  - {name: "", rect: [1948, 706, 1988, 756], shape: wc}
+  - {name: "", rect: [1606, 942, 1652, 988], shape: basin}
