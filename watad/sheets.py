@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.patches import Arc, Ellipse, FancyBboxPatch, Polygon, Rectangle
+from matplotlib.patches import Circle, Arc, Ellipse, FancyBboxPatch, Polygon, Rectangle
 from shapely.geometry import LineString, box
 from shapely.ops import unary_union
 
@@ -312,6 +312,21 @@ def draw_furniture(ax, P):
             ax.add_patch(Rectangle((x0, y0), w, h, fill=False, ec=C_FURN, lw=0.6))
             ax.add_patch(Ellipse(((x0 + x1) / 2, (y0 + y1) / 2), w * .6, h * .6, fill=False,
                                  ec=C_FURN, lw=0.5))
+        elif f.shape == "fireplace":                   # مشب: دكة حجر بطول الجدار + بيت النار بالنص ولهب
+            ax.add_patch(Rectangle((x0, y0), w, h, fc="#e6ddd0", ec="#5a3a22", lw=1.0, hatch="xx", zorder=3))
+            along = w >= h
+            fw = min(140, (w if along else h) * 0.3)
+            cx_, cy_ = (x0 + x1) / 2, (y0 + y1) / 2
+            bx = (cx_ - fw / 2, y0, fw, h) if along else (x0, cy_ - fw / 2, w, fw)
+            ax.add_patch(Rectangle(bx[:2], bx[2], bx[3], fc="#3a3a3a", ec="k", lw=0.8, zorder=3.1))
+            r_ = min(fw, w if not along else h) * 0.28
+            ax.add_patch(Circle((cx_, cy_), r_, fc="#f08a3c", ec="#b33", lw=0.6, zorder=3.2))
+            ax.text(cx_ + (0 if along else -(w / 2 + 6)), cy_ + ((h / 2 + 8) if along else 0),
+                    f"{f.name or 'مشب'} — دكة حجر {max(w, h) / 100:.2f} م + بيت نار بالنص",
+                    ha="center" if along else "right", va="bottom" if along else "center", fontsize=7,
+                    color="#5a3a22", rotation=0 if along else 90, zorder=3.3,
+                    bbox=dict(fc="white", ec="none", alpha=0.85, pad=1))
+            continue
         elif f.shape == "slats":                       # بارتشن شرائح خشب: مربعات الشرائح على خط
             ax.add_patch(Rectangle((x0, y0), w, h, fill=False, ec="#8B5A2B", lw=0.5, ls="--"))
             along = w >= h

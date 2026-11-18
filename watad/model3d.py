@@ -906,6 +906,40 @@ def add_interior(S, project, style, cut=None, pieces=True):
         if f.shape == "slats":
             _slat_partition(S, project, f)
             continue
+        if f.shape == "fireplace":    # مشب: دكة حجر بطول الجدار + بيت نار مفتوح بالنص + صدر مدخنة حجر غامق لين السقف
+            S.material("fp_stone", "#E6DCC8")
+            S.material("fp_dark", "#6E655A")
+            S.material("ember", "#F07A2A")
+            cx_, cy_ = (x0 + x1) / 2, (y0 + y1) / 2
+            room = next((r.rect for r in project.rooms if r.floor == f.floor and r.rect[0] - 1 <= cx_ <= r.rect[2] + 1
+                         and r.rect[1] - 1 <= cy_ <= r.rect[3] + 1), (x0, y0, x1, y1))
+            fl = project.floor_list[f.floor] if f.floor < len(project.floor_list) else None
+            top = (fl.get("height") if isinstance(fl, dict) else getattr(fl, "height", None)) or project.wall_height
+            d = {"W": x0 - room[0], "E": room[2] - x1, "S": y0 - room[1], "N": room[3] - y1}
+            back = min(d, key=d.get)
+            along = back in ("S", "N")                      # الدكة على طول x
+            L0, L1 = (x0, x1) if along else (y0, y1)
+            D0, D1 = (y0, y1) if along else (x0, x1)        # العمق: من الغرفة للجدار
+            wall_at_hi = back in ("N", "E")
+            dep = D1 - D0
+            def B(m, a0, a1, d0, d1, z0, z1):               # صندوق بإحداثيات (طول، عمق من الجدار)
+                e0, e1 = ((D1 - d1, D1 - d0) if wall_at_hi else (D0 + d0, D0 + d1))
+                if along:
+                    S.box(m, a0, e0, z0, a1, e1, z1)
+                else:
+                    S.box(m, e0, a0, z0, e1, a1, z1)
+            c = (L0 + L1) / 2
+            fw = min(140, (L1 - L0) * 0.3)
+            B("fp_stone", L0, c - fw / 2, 0, dep, 1.2, 45)              # الدكة يمين ويسار
+            B("fp_stone", c + fw / 2, L1, 0, dep, 1.2, 45)
+            B("fp_stone", c - fw / 2, c + fw / 2, 0, dep, 1.2, 30)      # أرضية بيت النار
+            B("ember", c - fw / 2 + 10, c + fw / 2 - 10, 10, dep - 8, 30, 42)
+            B("fp_dark", c - fw / 2, c - fw / 2 + 8, 0, dep, 30, 120)   # جوانب بيت النار
+            B("fp_dark", c + fw / 2 - 8, c + fw / 2, 0, dep, 30, 120)
+            B("fp_dark", c - fw / 2, c + fw / 2, 0, 8, 30, 120)         # ظهر بيت النار
+            B("fp_dark", c - fw / 2 - 20, c + fw / 2 + 20, 0, 22, 120, top)   # صدر المدخنة لين السقف
+            B("fp_stone", L0, L1, 0, 4, 45, top)                        # تكسية حجر على الجدار بطول المشب
+            continue
         h, m = 50, "furn"
         for key, hh, mm in FURN_H:
             if key in f.name:
