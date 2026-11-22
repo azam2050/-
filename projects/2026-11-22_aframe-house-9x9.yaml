@@ -1,10 +1,10 @@
-# عميل جديد: منزل خاص — الكوخ المثلث (A-frame) دورين، بصمة ≈ 80 م² (9.00 × 9.00) — رسالة المصنع:
-#   الأرضي: صالة + مطبخ + دورة مياه + غرفة رئيسية + بلكونة (تراس أمامي).
-#   الأول (+2.90): غرفتين + دورة مياه + غرفة عاملة صغيرة.
-# القمة ≈ 9.00 م: قاعدة 15 سم + ميل 63°. الأول بين x 160..728 (الوقفة الكاملة 251..637).
+# عميل جديد: منزل خاص — الكوخ المثلث (A-frame) دورين، إجمالي البناء ≈ 80 م² (تعديل المصنع: الـ 80 للدورين):
+#   الأرضي 7.20 × 7.60 = 54.7 م²: صالة + مطبخ + دورة مياه + غرفة رئيسية + بلكونة (تراس أمامي).
+#   الأول (+2.90) داخل المثلث ≈ 25 م²: غرفتين + دورة مياه (غرفة العاملة ما تتسع ضمن 80 م²).
+# القمة ≈ 7.10 م: قاعدة 15 سم + ميل 63°. الأول بين x 160..548 (الوقفة الكاملة 247..461).
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب (مثلث زجاج).
 name: aframe-house-9x9
-title: منزل خاص — كوخ مثلث (A-frame) دورين 9.00 × 9.00 م — صالة ومطبخ وغرفة رئيسية + غرفتين وغرفة عاملة
+title: منزل خاص — كوخ مثلث (A-frame) دورين 7.20 × 7.60 م — إجمالي 80 م²
 client: "عميل — كوخ مثلث 80 م²"
 meta:
   location: "—"
@@ -18,7 +18,7 @@ style: {preset: walnut_black, wood: natural_pine, glass: clear, frame: black, ra
 wall_height: 15
 height_exact: true
 slab_height: 45
-roof: {ridge_axis: y, pitch_deg: 63, overhang: 10, ext_start: 150, purlins: 3}
+roof: {ridge_axis: y, pitch_deg: 63, overhang: 10, ext_start: 150, purlins: 2}
 insulation: true
 cladding_board_length: 400
 pallet_length: 320
@@ -29,128 +29,116 @@ walls:
     glass_front: true
     glass_split: true
     start: [0, 0]
-    end: [888, 0]
+    end: [708, 0]
     openings:
-      - {kind: door, code: ب1, name: ب1 المدخل (زجاج دبل), offset: 372, width: 144, height: 230, leaves: 2}
-  - {name: شرق, title: الواجهة الشرقية (السقف لين الأرض), start: [888, 0], end: [888, 888]}
+      - {kind: door, code: ب1, name: ب1 المدخل (زجاج دبل), offset: 282, width: 144, height: 230, leaves: 2}
+  - {name: شرق, title: الواجهة الشرقية (السقف لين الأرض), start: [708, 0], end: [708, 748]}
   - name: شمال
     title: الواجهة الخلفية
-    start: [888, 888]
-    end: [0, 888]
+    start: [708, 748]
+    end: [0, 748]
     openings:
-      - {kind: door, code: ب2, name: ب2 الباب الخلفي (الممر), offset: 318, width: 90, height: 210, leaves: 1, grid: [1, 4]}
+      - {kind: door, code: ب2, name: ب2 الباب الخلفي (الممر), offset: 228, width: 90, height: 210, leaves: 1, grid: [1, 4]}
     gable_openings:
-      - {code: ش1, name: ش1 الغرفة الرئيسية, offset: 558, width: 180, height: 120, sill: 90, grid: [2, 2]}
-      - {code: ش2, name: ش2 دورة المياه, offset: 128, width: 60, height: 60, sill: 170}
-      - {code: ش3, name: ش3 غرفة نوم 3, offset: 348, width: 200, height: 110, sill: 380, grid: [2, 2]}
-  - {name: غرب, title: الواجهة الغربية (السقف لين الأرض), start: [0, 888], end: [0, 0]}
-  # ---- الأرضي: الغرفة الرئيسية (خلفي يسار) + ممر + دورة مياه (خلفي يمين) + مطبخ مفتوح على الصالة
-  - {name: جدار الغرفة الرئيسية — الصالة, exterior: false, height: 270, start: [0, 500], end: [430, 500]}
+      - {code: ش1, name: ش1 الغرفة الرئيسية, offset: 408, width: 180, height: 120, sill: 90, grid: [2, 2]}
+      - {code: ش2, name: ش2 دورة المياه, offset: 138, width: 50, height: 60, sill: 170}
+      - {code: ش3, name: ش3 غرفة نوم 3, offset: 268, width: 170, height: 110, sill: 380, grid: [2, 2]}
+  - {name: غرب, title: الواجهة الغربية (السقف لين الأرض), start: [0, 748], end: [0, 0]}
+  - {name: جدار الغرفة الرئيسية — الصالة, exterior: false, height: 270, start: [0, 360], end: [360, 360]}
   - name: جدار الغرفة الرئيسية — الممر
     exterior: false
     height: 270
-    start: [430, 500]
-    end: [430, 888]
+    start: [360, 360]
+    end: [360, 748]
     openings:
-      - {kind: door, code: ب3, name: ب3 الغرفة الرئيسية, offset: 260, width: 90, height: 210}
-  - {name: جدار المطبخ — دورة المياه, exterior: false, height: 270, start: [650, 700], end: [888, 700]}
+      - {kind: door, code: ب3, name: ب3 الغرفة الرئيسية, offset: 210, width: 90, height: 210}
+  - {name: جدار المطبخ — دورة المياه, exterior: false, height: 270, start: [520, 580], end: [708, 580]}
   - name: جدار دورة المياه — الممر
     exterior: false
     height: 270
-    start: [650, 700]
-    end: [650, 888]
+    start: [520, 580]
+    end: [520, 748]
     openings:
       - {kind: door, code: ب4, name: ب4 دورة المياه, offset: 20, width: 70, height: 210}
 
 rooms:
-  - {name: الصالة, rect: [6, 6, 882, 494], label: [470, 110]}
-  - {name: الغرفة الرئيسية, rect: [6, 506, 424, 882], label: [300, 560]}
-  - {name: المطبخ, rect: [436, 500, 882, 694], label: [560, 600]}
-  - {name: الممر, rect: [436, 700, 644, 882], kind: corridor, label: [540, 740]}
-  - {name: دورة مياه, rect: [656, 706, 882, 882], wet: true, label: [740, 760]}
+  - {name: الصالة, rect: [6, 6, 702, 354], label: [470, 90]}
+  - {name: الغرفة الرئيسية, rect: [6, 366, 354, 742], label: [200, 710]}
+  - {name: المطبخ, rect: [366, 360, 702, 574], label: [470, 430]}
+  - {name: الممر, rect: [366, 580, 514, 742], kind: corridor, label: [440, 640]}
+  - {name: دورة مياه, rect: [526, 586, 702, 742], wet: true, label: [600, 640]}
 
 mezzanines:   # الدور الأول (+2.90)
   - name: غرفة نوم 2
-    rect: [250, 6, 728, 280]
+    rect: [250, 6, 548, 300]
     level: 290
     no_ground_label: true
     use: غرفة نوم 2 (على الزجاج الأمامي)
     plan_title: المسقط الأفقي مع الفرش — الدور الأول (+2.90)
     railing: []
     walls: [W, N]
-    wall_doors: {N: [[300, 370]]}
-    headroom: [251, 637]
+    wall_doors: {N: [[255, 325]]}
+    headroom: [247, 461]
   - name: الممر
-    rect: [160, 280, 430, 610]
+    rect: [160, 300, 330, 420]
     level: 290
     no_ground_label: true
     use: ممر
     railing: []
     holes:
-      - {rect: [160, 280, 250, 470], railing: [E, S], gaps: {}}
-    headroom: [251, 637]
-  - name: غرفة عاملة
-    rect: [430, 280, 728, 450]
-    level: 290
-    no_ground_label: true
-    use: غرفة عاملة صغيرة
-    railing: []
-    walls: [W]
-    wall_doors: {W: [[330, 400]]}
-    headroom: [251, 637]
+      - {rect: [160, 300, 250, 355], railing: [E, S], gaps: {}}
+    headroom: [247, 461]
   - name: دورة مياه الأول
-    rect: [430, 450, 728, 610]
+    rect: [330, 300, 548, 420]
     level: 290
     no_ground_label: true
     use: دورة مياه
     railing: []
-    walls: [W, S]
-    wall_doors: {W: [[480, 550]]}
-    headroom: [251, 637]
+    walls: [W]
+    wall_doors: {W: [[330, 400]]}
+    headroom: [247, 461]
   - name: غرفة نوم 3
-    rect: [160, 610, 728, 882]
+    rect: [160, 420, 548, 742]
     level: 290
     no_ground_label: true
     use: غرفة نوم 3
     railing: []
     walls: [S]
-    wall_doors: {S: [[280, 350]]}
-    headroom: [251, 637]
+    wall_doors: {S: [[260, 330]]}
+    headroom: [247, 461]
 
-straight_stairs:   # يطلع من جنب المدخل (غرب) للخلف: 15 قائمة × 19.3 ونائمة 25
-  - {name: الدرج, start: [160, 120], dir: N, width: 90, rise: 290, riser: 19.3, tread: 25, rail: E}
+straight_stairs:   # يطلع من جنب المدخل (غرب) للخلف: 15 قائمة × 19.3 ونائمة 22.5
+  - {name: الدرج, start: [160, 40], dir: N, width: 90, rise: 290, riser: 19.3, tread: 22.5, rail: E}
 
 decks:
   - name: البلكونة (التراس الأمامي)
-    rect: [100, -206, 788, -6]
+    rect: [80, -206, 628, -6]
     height: 45
     railing: [W, E]
-    stairs: {side: S, offset: 244, width: 200}
-    label: [444, -130]
+    stairs: {side: S, offset: 174, width: 200}
+    label: [354, -130]
 
 furniture:
-  # الصالة: جلسة L شرق مطلة على الزجاج + طعام جنب الدرج — المدخل ومدخل الدرج فاضيين
-  - {name: كنبة, rect: [780, 80, 860, 400]}
-  - {name: كنبة, rect: [500, 400, 780, 480]}
-  - {name: طاولة, rect: [580, 180, 700, 300]}
-  - {name: طاولة 6, rect: [300, 300, 420, 440]}
-  # المطبخ: كاونتر L على جدار دورة المياه والجهة الشرقية + ثلاجة
-  - {name: كاونتر, rect: [650, 640, 840, 700]}
-  - {name: كاونتر, rect: [780, 500, 840, 640]}
-  - {name: ثلاجة, rect: [585, 635, 650, 700]}
-  # الغرفة الرئيسية: راس السرير جهة الميل + دولاب على جدار الممر
-  - {name: سرير 180×200, rect: [60, 600, 260, 780]}
-  - {name: دولاب, rect: [370, 520, 424, 720]}
+  # الصالة: جلسة L شرق + طاولة طعام جنب الدرج — المدخل ومدخل الدرج فاضيين
+  - {name: كنبة, rect: [620, 60, 700, 330]}
+  - {name: كنبة, rect: [420, 270, 620, 350]}
+  - {name: طاولة, rect: [480, 120, 580, 220]}
+  - {name: طاولة 6, rect: [290, 190, 390, 310]}
+  # المطبخ: كاونتر L + ثلاجة
+  - {name: كاونتر, rect: [520, 520, 702, 580]}
+  - {name: كاونتر, rect: [642, 360, 702, 520]}
+  - {name: ثلاجة, rect: [455, 515, 520, 580]}
+  # الغرفة الرئيسية: راس السرير جهة الميل + دولاب
+  - {name: سرير 180×200, rect: [40, 420, 240, 600]}
+  - {name: دولاب, rect: [300, 380, 354, 560]}
   # دورة المياه
-  - {name: "", rect: [660, 842, 700, 882], shape: wc}
-  - {name: "", rect: [720, 836, 766, 882], shape: basin}
-  # الأول: غرفة 2 (السرير راسه على جدار الممر)
-  - {name: سرير 180×200, rect: [400, 80, 580, 280], floor: -1, z: 290}
-  # غرفة العاملة
-  - {name: سرير 90×190, rect: [440, 360, 630, 450], floor: -1, z: 290}
+  - {name: "", rect: [540, 702, 580, 742], shape: wc}
+  - {name: "", rect: [600, 696, 646, 742], shape: basin}
+  # الأول: غرفة 2 (راس السرير على جدار الممر)
+  - {name: سرير 160×200, rect: [330, 100, 490, 300], floor: -1, z: 290}
   # دورة مياه الأول
-  - {name: دش, rect: [638, 456, 728, 546], shape: shower, floor: -1, z: 290}
-  - {name: "", rect: [586, 456, 626, 496], shape: wc, floor: -1, z: 290}
-  - {name: "", rect: [530, 456, 576, 502], shape: basin, floor: -1, z: 290}
-  # غرفة 3 (السرير راسه على الجدار الخلفي)
-  - {name: سرير 180×200, rect: [354, 682, 534, 882], floor: -1, z: 290}
+  - {name: دش, rect: [458, 330, 548, 420], shape: shower, floor: -1, z: 290}
+  - {name: "", rect: [414, 380, 454, 420], shape: wc, floor: -1, z: 290}
+  - {name: "", rect: [408, 306, 450, 348], shape: basin, floor: -1, z: 290}
+  # غرفة 3 (راس السرير على الجدار الخلفي)
+  - {name: سرير 160×200, rect: [274, 542, 434, 742], floor: -1, z: 290}

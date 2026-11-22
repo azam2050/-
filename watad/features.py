@@ -621,8 +621,12 @@ def mezz_sheet(ctx):
                         ax.plot([pa[0], pa[0]], [g0, g1], color="white", lw=3, zorder=5)
             ax.text((hx0 + hx1) / 2, hy0 - 6, "فتحة الدرج + دربزين", ha="center", va="top", fontsize=6.5,
                     color="#8b5a2b", zorder=6)
-        ax.text((mx0 + mx1) / 2, my1 - 20, f"{m.get('name', 'الميزانين')}  {(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
-                f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=10, color="#5a3a22", zorder=6)
+        narrow = (mx1 - mx0) < 320            # فراغ ضيق (ممر/دورة مياه): الاسم والمقاس سطرين بخط أصغر بدون تداخل
+        sep = "\n" if narrow else "  "
+        ax.text((mx0 + mx1) / 2, my1 - (10 if narrow else 20),
+                f"{m.get('name', 'الميزانين')}{sep}{(mx1 - mx0) / 100:.2f} × {(my1 - my0) / 100:.2f} م"
+                f"  |  {(mx1 - mx0) * (my1 - my0) / 1e4:.1f} م²", ha="center", va="top", fontsize=7 if narrow else 10,
+                color="#5a3a22", zorder=6, linespacing=1.2, bbox=dict(fc="white", ec="none", alpha=0.8, pad=1) if narrow else None)
         vy0 = y0 + 2 * half
         full = any(mm.get("plan_title") for mm in P.mezzanines)   # دور كامل: مافيه فراغ مزدوج
         if full:
