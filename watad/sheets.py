@@ -1855,7 +1855,9 @@ def build_client_pdf(ctx, path, with_perspective=True):
 
 
 def build_pdf(ctx, path):
+    from .features import mezz_sheet
     pages = [perspective_sheet(ctx)] + [plan_sheet(ctx, f) for f in range(len(ctx["project"].floor_list))] + \
+        ([mezz_sheet(ctx)] if ctx["project"].mezzanines else []) + \
         elevation_sheets(ctx) + [roof_sheet(ctx), schedule_sheet(ctx),
                                                          areas_sheet(ctx)]
     pages += framing_sheets(ctx)
