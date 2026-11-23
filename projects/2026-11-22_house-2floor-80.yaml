@@ -151,7 +151,7 @@ rooms:
 
 decks:
   - {name: التراس الأمامي, rect: [0, -206, 595, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 190, width: 120}, label: [400, -150]}
-  - {name: البلكونة (الأول), rect: [0, -206, 595, -6], level: 305, railing: [S, E, W], railing_style: glass_panel, label: [400, -150]}
+  - {name: البلكونة (الأول), rect: [0, -206, 595, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters, label: [400, -150]}
 
 posts:   # أعمدة خشب تشيل البلكونة
   - {at: [10, -196], size: 15}
