@@ -2,7 +2,7 @@
 #   البصمة 5.95 × 6.72 = 40.0 م² × دورين = 80.0 م².
 #   الأرضي: صالة + مطبخ مفتوح + دورة مياه + غرفة رئيسية بدورة مياه خاصة (من المطبخ والغرفة — ملاحظة العميل) + تراس + درج U.
 #   الأول (+3.05): غرفتين قدام + بلكونة فوق التراس + ممر + دورتين مياه + غرفة عاملة صغيرة ورا (ملاحظة العميل).
-# السقف: جملون أمامي بمثلث زجاج فوق الغرف.
+# السقف: جملون أمامي بمثلث زجاج فوق الغرف. الواجهة الأمامية أغلبها زجاج بمحاور متطابقة بين الدورين (تعديل المصنع).
 # الإحداثيات على محور الجدار، الجدار 12 سم، +y = الخلف، الواجهة جنوب.
 name: house-2floor-80
 title: منزل خاص دورين 5.95 × 6.72 م — إجمالي 80 م² — صالة ومطبخ وغرفة رئيسية + غرفتين وغرفة عاملة
@@ -33,8 +33,10 @@ walls:
     start: [6, 6]
     end: [589, 6]
     openings:
-      - {kind: door, code: ب1, name: ب1 المدخل, offset: 196, width: 100, height: 230, leaves: 1, grid: [2, 5]}
-      - {kind: window, code: ش1, name: ش1 المطبخ, offset: 374, width: 160, height: 110, sill: 110, grid: [2, 2]}
+      # الواجهة أغلبها زجاج (تعديل المصنع) — رؤوس الفتحات كلها على 2.40 ومحاورها على محاور زجاج الأول
+      - {kind: door, code: ز2, name: ز2 زجاج الصالة لين 2.40, offset: 14, width: 166, height: 240, style: sliding, leaves: 2}
+      - {kind: door, code: ب1, name: ب1 المدخل (باب زجاج), offset: 190, width: 100, height: 240, leaves: 1, grid: [1, 4]}
+      - {kind: window, code: ش1, name: ش1 زجاج المطبخ (فوق الكاونتر), offset: 332, width: 220, height: 150, sill: 90, grid: [3, 2]}
   - name: أ-شرق
     title: الواجهة الشرقية
     start: [589, 6]
@@ -82,8 +84,8 @@ walls:
     start: [6, 6]
     end: [589, 6]
     openings:
-      - {kind: window, code: ش6, name: ش6 غرفة نوم 2, offset: 74, width: 150, height: 130, sill: 80, grid: [2, 2]}
-      - {kind: door, code: ز1, name: ز1 سحاب غرفة نوم 3 — البلكونة, offset: 364, width: 150, height: 210, style: sliding, leaves: 2}
+      - {kind: door, code: ز1, name: ز1 سحاب زجاج غرفة نوم 2 — البلكونة, offset: 40, width: 220, height: 240, style: sliding, leaves: 2}
+      - {kind: door, code: ز1, name: ز1 سحاب زجاج غرفة نوم 3 — البلكونة, offset: 332, width: 220, height: 240, style: sliding, leaves: 2}
   - name: ب-شرق
     floor: 1
     title: الواجهة الشرقية (الأول)
@@ -149,7 +151,7 @@ rooms:
 
 decks:
   - {name: التراس الأمامي, rect: [0, -206, 595, -6], height: 45, railing: [W, E], stairs: {side: S, offset: 190, width: 120}, label: [400, -150]}
-  - {name: البلكونة (الأول), rect: [0, -206, 595, -6], level: 305, railing: [S, E, W], railing_style: vertical_balusters, label: [400, -150]}
+  - {name: البلكونة (الأول), rect: [0, -206, 595, -6], level: 305, railing: [S, E, W], railing_style: glass_panel, label: [400, -150]}
 
 posts:   # أعمدة خشب تشيل البلكونة
   - {at: [10, -196], size: 15}
